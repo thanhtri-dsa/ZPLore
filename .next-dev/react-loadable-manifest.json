@@ -1,0 +1,9 @@
+{
+  "components/home/home-map-section.tsx -> @/components/ui/DestinationsMap": {
+    "id": "components/home/home-map-section.tsx -> @/components/ui/DestinationsMap",
+    "files": [
+      "static/css/_app-pages-browser_components_ui_DestinationsMap_tsx.css",
+      "static/chunks/_app-pages-browser_components_ui_DestinationsMap_tsx.js"
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "node": {
+    "4d4474e3156ec570c778aaaff067662056b830c2": {
+      "workers": {
+        "app/(main)/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fthanhtri%2FDownloads%2FEco-Tour-Wed%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fserver-actions.js%22%2C%5B%22invalidateCacheAction%22%5D%5D%5D&__client_imported__=true!",
+        "app/_not-found/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fthanhtri%2FDownloads%2FEco-Tour-Wed%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fserver-actions.js%22%2C%5B%22invalidateCacheAction%22%5D%5D%5D&__client_imported__=true!",
+        "app/(main)/(packages)/packages/page": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2FUsers%2Fthanhtri%2FDownloads%2FEco-Tour-Wed%2Fnode_modules%2F%40clerk%2Fnextjs%2Fdist%2Fesm%2Fapp-router%2Fserver-actions.js%22%2C%5B%22invalidateCacheAction%22%5D%5D%5D&__client_imported__=true!"
+      },
+      "layer": {
+        "app/(main)/page": "action-browser",
+        "app/_not-found/page": "action-browser",
+        "app/(main)/(packages)/packages/page": "action-browser"
+      }
+    }
+  },
+  "edge": {},
+  "encryptionKey": "peoaPL3sRDqn6M9T9jpKLxG4rVRWaTCzZttTQ8JazjE="
+}
