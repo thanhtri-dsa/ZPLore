@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { auth, currentUser } from '@clerk/nextjs/server'
 import { PrismaClient } from '@prisma/client'
 
+export const dynamic = 'force-dynamic'
+
 const prisma = new PrismaClient()
 
 // Public GET endpoint - /api/packages
@@ -58,9 +60,9 @@ export async function POST(request: Request) {
     } else {
       userId = 'dev-admin'
     }
-    
+
     const { name, location, imageData, duration, groupSize, price, description, included } = await request.json()
-    
+
     if (!name || !location || !duration || !groupSize || !price || !description) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
@@ -71,7 +73,7 @@ export async function POST(request: Request) {
         item: item // Changed from 'name' to 'item' to match your schema
       }))
     }
-    
+
     const newPackage = await prisma.package.create({
       data: {
         name,
@@ -89,7 +91,7 @@ export async function POST(request: Request) {
         included: true // Include the related items in the response
       }
     })
-    
+
     return NextResponse.json(newPackage, { status: 201 })
   } catch (error) {
     console.error('Error creating package:', error)

@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { auth, currentUser } from '@clerk/nextjs/server'
 import { PrismaClient } from '@prisma/client'
 
+export const dynamic = 'force-dynamic'
+
 const prisma = new PrismaClient()
 
 // Public GET endpoint - /api/blogs
@@ -54,13 +56,13 @@ export async function POST(request: Request) {
     } else {
       userId = 'dev-admin'
     }
-    
+
     const { title, content, tags, image } = await request.json()
-    
+
     if (!title || !content) {
       return NextResponse.json({ error: 'Title and content are required' }, { status: 400 })
     }
-    
+
     const newBlog = await prisma.blog.create({
       data: {
         title,
@@ -71,7 +73,7 @@ export async function POST(request: Request) {
         authorName,
       },
     })
-    
+
     return NextResponse.json(newBlog, { status: 201 })
   } catch (error) {
     console.error('Error creating blog:', error)
