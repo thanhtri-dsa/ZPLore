@@ -1,9 +1,6 @@
 {
-  "/api/blogs/route": "app/api/blogs/route.js",
-  "/manifest.webmanifest/route": "app/manifest.webmanifest/route.js",
-  "/api/packages/route": "app/api/packages/route.js",
-  "/(main)/(packages)/packages/[id]/page": "app/(main)/(packages)/packages/[id]/page.js",
+  "/(main)/blogs/page": "app/(main)/blogs/page.js",
   "/(main)/page": "app/(main)/page.js",
-  "/(main)/(packages)/packages/page": "app/(main)/(packages)/packages/page.js",
-  "/(main)/blogs/page": "app/(main)/blogs/page.js"
+  "/(main)/(packages)/packages/[id]/page": "app/(main)/(packages)/packages/[id]/page.js",
+  "/(main)/(packages)/packages/page": "app/(main)/(packages)/packages/page.js"
 }

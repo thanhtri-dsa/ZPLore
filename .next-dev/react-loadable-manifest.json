@@ -6,6 +6,12 @@
       "static/chunks/_app-pages-browser_components_ui_DestinationsMap_tsx.js"
     ]
   },
+  "components\\packages\\packageDetail.tsx -> @/components/ui/RouteMapLoader": {
+    "id": "components\\packages\\packageDetail.tsx -> @/components/ui/RouteMapLoader",
+    "files": [
+      "static/chunks/_app-pages-browser_components_ui_RouteMapLoader_tsx.js"
+    ]
+  },
   "components\\ui\\RouteMapLoader.tsx -> @/components/ui/RouteMap": {
     "id": "components\\ui\\RouteMapLoader.tsx -> @/components/ui/RouteMap",
     "files": [

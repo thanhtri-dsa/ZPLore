@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { ArrowLeft, MapPin, Calendar, Clock, Users, DollarSign, Crown, Star, Share2, Heart, CheckCircle2, ShieldCheck, ChevronRight, Leaf, Compass, Utensils, Award, Navigation, Play, Square, RefreshCcw, TreeDeciduous, Package as PackageIcon, Info } from "lucide-react"
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { computeDistanceKm, computeLegKgCo2e, normalizeMode, transportModeLabels, haversineDistanceKm, TransportMode } from '@/lib/emissions'
 import { format } from "date-fns"
 import { Calendar as CalendarComponent } from "@/components/ui/calendar"
@@ -24,8 +24,17 @@ import {
 import { toast } from "sonner"
 import Link from 'next/link'
 import Image from 'next/image'
-import RouteMapLoader from '@/components/ui/RouteMapLoader'
+import dynamic from 'next/dynamic'
+
 import { vi } from "date-fns/locale"
+
+const RouteMapLoader = dynamic(
+  () => import('@/components/ui/RouteMapLoader'),
+  { 
+    loading: () => <div className="h-[400px] w-full bg-muted animate-pulse rounded-[2.5rem] flex items-center justify-center">Đang tải bản đồ hành trình...</div>,
+    ssr: false
+  }
+)
 
 interface PackageDestinationProps {
   package: {
