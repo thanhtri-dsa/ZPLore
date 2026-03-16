@@ -1,5 +1,3 @@
-import { Button } from "@/components/ui/button"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import Image from "next/image"
 
 // Enhanced package category type with keywords for filtering

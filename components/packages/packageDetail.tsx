@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { ArrowLeft, MapPin, Calendar, Clock, Users, DollarSign, Crown, Share2, Heart, CheckCircle2, ShieldCheck, ChevronRight, Leaf, Compass, Utensils, Award, Navigation, Play, Square, RefreshCcw, Info } from "lucide-react"
+import { ArrowLeft, MapPin, Calendar, Clock, Users, DollarSign, Crown, Share2, Heart, ShieldCheck, ChevronRight, Leaf, Compass, Utensils, Award, Navigation, Play, Square, Info } from "lucide-react"
 import { motion, AnimatePresence } from 'framer-motion'
 import { computeDistanceKm, computeLegKgCo2e, normalizeMode, transportModeLabels, haversineDistanceKm, TransportMode } from '@/lib/emissions'
 import { format } from "date-fns"
@@ -100,7 +100,7 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
     const requestWakeLock = async () => {
       if ('wakeLock' in navigator && isTracking) {
         try {
-          const lock = await (navigator as any).wakeLock.request('screen') as WakeLockSentinel;
+          const lock = await (navigator as unknown as { wakeLock: { request: (type: string) => Promise<WakeLockSentinel> } }).wakeLock.request('screen');
           setWakeLock(lock);
           console.log("Wake Lock is active");
         } catch (err) {
