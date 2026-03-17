@@ -873,6 +873,9 @@ body {
 .bottom-0 {
   bottom: 0px;
 }
+.bottom-10 {
+  bottom: 2.5rem;
+}
 .bottom-16 {
   bottom: 4rem;
 }

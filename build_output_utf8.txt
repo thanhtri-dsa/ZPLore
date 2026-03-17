@@ -1,0 +1,68 @@
+﻿
+> eco-tour-web-app@0.1.0 build
+> next build
+
+  Γû▓ Next.js 14.2.15
+  - Environments: .env
+
+   Creating an optimized production build ...
+ Γ£ô Compiled successfully
+   Linting and checking validity of types ...
+node.exe : Failed to compile.
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" 
+"C:\Users\phamt\AppData\Roaming\ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Failed  
+   to compile.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+./components/ui/RouteMap.tsx:187:12
+Type error: No overload matches this call.
+  Overload 1 of 2, '(type: keyof WindowEventMap, 
+listener: (this: Window, ev: Event | KeyboardEvent | 
+UIEvent | ErrorEvent | MessageEvent<any> | ... 23 
+more ... | StorageEvent) => any, options?: boolean | 
+... 1 more ... | undefined): void', gave the 
+following error.
+    Argument of type '"ai-map-command"' is not 
+assignable to parameter of type 'keyof 
+WindowEventMap'.
+  Overload 2 of 2, '(type: string, listener: 
+EventListenerOrEventListenerObject, options?: 
+boolean | AddEventListenerOptions | undefined): 
+void', gave the following error.
+    Argument of type '(e: { detail: { action: 
+string; points: { lat: number; lng: number; }[]; 
+eco_points: { lat: number; lng: number; label: 
+string; type: string; }[]; }; }) => void' is not 
+assignable to parameter of type 
+'EventListenerOrEventListenerObject'.
+      Type '(e: { detail: { action: string; points: 
+{ lat: number; lng: number; }[]; eco_points: { lat: 
+number; lng: number; label: string; type: string; 
+}[]; }; }) => void' is not assignable to type 
+'EventListener'.
+        Types of parameters 'e' and 'evt' are 
+incompatible.
+          Property 'detail' is missing in type 
+'Event' but required in type '{ detail: { action: 
+string; points: { lat: number; lng: number; }[]; 
+eco_points: { lat: number; lng: number; label: 
+string; type: string; }[]; }; }'.
+
+[0m [90m 185 |[39m     }[0m
+[0m [90m 186 |[39m[0m
+[0m[31m[1m>[22m[39m[90m 187 |[39m     window[
+33m.[39maddEventListener([32m'ai-map-command'[39m
+[33m,[39m handleAiMapCommand)[0m
+[0m [90m     |[39m            
+[31m[1m^[22m[39m[0m
+[0m [90m 188 |[39m     [36mreturn[39m () 
+[33m=>[39m window[33m.[39mremoveEventListener([3
+2m'ai-map-command'[39m[33m,[39m 
+handleAiMapCommand)[0m
+[0m [90m 189 |[39m   }[33m,[39m [])[0m
+[0m [90m 190 |[39m[0m
