@@ -7,8 +7,7 @@ export type QueryResponse = {
 }
 
 export type QueryResponseWithData = QueryResponse & {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    data: Record<string, any>[] | null
+    data: unknown[] | null
 }
 
 const defaultRandomStringLength: number = 12
@@ -44,7 +43,7 @@ export const retrieveEntries = async (supabase: SupabaseClient): Promise<QueryRe
     return {
         successful: true,
         message: `${messageInfo}: ${JSON.stringify(data)}`,
-        data: data,
+        data: data as unknown[] | null,
     }
 }
 
@@ -118,8 +117,8 @@ export const determineAction = async (supabase: SupabaseClient): Promise<QueryRe
             let responseSuccessful: boolean = true
 
             if (retrievedEntries.length > config.sizeBeforeDeletions) {
-                const entryToDelete = retrievedEntries.pop()
-                const deletionResults: QueryResponse = await deleteRandom(supabase, entryToDelete![config.column])
+                const entryToDelete = retrievedEntries.pop() as Record<string, string>
+                const deletionResults: QueryResponse = await deleteRandom(supabase, entryToDelete[config.column])
 
                 responseSuccessful = deletionResults.successful
                 responseMessage += deletionResults.message

@@ -4,7 +4,6 @@ import React, { useMemo, useState, useEffect, useRef } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { ArrowLeft, MapPin, Calendar, Users, Crown, Share2, Heart, ChevronRight, Leaf, Navigation, Play, Square, Info, Sparkles } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { computeDistanceKm, computeLegKgCo2e, normalizeMode, transportModeLabels, haversineDistanceKm, TransportMode } from '@/lib/emissions'
@@ -15,7 +14,6 @@ import { toast } from "sonner"
 import Link from 'next/link'
 import Image from 'next/image'
 import dynamic from 'next/dynamic'
-import { vi } from "date-fns/locale"
 
 const RouteMapLoader = dynamic(
   () => import('@/components/ui/RouteMapLoader'),
@@ -63,7 +61,7 @@ interface FormErrors {
 
 // --- Sub-components moved outside to ensure stability ---
 
-const InfoTabContent = ({ travelPackage: _travelPackage }: { travelPackage: PackageDestinationProps['package'] }) => (
+const InfoTabContent = () => (
   
     <div className="bg-white/80 backdrop-blur-md p-8 md:p-16 rounded-[3rem] shadow-sm border border-white relative overflow-hidden">
       <div className="absolute top-0 right-0 opacity-[0.05] vn-pattern w-64 h-64 rotate-12 -mr-10 -mt-10" />
@@ -453,10 +451,11 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
     const requestWakeLock = async () => {
       if ('wakeLock' in navigator && isTracking) {
         try {
-          const lock = await (navigator as any).wakeLock.request('screen');
+          const lock = await (navigator as unknown as { wakeLock: { request: (type: string) => Promise<WakeLockSentinel> } }).wakeLock.request('screen');
           setWakeLock(lock);
-        } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
-          console.error(`Wake Lock Error: ${err.name}, ${err.message}`);
+        } catch (err: unknown) {
+          const error = err as Error;
+          console.error(`Wake Lock Error: ${error.name}, ${error.message}`);
         }
       }
     };
@@ -677,13 +676,13 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
           {/* Main Content Area */}
           <div className="lg:col-span-8">
             {!hasMounted ? (
-              <div className="space-y-8"><InfoTabContent travelPackage={travelPackage} /></div>
+              <div className="space-y-8"><InfoTabContent /></div>
             ) : (
               <div className="space-y-8 md:space-y-12">
                 {window.innerWidth >= 1024 ? (
                   <>
                     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-                      <InfoTabContent travelPackage={travelPackage} />
+                      <InfoTabContent />
                     </motion.div>
                     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
                       <ItineraryTabContent 
@@ -706,7 +705,7 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
                   <AnimatePresence mode="wait">
                     {activeTab === 'info' && (
                       <motion.div key="info" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}>
-                        <InfoTabContent travelPackage={travelPackage} />
+                        <InfoTabContent />
                       </motion.div>
                     )}
                     {activeTab === 'itinerary' && (

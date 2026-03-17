@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MessageSquare, X, Send, Sparkles, Leaf, Bot, User, Minus, MapPin, History, Coffee, Info, Headphones, Bike, Zap } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -29,60 +29,11 @@ export default function AIAssistant() {
   const scrollRef = useRef<HTMLDivElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    const handleTourInfo = (e: { detail: Record<string, unknown> } | Event) => {
-      if ('detail' in e) setCurrentTour((e as CustomEvent).detail);
-    };
-    const handleAiAskRoute = (e: { detail: { tourName: string } } | Event) => {
-      setIsOpen(true);
-      setIsMinimized(false);
-      if ('detail' in e) setInput(`Chỉ đường cho tôi đến tour ${e.detail.tourName} từ vị trí của tôi.`);
-    };
-
-    const handleOpenAiChat = (e: { detail: { prompt: string } } | Event) => {
-      setIsOpen(true);
-      setIsMinimized(false);
-      if ('detail' in e && e.detail.prompt) {
-        // We use a small timeout to ensure the UI is open before sending
-        setTimeout(() => {
-          triggerAiResponse(e.detail.prompt);
-        }, 100);
-      }
-    };
-
-    window.addEventListener('current-tour-info', handleTourInfo);
-    window.addEventListener('ai-ask-route', handleAiAskRoute);
-    window.addEventListener('open-ai-chat', handleOpenAiChat);
-
-    return () => {
-      window.removeEventListener('current-tour-info', handleTourInfo);
-      window.removeEventListener('ai-ask-route', handleAiAskRoute);
-      window.removeEventListener('open-ai-chat', handleOpenAiChat);
-    };
-  }, []);
-
-  const handleOpenTawkTo = () => {
-    if (window.Tawk_API && typeof window.Tawk_API.maximize === 'function') {
-      document.body.classList.add('tawk-maximized');
-      window.Tawk_API.maximize();
-      setIsOpen(false);
-    } else {
-      toast.error("Hệ thống chat hỗ trợ đang bận, vui lòng thử lại sau.");
-    }
-  }
-
-  const triggerAiResponse = async (prompt: string) => {
+  const triggerAiResponse = useCallback(async (prompt: string) => {
     if (isLoading) return;
     
     setMessages(prev => [...prev, { role: 'user', text: prompt }]);
     setIsLoading(true);
-
-    const VIETNAM_BOUNDS = {
-      latMin: 8.5,
-      latMax: 23.4,
-      lngMin: 102.1,
-      lngMax: 109.5
-    };
 
     const isInsideVietnam = (lat: number, lng: number) => {
       // DISABLED GEO-RESTRICTIONS FOR GLOBAL REACH
@@ -131,10 +82,6 @@ export default function AIAssistant() {
 
         if (jsonStr) {
           try {
-            // Clean up possible markdown code blocks around the JSON
-            if (jsonStr.startsWith('```')) {
-              jsonStr = jsonStr.replace(/^```[a-z]*\n/i, '').replace(/\n```$/i, '');
-            }
             const command = JSON.parse(jsonStr);
             if (command.action === 'draw_route' && command.points) {
               // GEOFENCING: Validate points are in Vietnam
@@ -152,7 +99,6 @@ export default function AIAssistant() {
               );
 
               if (isNorthToSouth && !hasDanang) {
-                console.log("HARD FIX: Inserting mandatory Da Nang waypoint and SORTING for North-South trip.");
                 const danangPoint = { lat: 16.0544, lng: 108.2022, label: "Đà Nẵng (Điểm chốt bắt buộc)" };
                 validPoints.push(danangPoint);
                 
@@ -161,19 +107,18 @@ export default function AIAssistant() {
               }
 
               if (validPoints.length < command.points.length) {
-                console.warn("AI attempted to draw points outside Vietnam. Filtering out...");
                 toast.warning("AI đã cố gắng vẽ lộ trình ra ngoài biên giới. Hệ thống đã tự động lọc các điểm này.");
               }
 
               if (validPoints.length < 2) {
                 toast.error("Lộ trình AI cung cấp không nằm trong lãnh thổ Việt Nam hợp lệ.");
-                return false;
+                return text;
               }
 
               // Update command with valid points only
               command.points = validPoints;
 
-              // Dispatch global event for the map
+              // Broadcast map command
               const event = new CustomEvent('ai-map-command', { detail: command });
               window.dispatchEvent(event);
               
@@ -190,29 +135,70 @@ export default function AIAssistant() {
               
               // Remove the JSON block from the displayed text
               if (taggedMatch) {
-                cleanText = text.replace(/---MAP_COMMAND---[\s\S]*?---END_MAP_COMMAND---/, '').trim();
+                return text.replace(/---MAP_COMMAND---[\s\S]*?---END_MAP_COMMAND---/, '').trim();
               } else {
-                cleanText = text.replace(jsonStr, '').trim();
+                return text.replace(jsonStr, '').trim();
               }
-              return true;
             }
           } catch (e) {
-            console.error("Failed to parse extracted JSON:", e);
+            console.error("Failed to parse AI map command:", e);
           }
         }
-        return false;
+        return text;
       };
 
-      extractAndRunCommand(data.text);
-      
-      setMessages(prev => [...prev, { role: 'model', text: cleanText || "Hành trình của bạn đã sẵn sàng trên bản đồ." }]);
+      cleanText = extractAndRunCommand(data.text);
+      setMessages(prev => [...prev, { role: 'model', text: cleanText }]);
     } catch (error) {
-      console.error('AI Error:', error);
-      toast.error('Có lỗi xảy ra khi kết nối với AI.');
+      console.error("AI Error:", error);
+      setMessages(prev => [...prev, { role: 'model', text: "Xin lỗi, tôi gặp trục trặc khi kết nối với bộ não AI. Vui lòng thử lại sau giây lát." }]);
     } finally {
-      setIsLoading(false);
+      setIsLoading(true);
+      setTimeout(() => setIsLoading(false), 500);
     }
-  };
+  }, [isLoading, userLocation, currentTour, messages]);
+
+  useEffect(() => {
+    const handleTourInfo = (e: { detail: Record<string, unknown> } | Event) => {
+      if ('detail' in e) setCurrentTour((e as CustomEvent).detail);
+    };
+    const handleAiAskRoute = (e: { detail: { tourName: string } } | Event) => {
+      setIsOpen(true);
+      setIsMinimized(false);
+      if ('detail' in e) setInput(`Chỉ đường cho tôi đến tour ${e.detail.tourName} từ vị trí của tôi.`);
+    };
+
+    const handleOpenAiChat = (e: { detail: { prompt: string } } | Event) => {
+      setIsOpen(true);
+      setIsMinimized(false);
+      if ('detail' in e && e.detail.prompt) {
+        // We use a small timeout to ensure the UI is open before sending
+        setTimeout(() => {
+          triggerAiResponse(e.detail.prompt);
+        }, 100);
+      }
+    };
+
+    window.addEventListener('current-tour-info', handleTourInfo);
+    window.addEventListener('ai-ask-route', handleAiAskRoute);
+    window.addEventListener('open-ai-chat', handleOpenAiChat);
+
+    return () => {
+      window.removeEventListener('current-tour-info', handleTourInfo);
+      window.removeEventListener('ai-ask-route', handleAiAskRoute);
+      window.removeEventListener('open-ai-chat', handleOpenAiChat);
+    };
+  }, [triggerAiResponse]);
+
+  const handleOpenTawkTo = () => {
+    if (window.Tawk_API && typeof window.Tawk_API.maximize === 'function') {
+      document.body.classList.add('tawk-maximized');
+      window.Tawk_API.maximize();
+      setIsOpen(false);
+    } else {
+      toast.error("Hệ thống chat hỗ trợ đang bận, vui lòng thử lại sau.");
+    }
+  }
 
   useEffect(() => {
     if (messagesEndRef.current) {
