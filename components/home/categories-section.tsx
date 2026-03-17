@@ -4,7 +4,7 @@ import Link from "next/link"
 
 export function CategoriesSection() {
   const categories = [
-    { name: "Điểm đến", image: "/images/destinations_image.svg", link: "/destinations" },
+    { name: "Hành trình", image: "/images/destinations_image.svg", link: "/destinations" },
     { name: "Gói du lịch", image: "/images/packages_image.svg", link: "/packages" },
     { name: "Gia đình", image: "/images/family.svg", link: "/packages" },
     { name: "Chỗ ở", image: "/images/hotel_image.svg", link: "/destinations" },

@@ -83,9 +83,9 @@ const RoutingMachine = ({ waypoints, showPanel = false }: RoutingMachineProps) =
             draggable: true,
           });
 
-          marker.bindPopup(`<div class="p-2 font-sans">
-            <p class="font-bold text-gray-900 m-0">${isFirst ? '📍 Điểm đi' : (isLast ? '🏁 Điểm đến' : '⚓ Điểm dừng')}</p>
-            <p class="text-xs text-gray-500 m-0 mt-1">Kéo để đổi vị trí</p>
+          marker.bindPopup(`<div className="p-2 font-sans">
+            <p className="font-bold text-gray-900 m-0">${isFirst ? '📍 Điểm đi' : (isLast ? '🏁 Hành trình ước mơ' : '⚓ Điểm dừng')}</p>
+            <p className="text-xs text-gray-500 m-0 mt-1">Kéo để đổi vị trí</p>
           </div>`);
           return marker;
         },

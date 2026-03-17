@@ -114,6 +114,32 @@ model KeepAlive {
   random String? @default(uuid())
 }
 
+model AIPlannerBooking {
+  id              String    @id @default(cuid())
+  firstname       String
+  lastname        String
+  email           String
+  phone           String?
+  status          String    @default("PENDING")
+  bookingDate     DateTime?
+  numberOfGuests  Int       @default(1)
+  
+  // Journey Details
+  startLocation   String
+  endLocation     String
+  transportMode   String
+  distanceKm      Float?
+  co2Kg           Float?
+  
+  // AI Generated Data (JSON stringified)
+  routePoints     String?   @db.Text
+  ecoPoints       String?   @db.Text
+  expertInsights  String?   @db.Text
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
 model Destination {
   id          String   @id @default(cuid())
   name        String

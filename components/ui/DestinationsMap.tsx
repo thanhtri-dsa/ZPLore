@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { Circle as LeafletCircle, CircleMarker as LeafletCircleMarker, MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
+import RoutingMachine from './RoutingMachine'
 
 type GoogleMaps = {
   maps: {
@@ -164,6 +165,24 @@ interface DestinationsMapProps {
 }
 
 const DestinationsMap: React.FC<DestinationsMapProps> = ({ destinations, highlightCountry }) => {
+  const [aiWaypoints, setAiWaypoints] = useState<L.LatLng[]>([])
+  const [ecoPoints, setEcoPoints] = useState<Array<{ lat: number, lng: number, label: string, type: string }>>([])
+
+  useEffect(() => {
+    const handleAiMapCommand = (e: any) => {
+      const { action, points: newPoints, eco_points: newEcoPoints } = e.detail
+      if (action === 'draw_route' && Array.isArray(newPoints)) {
+        setAiWaypoints(newPoints.map(p => L.latLng(p.lat, p.lng)))
+      }
+      if (Array.isArray(newEcoPoints)) {
+        setEcoPoints(newEcoPoints)
+      }
+    }
+
+    window.addEventListener('ai-map-command', handleAiMapCommand)
+    return () => window.removeEventListener('ai-map-command', handleAiMapCommand)
+  }, [])
+
   const googleKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
   const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN
   const providerRaw = process.env.NEXT_PUBLIC_MAP_PROVIDER?.toLowerCase()
@@ -526,7 +545,31 @@ const DestinationsMap: React.FC<DestinationsMapProps> = ({ destinations, highlig
         scrollWheelZoom={true}
         style={{ height: '100%', width: '100%', borderRadius: '0.75rem' }}
       >
-        <FitBoundsAndCenterLeaflet points={focusPoints} />
+        {aiWaypoints.length >= 2 && <RoutingMachine waypoints={aiWaypoints} showPanel={false} />}
+
+        {ecoPoints.map((p, idx) => (
+          <Marker 
+            key={`eco-${idx}`} 
+            position={[p.lat, p.lng]} 
+            icon={L.divIcon({
+              className: 'eco-poi-icon',
+              html: `<div class="w-8 h-8 rounded-full bg-white border-2 border-emerald-500 shadow-lg flex items-center justify-center">
+                      <span class="text-xs">${p.type === 'restaurant' ? '🥗' : (p.type === 'charging' ? '⚡' : '🌿')}</span>
+                     </div>`,
+              iconSize: [32, 32],
+              iconAnchor: [16, 16]
+            })}
+          >
+            <Popup>
+              <div className="p-1">
+                <p className="font-bold text-emerald-700 m-0">{p.label}</p>
+                <p className="text-[10px] text-gray-500 m-0 capitalize italic">{p.type}</p>
+              </div>
+            </Popup>
+          </Marker>
+        ))}
+
+        <FitBoundsAndCenterLeaflet points={focusPoints} aiWaypoints={aiWaypoints} />
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
           url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
@@ -588,20 +631,28 @@ const DestinationsMap: React.FC<DestinationsMapProps> = ({ destinations, highlig
 
 export default DestinationsMap
 
-function FitBoundsAndCenterLeaflet({ points }: { points: Array<[number, number]> }) {
+function FitBoundsAndCenterLeaflet({ points, aiWaypoints }: { points: Array<[number, number]>, aiWaypoints: L.LatLng[] }) {
   const map = useMap()
 
-  const pointsKey = useMemo(() => points.map((p) => `${p[0].toFixed(5)},${p[1].toFixed(5)}`).join('|'), [points])
+  const pointsKey = useMemo(() => {
+    const ptsStr = points.map((p) => `${p[0].toFixed(5)},${p[1].toFixed(5)}`).join('|')
+    const aiStr = aiWaypoints.map((p) => `${p.lat.toFixed(5)},${p.lng.toFixed(5)}`).join('|')
+    return `${ptsStr}-${aiStr}`
+  }, [points, aiWaypoints])
 
   useEffect(() => {
-    if (points.length === 0) return
-    if (points.length === 1) {
-      map.setView(points[0], 6, { animate: true, duration: 0.6 })
+    const allLatLngs: L.LatLng[] = []
+    points.forEach(p => allLatLngs.push(L.latLng(p[0], p[1])))
+    aiWaypoints.forEach(p => allLatLngs.push(p))
+
+    if (allLatLngs.length === 0) return
+    if (allLatLngs.length === 1) {
+      map.setView(allLatLngs[0], 6, { animate: true, duration: 0.6 })
       return
     }
-    const bounds = L.latLngBounds(points.map((p) => L.latLng(p[0], p[1])))
-    map.fitBounds(bounds, { padding: [40, 40], maxZoom: 7, animate: true, duration: 0.6 })
-  }, [map, pointsKey, points])
+    const bounds = L.latLngBounds(allLatLngs)
+    map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14, animate: true, duration: 0.6 })
+  }, [map, pointsKey, points, aiWaypoints])
 
   return null
 }

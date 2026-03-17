@@ -14,9 +14,9 @@ async function main() {
   // Create Sample Packages
   const packages = [
     {
-      name: 'Maasai Mara Wildlife Safari',
+      name: 'Bình Thuận ',
       location: 'Maasai Mara, Kenya',
-      imageData: '/images/masaaiMara.jpg',
+      imageData: '/images/binhthuan.jpg',
       duration: '3 Days',
       groupSize: '6 People',
       price: 45000,
@@ -325,25 +325,12 @@ async function main() {
   // Create Sample Destinations
   const destinations = [
     {
-      name: 'Nairobi City Tour',
-      country: 'Kenya',
-      city: 'Nairobi',
-      amount: 5000,
-      tags: 'City,Culture,Nature',
-      imageData: '/images/Nairobi.jpg',
-      description: 'Explore the vibrant capital of Kenya, from the Giraffe Centre to the Elephant Orphanage.',
-      daysNights: 1,
-      tourType: 'DAYS',
-      latitude: -1.286389,
-      longitude: 36.817223
-    },
-    {
-      name: 'Mombasa Coastal Adventure',
-      country: 'Kenya',
-      city: 'Mombasa',
+      name: 'Làng Chài Bình Thuận ',
+      country: 'Việt Nam',
+      city: 'Bình Thuận',
       amount: 15000,
       tags: 'Beach,History,Food',
-      imageData: '/images/mombasa.jpg',
+      imageData: '/images/binhthuan.jpg',
       description: 'Discover the rich history of Fort Jesus and the beautiful beaches of the North Coast.',
       daysNights: 3,
       tourType: 'NIGHTS',
@@ -351,12 +338,12 @@ async function main() {
       longitude: 39.668206
     },
     {
-      name: 'Khám Phá Sài Gòn Đêm',
+      name: 'Bến Thành - Sài Gòn Đêm',
       country: 'Việt Nam',
       city: 'TP. Hồ Chí Minh',
       amount: 500000,
       tags: 'City,Culture,Food',
-      imageData: '/images/one.jpg',
+      imageData: '/images/benthanhsaigon.jpg',
       description: 'Hành trình từ Quận 12 đến Chợ Bến Thành, khám phá vẻ đẹp sôi động của Sài Gòn về đêm.',
       daysNights: 1,
       tourType: 'DAYS',
@@ -369,7 +356,7 @@ async function main() {
       city: 'Quảng Ninh',
       amount: 3500000,
       tags: 'Nature,Boat,Heritage',
-      imageData: '/images/four.jpg',
+      imageData: '/images/halong.jpg',
       description: 'Kỳ quan thiên nhiên thế giới với hàng nghìn đảo đá vôi, hang động và hành trình du thuyền tuyệt đẹp.',
       daysNights: 2,
       tourType: 'NIGHTS',
@@ -382,7 +369,7 @@ async function main() {
       city: 'Quảng Nam',
       amount: 1200000,
       tags: 'Heritage,Culture,Food',
-      imageData: '/images/five.jpg',
+      imageData: '/images/hoian.jpg',
       description: 'Phố cổ lung linh đèn lồng, di sản UNESCO và ẩm thực miền Trung đặc sắc.',
       daysNights: 1,
       tourType: 'DAYS',
@@ -395,7 +382,7 @@ async function main() {
       city: 'Đà Nẵng',
       amount: 1990000,
       tags: 'City,View,Family',
-      imageData: '/images/six.jpg',
+      imageData: '/images/danang.jpg',
       description: 'Khám phá thành phố biển hiện đại và trải nghiệm Bà Nà Hills với khí hậu 4 mùa trong ngày.',
       daysNights: 2,
       tourType: 'NIGHTS',

@@ -80,8 +80,8 @@ export default function DestinationsPage({ initialDestinations, country }: Desti
             </span>
             <h1 className="text-4xl md:text-7xl font-serif font-black text-white drop-shadow-2xl capitalize">
               {country 
-                ? `Điểm đến ${country}` 
-                : 'Tất cả điểm đến'
+                ? `Hành trình ${country}` 
+                : 'Hành trình ước mơ'
               }
             </h1>
           </motion.div>
@@ -96,7 +96,7 @@ export default function DestinationsPage({ initialDestinations, country }: Desti
             <div>
               <h2 className="text-xl md:text-3xl font-serif font-black flex items-center gap-3 text-primary uppercase">
                 <div className="h-6 md:h-8 w-1.5 bg-secondary rounded-full" />
-                Bản đồ điểm đến
+                Bản đồ hành trình
               </h2>
               <p className="text-xs text-gray-400 font-medium italic">Khám phá các tọa độ du lịch xanh trên toàn cầu</p>
             </div>

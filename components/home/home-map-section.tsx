@@ -49,7 +49,7 @@ export function HomeMapSection() {
                 <span className="w-2 h-2 rounded-full bg-primary animate-ping" />
                 Khám phá trực quan
               </div>
-              <h2 className="vn-title text-4xl md:text-5xl font-bold mb-6">Mạng lưới <br/><span className="text-primary italic font-serif">Điểm đến Xanh</span></h2>
+              <h2 className="vn-title text-4xl md:text-5xl font-bold mb-6">Mạng lưới <br/><span className="text-primary italic font-serif">Hành trình Xanh</span></h2>
               <p className="text-muted-foreground text-lg leading-relaxed italic">
                 &quot;Hành trình của chúng tôi trải dài khắp dải đất hình chữ S, nơi mỗi tọa độ là một cam kết về bảo tồn và đẳng cấp.&quot;
               </p>

@@ -7,6 +7,7 @@ import { Analytics } from "@vercel/analytics/react"
 import Script from 'next/script'
 import { OfflineWrapper } from "@/components/offlineWrapper"
 import CookieConsentBanner from '@/components/CookieConsentBanner';
+import IntroOverlay from '@/components/IntroOverlay';
 
 const beVietnamPro = Be_Vietnam_Pro({
   subsets: ["vietnamese"],
@@ -86,6 +87,7 @@ export default function RootLayout({
         </Script>
         </head>
       <body className={`${beVietnamPro.variable} ${playfairDisplay.variable} font-sans antialiased`}>
+        <IntroOverlay />
         <OfflineWrapper>
         {children}
         <Toaster />

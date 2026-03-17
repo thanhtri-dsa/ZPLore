@@ -99,7 +99,7 @@ export default function AboutPage() {
                     Leading Eco-Friendly Tourism
                   </h3>
                   <p className="text-gray-600 text-base md:text-lg leading-relaxed">
-                    Founded in Nairobi, Kenya, Forestline is emerging as a leading travels and tours company with an eco-friendly business approach. We are dedicated to revolutionizing your travels and tours experience to foster memorable experiences and environmental conservation simultaneously.
+                    Được sáng lập bởi chuyên gia Phạm Thành Tri, ZPLore đang vươn mình trở thành công ty du lịch hàng đầu với phương pháp tiếp cận thân thiện với môi trường. Chúng tôi tận tâm cách mạng hóa trải nghiệm du lịch của bạn để thúc đẩy những kỷ niệm đáng nhớ đồng thời bảo tồn môi trường.
                   </p>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex items-center gap-3">
@@ -159,7 +159,7 @@ export default function AboutPage() {
                 Environmental Impact
               </h3>
               <p className="text-gray-600 text-sm leading-relaxed">
-                Climate change poses a significant threat to Kenya&apos;s tourism industry. Through our eco-friendly approach, we&apos;re committed to supporting Africa&apos;s transition to a green economy while preserving the natural beauty that makes our destinations unique.
+                Biến đổi khí hậu đặt ra thách thức lớn cho ngành du lịch. Thông qua cách tiếp cận thân thiện với môi trường, Phạm Thành Tri và đội ngũ ZPLore cam kết hỗ trợ quá trình chuyển đổi sang nền kinh tế xanh của Việt Nam trong khi vẫn giữ gìn vẻ đẹp tự nhiên của các điểm đến.
               </p>
             </div>
           </div>

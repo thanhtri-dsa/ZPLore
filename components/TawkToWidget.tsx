@@ -50,13 +50,8 @@ const TawkToWidget = () => {
     // Append the script to the body
     document.body.appendChild(script);
 
-    // Cleanup
     return () => {
-      // Check if script exists before removing
-      const tawkScript = document.querySelector(`script[src="${script.src}"]`);
-      if (tawkScript && tawkScript.parentNode) {
-        tawkScript.parentNode.removeChild(tawkScript);
-      }
+      if (script.parentNode) script.parentNode.removeChild(script);
     };
   }, []);
 

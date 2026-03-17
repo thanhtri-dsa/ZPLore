@@ -12,7 +12,7 @@ const MapLoader = () => {
     }
   ), [])
 
-  return <ContactMap lat={-1.2921} lng={36.8219} popupText="Nairobi, Kenya" />
+  return <ContactMap lat={10.762622} lng={106.660172} popupText="TP. Hồ Chí Minh, Việt Nam" />
 }
 
 export default MapLoader

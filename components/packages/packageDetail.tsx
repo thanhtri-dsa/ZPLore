@@ -1,11 +1,11 @@
 'use client'
 
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useEffect, useRef } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { ArrowLeft, MapPin, Calendar, Clock, Users, DollarSign, Crown, Share2, Heart, ShieldCheck, ChevronRight, Leaf, Compass, Utensils, Award, Navigation, Play, Square, Info } from "lucide-react"
+import { ArrowLeft, MapPin, Calendar, Clock, Users, DollarSign, Crown, Share2, Heart, ShieldCheck, ChevronRight, Leaf, Compass, Utensils, Award, Navigation, Play, Square, Info, Sparkles } from "lucide-react"
 import { motion, AnimatePresence } from 'framer-motion'
 import { computeDistanceKm, computeLegKgCo2e, normalizeMode, transportModeLabels, haversineDistanceKm, TransportMode } from '@/lib/emissions'
 import { format } from "date-fns"
@@ -15,7 +15,6 @@ import { toast } from "sonner"
 import Link from 'next/link'
 import Image from 'next/image'
 import dynamic from 'next/dynamic'
-
 import { vi } from "date-fns/locale"
 
 const RouteMapLoader = dynamic(
@@ -62,17 +61,271 @@ interface FormErrors {
   bookingDate?: string
 }
 
+// --- Sub-components moved outside to ensure stability ---
+
+const InfoTabContent = ({ travelPackage }: { travelPackage: PackageDestinationProps['package'] }) => (
+  
+    <div className="bg-white/80 backdrop-blur-md p-8 md:p-16 rounded-[3rem] shadow-sm border border-white relative overflow-hidden">
+      <div className="absolute top-0 right-0 opacity-[0.05] vn-pattern w-64 h-64 rotate-12 -mr-10 -mt-10" />
+      <div className="absolute bottom-0 left-0 opacity-[0.05] vn-pattern w-48 h-48 -ml-10 -mb-10 rotate-45" />
+    </div>
+)
+
+const ItineraryTabContent = ({ 
+  travelPackage, 
+  googleTripUrl, 
+  showMapPanel, 
+  setShowMapPanel, 
+  mapPoints, 
+  isTracking, 
+  setIsTracking, 
+  trackedDistance, 
+  trackedEmissions, 
+  trackingMode, 
+  setTrackingMode, 
+  itinerarySummary 
+}: {
+  travelPackage: PackageDestinationProps['package']
+  googleTripUrl: string | null
+  showMapPanel: boolean
+  setShowMapPanel: (v: boolean) => void
+  mapPoints: any
+  isTracking: boolean
+  setIsTracking: (v: boolean) => void
+  trackedDistance: number
+  trackedEmissions: number
+  trackingMode: TransportMode
+  setTrackingMode: (v: TransportMode) => void
+  itinerarySummary: any
+}) => (
+  <div className="space-y-8 md:space-y-12">
+    <div className="bg-white p-5 md:p-10 rounded-3xl md:rounded-[3rem] shadow-sm border border-gray-100">
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 md:mb-8 gap-4">
+        <h2 className="text-xl md:text-3xl font-serif font-black flex items-center gap-3 md:gap-4 text-primary">
+          <div className="h-6 md:h-8 w-1.5 bg-secondary rounded-full" />
+          Lộ trình di chuyển
+        </h2>
+        <div className="flex gap-2">
+            <Button 
+              onClick={() => {
+                const event = new CustomEvent('ai-ask-route', { detail: { tourName: travelPackage.name } });
+                window.dispatchEvent(event);
+                toast.success("Đang hỏi AI về đường đi...");
+              }} 
+              variant="outline" 
+              className="rounded-full h-8 md:h-10 px-4 text-[10px] font-bold bg-secondary/10 border-secondary/20 text-primary flex gap-2"
+            >
+              <Sparkles size={14} className="text-secondary" /> Hỏi AI đường đi
+            </Button>
+            {googleTripUrl && (
+            <Button asChild variant="outline" className="rounded-full h-8 md:h-10 px-4 text-[10px] font-bold">
+              <a href={googleTripUrl} target="_blank" rel="noreferrer">Google Maps</a>
+            </Button>
+          )}
+          <Button onClick={() => setShowMapPanel(!showMapPanel)} variant="outline" className={`rounded-full h-8 md:h-10 px-4 text-[10px] font-bold ${showMapPanel ? 'bg-primary text-white' : ''}`}>
+            {showMapPanel ? 'Đóng' : 'Chỉnh sửa'}
+          </Button>
+        </div>
+      </div>
+      <div className="h-[300px] md:h-[500px] w-full rounded-2xl md:rounded-[2.5rem] overflow-hidden border-2 border-white shadow-xl relative bg-gray-50">
+        <RouteMapLoader location={travelPackage.location} name={travelPackage.name} showPanel={showMapPanel} points={mapPoints} />
+      </div>
+
+      <div className="mt-8 rounded-2xl md:rounded-[2.5rem] border border-primary/10 bg-primary/5 p-5 md:p-8">
+        <div className="flex justify-between items-center mb-6">
+          <div className="text-lg md:text-xl font-black text-primary">Live Tracker</div>
+          {!isTracking ? (
+            <Button onClick={() => setIsTracking(true)} className="bg-green-600 hover:bg-green-700 text-white rounded-full h-10 px-6 font-bold flex gap-2">
+              <Play size={14} /> Bắt đầu
+            </Button>
+          ) : (
+            <Button onClick={() => setIsTracking(false)} variant="destructive" className="rounded-full h-10 px-6 font-bold flex gap-2">
+              <Square size={14} /> Dừng
+            </Button>
+          )}
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+          <div className="bg-white p-4 rounded-xl shadow-sm border border-white">
+            <p className="text-[10px] font-black uppercase text-gray-400">Quãng đường</p>
+            <p className="text-lg font-black text-primary">{trackedDistance.toFixed(2)} km</p>
+          </div>
+          <div className="bg-white p-4 rounded-xl shadow-sm border border-white">
+            <p className="text-[10px] font-black uppercase text-gray-400">Khí thải</p>
+            <p className="text-lg font-black text-secondary">{trackedEmissions.toFixed(2)} kg</p>
+          </div>
+          <div className="col-span-2 md:col-span-1 bg-white p-4 rounded-xl shadow-sm border border-white">
+            <p className="text-[10px] font-black uppercase text-gray-400">Phương tiện</p>
+            <select value={trackingMode} onChange={(e) => setTrackingMode(e.target.value as TransportMode)} className="w-full text-sm font-bold bg-transparent outline-none">
+              {Object.entries(transportModeLabels).map(([key, label]) => (
+                <option key={key} value={key}>{label}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+        {isTracking && (
+          <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 2 }} className="flex items-center gap-2 text-green-600 text-[10px] font-black uppercase tracking-widest mb-4">
+            <span className="w-2 h-2 bg-green-600 rounded-full animate-ping" />
+            Đang GPS Tracking...
+          </motion.div>
+        )}
+        <div className="mt-8 space-y-6 relative pl-8 border-l-2 border-dashed border-primary/20">
+          {itinerarySummary.legs.map((leg: any, index: number) => (
+            <div key={leg.id} className="relative">
+              <div className="absolute -left-[41px] top-0 bg-white p-2 rounded-full border-2 border-primary text-primary">
+                <Navigation size={14} />
+              </div>
+              <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex justify-between items-center">
+                <div>
+                  <p className="text-[10px] font-black uppercase text-primary">Chặng {index + 1}</p>
+                  <h4 className="font-bold text-gray-900">{leg.fromName} → {leg.toName}</h4>
+                  <p className="text-xs text-gray-500 italic">{transportModeLabels[leg.mode as TransportMode]}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[10px] font-black text-gray-400 uppercase">Khí thải</p>
+                  <p className="text-lg font-black text-primary">{leg.kgCo2e?.toFixed(2) || '0.00'} kg</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+)
+
+const BookingForm = ({ 
+  isMobile = false, 
+  formRef, 
+  handleSubmit, 
+  bookingDate, 
+  setBookingDate, 
+  travelerCount, 
+  setTravelerCount, 
+  isLoading 
+}: {
+  isMobile?: boolean
+  formRef: React.RefObject<HTMLFormElement>
+  handleSubmit: (e: React.FormEvent<HTMLFormElement>) => Promise<void>
+  bookingDate: Date | undefined
+  setBookingDate: (d: Date | undefined) => void
+  travelerCount: number
+  setTravelerCount: (n: number) => void
+  isLoading: boolean
+}) => (
+  <div className={`bg-white/90 backdrop-blur-2xl rounded-[3rem] shadow-[0_40px_100px_rgba(0,0,0,0.1)] border border-white relative overflow-hidden ${isMobile ? 'p-8' : 'p-10 sticky top-32'}`}>
+    <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-primary via-secondary to-primary opacity-80" />
+    <div className="absolute -top-10 -right-10 w-32 h-32 bg-secondary/10 rounded-full blur-3xl" />
+    <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-primary/10 rounded-full blur-3xl" />
+    
+    <div className="mb-10 text-center relative z-10">
+      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 text-secondary text-[9px] font-black uppercase tracking-widest mb-4 border border-secondary/20">
+        <Crown size={12} /> Premium Concierge
+      </div>
+      <h3 className={`${isMobile ? 'text-3xl' : 'text-4xl'} font-serif font-black text-primary mb-2`}>Đặt Chỗ</h3>
+      <p className="text-gray-400 text-[10px] font-black uppercase tracking-[0.3em]">Hành trình xanh của bạn</p>
+    </div>
+
+    <form ref={formRef} onSubmit={handleSubmit} className="space-y-6 relative z-10">
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label className="text-[10px] font-black uppercase ml-1 text-primary/60 tracking-wider">Tên</Label>
+          <Input name="firstname" placeholder="Tên" className="rounded-2xl h-14 bg-gray-50/50 border-gray-100 focus:bg-white transition-all" required />
+        </div>
+        <div className="space-y-2">
+          <Label className="text-[10px] font-black uppercase ml-1 text-primary/60 tracking-wider">Họ</Label>
+          <Input name="lastname" placeholder="Họ" className="rounded-2xl h-14 bg-gray-50/50 border-gray-100 focus:bg-white transition-all" required />
+        </div>
+      </div>
+      
+      <div className="space-y-2">
+        <Label className="text-[10px] font-black uppercase ml-1 text-primary/60 tracking-wider">Email liên hệ</Label>
+        <Input name="email" type="email" placeholder="email@vi-du.com" className="rounded-2xl h-14 bg-gray-50/50 border-gray-100 focus:bg-white transition-all" required />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label className="text-[10px] font-black uppercase ml-1 text-primary/60 tracking-wider">Ngày khởi hành</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-full h-14 rounded-2xl bg-gray-50/50 border-gray-100 justify-start text-xs font-bold hover:bg-white transition-all">
+                <Calendar className="mr-2 h-4 w-4 text-secondary" />
+                {bookingDate ? format(bookingDate, 'dd/MM/yyyy') : 'Chọn ngày'}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0 rounded-3xl border-none shadow-2xl z-[10001]">
+              <CalendarComponent 
+                mode="single" 
+                selected={bookingDate} 
+                onSelect={setBookingDate} 
+                disabled={(date) => date < new Date()}
+                className="p-4"
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+        <div className="space-y-2">
+          <Label className="text-[10px] font-black uppercase ml-1 text-primary/60 tracking-wider">Số khách</Label>
+          <div className="relative">
+            <Users className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+            <Input 
+              name="guests" 
+              type="number" 
+              min="1" 
+              defaultValue={travelerCount} 
+              className="rounded-2xl h-14 bg-gray-50/50 border-gray-100 pl-12 focus:bg-white transition-all font-bold" 
+              required 
+              onChange={(e) => setTravelerCount(Number(e.target.value) || 1)} 
+            />
+          </div>
+        </div>
+      </div>
+
+      <motion.div
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+      >
+        <Button 
+          type="submit" 
+          className="w-full bg-primary hover:bg-gray-900 text-white h-16 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-primary/20 transition-all flex items-center justify-center gap-3" 
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 bg-white rounded-full animate-bounce" />
+              <span className="w-2 h-2 bg-white rounded-full animate-bounce [animation-delay:0.2s]" />
+              <span className="w-2 h-2 bg-white rounded-full animate-bounce [animation-delay:0.4s]" />
+            </div>
+          ) : (
+            <>Xác nhận hành trình <ChevronRight size={16} /></>
+          )}
+        </Button>
+      </motion.div>
+
+      <p className="text-[9px] text-center text-gray-400 font-medium px-4">
+        Bằng cách nhấn xác nhận, bạn đồng ý với các <span className="text-primary font-bold">Điều khoản & Chính sách</span> bảo mật của ZPLore VIP.
+      </p>
+    </form>
+  </div>
+)
+
+// --- Main Component ---
+
 export default function PackageDestination({ package: travelPackage }: PackageDestinationProps) {
+  const [hasMounted, setHasMounted] = useState(false)
   const [bookingDate, setBookingDate] = useState<Date>()
   const [isLoading, setIsLoading] = useState(false)
   const [showMapPanel, setShowMapPanel] = useState(false)
   const [errors, setErrors] = useState<FormErrors>({})
   const [isLiked, setIsLiked] = useState(false)
   const [travelerCount, setTravelerCount] = useState(1)
-  const formRef = React.useRef<HTMLFormElement>(null)
+  const [aiPoints, setAiPoints] = useState<any[] | null>(null)
+  const formRef = useRef<HTMLFormElement>(null)
 
-  // Wake Lock state to keep screen on
-  const [wakeLock, setWakeLock] = useState<WakeLockSentinel | null>(null)
+  // Mobile Tab State
+  const [activeTab, setActiveTab] = useState<'info' | 'itinerary' | 'booking'>('info')
+
+  // Local state for itinerary leg modes
+  const [itineraryModes, setItineraryModes] = useState<Record<string, TransportMode>>({})
 
   // Live Tracking States
   const [isTracking, setIsTracking] = useState(false)
@@ -80,29 +333,127 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
   const [lastCoords, setLastCoords] = useState<{ lat: number; lng: number } | null>(null)
   const [trackingMode, setTrackingMode] = useState<TransportMode>('BUS')
 
-  // Load saved tracking distance from localStorage on mount
-  React.useEffect(() => {
+  // Computations
+  const trackedEmissions = useMemo(() => {
+    return computeLegKgCo2e({ mode: trackingMode, distanceKm: trackedDistance, travelers: travelerCount });
+  }, [trackingMode, trackedDistance, travelerCount]);
+
+  const itinerarySummary = useMemo(() => {
+    const legs = (travelPackage.itinerary ?? []).slice().sort((a, b) => a.order - b.order)
+    const computed = legs.map((l) => {
+      const mode = itineraryModes[l.id] || normalizeMode(l.mode)
+      const distanceKm = computeDistanceKm({
+        distanceKm: l.distanceKm,
+        fromLat: l.fromLat,
+        fromLng: l.fromLng,
+        toLat: l.toLat,
+        toLng: l.toLng,
+      })
+      const kgCo2e = distanceKm != null ? computeLegKgCo2e({ mode, distanceKm, travelers: travelerCount }) : null
+      const carKgCo2e = distanceKm != null ? computeLegKgCo2e({ mode: 'CAR', distanceKm, travelers: travelerCount }) : 0
+      const savings = Math.max(0, carKgCo2e - (kgCo2e || 0))
+      return { ...l, mode, distanceKm, kgCo2e, savings }
+    })
+    const totalDistanceKm = computed.reduce((sum, l) => sum + (l.distanceKm ?? 0), 0)
+    const totalKgCo2e = computed.reduce((sum, l) => sum + (l.kgCo2e ?? 0), 0)
+    const totalSavings = computed.reduce((sum, l) => sum + (l.savings ?? 0), 0)
+    return { legs: computed, totalDistanceKm, totalKgCo2e, totalSavings }
+  }, [travelPackage.itinerary, travelerCount, itineraryModes])
+
+  const mapPoints = useMemo(() => {
+    const pts: Array<{ lat: number; lng: number; label?: string }> = []
+    const pushIfValid = (lat: number | null, lng: number | null, label?: string) => {
+      if (typeof lat !== 'number' || typeof lng !== 'number') return
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) return
+      pts.push({ lat, lng, label })
+    }
+    for (const leg of itinerarySummary.legs) {
+      pushIfValid(leg.fromLat ?? null, leg.fromLng ?? null, leg.fromName)
+      pushIfValid(leg.toLat ?? null, leg.toLng ?? null, leg.toName)
+    }
+    return pts.length >= 2 ? pts : undefined
+  }, [itinerarySummary.legs])
+
+  const googleTripUrl = useMemo(() => {
+    if (itinerarySummary.legs.length === 0) return null
+    const originLeg = itinerarySummary.legs[0]
+    const destLeg = itinerarySummary.legs[itinerarySummary.legs.length - 1]
+    const enc = (v: string) => encodeURIComponent(v)
+    const coord = (lat?: number | null, lng?: number | null) =>
+      typeof lat === 'number' && typeof lng === 'number' && Number.isFinite(lat) && Number.isFinite(lng) ? `${lat},${lng}` : null
+    const origin = coord(originLeg.fromLat, originLeg.fromLng) ?? originLeg.fromName
+    const destination = coord(destLeg.toLat, destLeg.toLng) ?? destLeg.toName
+    const waypoints = itinerarySummary.legs.slice(0, -1).map((l) => coord(l.toLat, l.toLng) ?? l.toName).filter(Boolean)
+    const base = `https://www.google.com/maps/dir/?api=1&origin=${enc(origin)}&destination=${enc(destination)}&travelmode=driving`
+    if (waypoints.length === 0) return base
+    return `${base}&waypoints=${enc(waypoints.join('|'))}`
+  }, [itinerarySummary.legs])
+
+  // Listen for AI Map Commands
+  useEffect(() => {
+    const handleAiMapCommand = (e: any) => {
+      if (e.detail && e.detail.action === 'draw_route' && e.detail.points) {
+        setAiPoints(e.detail.points);
+        setActiveTab('itinerary'); // Switch to itinerary tab to show map
+      }
+    };
+    window.addEventListener('ai-map-command', handleAiMapCommand);
+    return () => window.removeEventListener('ai-map-command', handleAiMapCommand);
+  }, []);
+
+  // Broadcast current tour info for AIAssistant
+  useEffect(() => {
+    if (hasMounted && travelPackage) {
+      const event = new CustomEvent('current-tour-info', { 
+        detail: {
+          id: travelPackage.id,
+          name: travelPackage.name,
+          location: travelPackage.location,
+          price: travelPackage.price,
+          description: travelPackage.description,
+          points: mapPoints
+        }
+      });
+      window.dispatchEvent(event);
+    }
+  }, [hasMounted, travelPackage, mapPoints]);
+
+  // Wake Lock state to keep screen on
+  const [wakeLock, setWakeLock] = useState<WakeLockSentinel | null>(null)
+
+  useEffect(() => {
+    setHasMounted(true)
+    
+    // Load saved tracking distance from localStorage
     const savedDistance = localStorage.getItem(`trackedDistance_${travelPackage.id}`);
     if (savedDistance) {
       setTrackedDistance(parseFloat(savedDistance));
     }
-  }, [travelPackage.id]);
+
+    // Initialize itinerary modes
+    if (travelPackage.itinerary) {
+      const modes: Record<string, TransportMode> = {}
+      travelPackage.itinerary.forEach(leg => {
+        modes[leg.id] = normalizeMode(leg.mode)
+      })
+      setItineraryModes(modes)
+    }
+  }, [travelPackage.id, travelPackage.itinerary]);
 
   // Save tracking distance whenever it changes
-  React.useEffect(() => {
-    if (trackedDistance > 0) {
+  useEffect(() => {
+    if (hasMounted && trackedDistance > 0) {
       localStorage.setItem(`trackedDistance_${travelPackage.id}`, trackedDistance.toString());
     }
-  }, [trackedDistance, travelPackage.id]);
+  }, [trackedDistance, travelPackage.id, hasMounted]);
 
-  // Wake Lock effect to keep screen alive during tracking
-  React.useEffect(() => {
+  // Wake Lock effect
+  useEffect(() => {
     const requestWakeLock = async () => {
       if ('wakeLock' in navigator && isTracking) {
         try {
-          const lock = await (navigator as unknown as { wakeLock: { request: (type: string) => Promise<WakeLockSentinel> } }).wakeLock.request('screen');
+          const lock = await (navigator as any).wakeLock.request('screen');
           setWakeLock(lock);
-          console.log("Wake Lock is active");
         } catch (err) {
           console.error(`Wake Lock Error: ${err}`);
         }
@@ -122,40 +473,17 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
     };
   }, [isTracking, wakeLock]);
 
-  // Local state for itinerary leg modes (to allow real-time changes)
-  const [itineraryModes, setItineraryModes] = useState<Record<string, TransportMode>>({})
-
-  // Mobile Tab State
-  const [activeTab, setActiveTab] = useState<'info' | 'itinerary' | 'booking'>('info')
-
-  // Initialize itinerary modes
-  React.useEffect(() => {
-    if (travelPackage.itinerary) {
-      const modes: Record<string, TransportMode> = {}
-      travelPackage.itinerary.forEach(leg => {
-        modes[leg.id] = normalizeMode(leg.mode)
-      })
-      setItineraryModes(modes)
-    }
-  }, [travelPackage.itinerary])
-
   // Live Tracking Effect
-  React.useEffect(() => {
+  useEffect(() => {
     let watchId: number | null = null;
     if (isTracking && "geolocation" in navigator) {
       watchId = navigator.geolocation.watchPosition(
         (position) => {
           const { latitude: lat, longitude: lng, accuracy } = position.coords;
-          
-          // Ignore updates with accuracy worse than 100 meters (poor signal)
           if (accuracy > 100) return;
-
           const newCoords = { lat, lng };
-
           if (lastCoords) {
             const distance = haversineDistanceKm(lastCoords, newCoords);
-            // Only add distance if it's more than 10 meters to avoid GPS noise
-            // but also not too large (e.g. > 5km in one jump) which could be a GPS jump
             if (distance > 0.01 && distance < 5) {
               setTrackedDistance(prev => prev + distance);
               setLastCoords(newCoords);
@@ -166,214 +494,64 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
         },
         (error) => {
           console.error("Tracking error:", error);
-          let errorMsg = "Lỗi định vị: Không thể theo dõi vị trí của bạn.";
-          
-          switch(error.code) {
-            case error.PERMISSION_DENIED:
-              errorMsg = "Bạn đã chặn quyền truy cập vị trí. Vui lòng cho phép trong cài đặt trình duyệt để sử dụng tính năng này.";
-              break;
-            case error.POSITION_UNAVAILABLE:
-              errorMsg = "Không tìm thấy tín hiệu vị trí. Vui lòng kiểm tra GPS hoặc kết nối mạng của bạn.";
-              break;
-            case error.TIMEOUT:
-              errorMsg = "Hết thời gian chờ lấy vị trí. Vui lòng thử lại.";
-              break;
-          }
-          
-          toast.error(errorMsg, {
-            duration: 6000,
-            action: {
-              label: "Hướng dẫn",
-              onClick: () => window.open("https://support.google.com/chrome/answer/142065", "_blank")
-            }
-          });
+          toast.error("Lỗi định vị. Vui lòng kiểm tra GPS.");
           setIsTracking(false);
         },
-        { 
-          enableHighAccuracy: true, 
-          timeout: 15000, 
-          maximumAge: 0 
-        }
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
       );
     }
-
     return () => {
       if (watchId !== null) navigator.geolocation.clearWatch(watchId);
     };
   }, [isTracking, lastCoords]);
 
-  const trackedEmissions = useMemo(() => {
-    return computeLegKgCo2e({ mode: trackingMode, distanceKm: trackedDistance, travelers: travelerCount });
-  }, [trackingMode, trackedDistance, travelerCount]);
-
-  const itinerarySummary = useMemo(() => {
-    const legs = (travelPackage.itinerary ?? []).slice().sort((a, b) => a.order - b.order)
-    const computed = legs.map((l) => {
-      const mode = itineraryModes[l.id] || normalizeMode(l.mode)
-      const distanceKm = computeDistanceKm({
-        distanceKm: l.distanceKm,
-        fromLat: l.fromLat,
-        fromLng: l.fromLng,
-        toLat: l.toLat,
-        toLng: l.toLng,
-      })
-      const kgCo2e = distanceKm != null ? computeLegKgCo2e({ mode, distanceKm, travelers: travelerCount }) : null
-      
-      // Calculate potential savings (compared to average CAR emission)
-      const carKgCo2e = distanceKm != null ? computeLegKgCo2e({ mode: 'CAR', distanceKm, travelers: travelerCount }) : 0
-      const savings = Math.max(0, carKgCo2e - (kgCo2e || 0))
-      
-      return { ...l, mode, distanceKm, kgCo2e, savings }
-    })
-    const totalDistanceKm = computed.reduce((sum, l) => sum + (l.distanceKm ?? 0), 0)
-    const totalKgCo2e = computed.reduce((sum, l) => sum + (l.kgCo2e ?? 0), 0)
-    const totalSavings = computed.reduce((sum, l) => sum + (l.savings ?? 0), 0)
-    return { legs: computed, totalDistanceKm, totalKgCo2e, totalSavings }
-  }, [travelPackage.itinerary, travelerCount, itineraryModes])
-
-  const mapPoints = useMemo(() => {
-    const pts: Array<{ lat: number; lng: number; label?: string }> = []
-    const pushIfValid = (lat: number | null, lng: number | null, label?: string) => {
-      if (typeof lat !== 'number' || typeof lng !== 'number') return
-      if (!Number.isFinite(lat) || !Number.isFinite(lng)) return
-      const last = pts[pts.length - 1]
-      if (last && Math.abs(last.lat - lat) < 0.000001 && Math.abs(last.lng - lng) < 0.000001) return
-      pts.push({ lat, lng, label })
-    }
-    for (const leg of itinerarySummary.legs) {
-      pushIfValid(leg.fromLat ?? null, leg.fromLng ?? null, leg.fromName)
-      pushIfValid(leg.toLat ?? null, leg.toLng ?? null, leg.toName)
-    }
-    return pts.length >= 2 ? pts : undefined
-  }, [itinerarySummary.legs])
-
-  const googleTripUrl = useMemo(() => {
-    if (itinerarySummary.legs.length === 0) return null
-    const originLeg = itinerarySummary.legs[0]
-    const destLeg = itinerarySummary.legs[itinerarySummary.legs.length - 1]
-
-    const enc = (v: string) => encodeURIComponent(v)
-    const coord = (lat?: number | null, lng?: number | null) =>
-      typeof lat === 'number' && typeof lng === 'number' && Number.isFinite(lat) && Number.isFinite(lng) ? `${lat},${lng}` : null
-
-    const origin = coord(originLeg.fromLat, originLeg.fromLng) ?? originLeg.fromName
-    const destination = coord(destLeg.toLat, destLeg.toLng) ?? destLeg.toName
-    const waypoints = itinerarySummary.legs.slice(0, -1).map((l) => coord(l.toLat, l.toLng) ?? l.toName).filter(Boolean)
-
-    const base = `https://www.google.com/maps/dir/?api=1&origin=${enc(origin)}&destination=${enc(destination)}&travelmode=driving`
-    if (waypoints.length === 0) return base
-    return `${base}&waypoints=${enc(waypoints.join('|'))}`
-  }, [itinerarySummary.legs])
-
   const validateForm = (formData: FormData): FormErrors => {
     const errors: FormErrors = {}
-    
-    // First Name validation
     const firstname = formData.get('firstname') as string
-    if (!firstname || firstname.trim().length < 2) {
-      errors.firstname = 'First name must be at least 2 characters'
-    }
-
-    // Last Name validation
+    if (!firstname || firstname.trim().length < 2) errors.firstname = 'Tên không hợp lệ'
     const lastname = formData.get('lastname') as string
-    if (!lastname || lastname.trim().length < 2) {
-      errors.lastname = 'Last name must be at least 2 characters'
-    }
-
-    // Email validation
+    if (!lastname || lastname.trim().length < 2) errors.lastname = 'Họ không hợp lệ'
     const email = formData.get('email') as string
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!email || !emailRegex.test(email)) {
-      errors.email = 'Please enter a valid email address'
-    }
-
-    // Phone validation
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = 'Email không hợp lệ'
     const phone = formData.get('phone') as string
-    const phoneRegex = /^\+?[\d\s-]{10,}$/
-    if (!phone || !phoneRegex.test(phone)) {
-      errors.phone = 'Please enter a valid phone number (min 10 digits)'
-    }
-
-    // Number of guests validation
-    const guests = parseInt(formData.get('guests') as string, 10)
-    if (isNaN(guests) || guests < 1) {
-      errors.numberOfGuests = 'Number of guests must be at least 1'
-    }
-
-    // Booking date validation
-    if (!bookingDate) {
-      errors.bookingDate = 'Please select a booking date'
-    } else {
-      const today = new Date()
-      if (bookingDate < today) {
-        errors.bookingDate = 'Booking date cannot be in the past'
-      }
-    }
-
+    if (!phone || !/^\+?[\d\s-]{10,}$/.test(phone)) errors.phone = 'Số điện thoại không hợp lệ'
+    if (!bookingDate) errors.bookingDate = 'Vui lòng chọn ngày'
     return errors
-  }
-
-  const clearForm = () => {
-    if (formRef.current) {
-      formRef.current.reset()
-      setBookingDate(undefined)
-    }
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
-
     const formData = new FormData(e.currentTarget)
     const validationErrors = validateForm(formData)
-
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors)
       setIsLoading(false)
-      toast.error('Please correct the errors in the form')
+      toast.error('Vui lòng kiểm tra lại thông tin')
       return
     }
-
-    const bookingData = {
-      firstname: formData.get('firstname') as string,
-      lastname: formData.get('lastname') as string,
-      email: formData.get('email') as string,
-      phone: formData.get('phone') as string,
-      numberOfGuests: parseInt(formData.get('guests') as string, 10),
-      bookingDate: bookingDate?.toISOString(),
-      specialRequests: formData.get('special-requests') as string,
-      destinationName: travelPackage.name,
-      price: travelPackage.price
-    }
-
     try {
       const response = await fetch('/api/packages/bookings', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(bookingData),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstname: formData.get('firstname'),
+          lastname: formData.get('lastname'),
+          email: formData.get('email'),
+          phone: formData.get('phone'),
+          numberOfGuests: travelerCount,
+          bookingDate: bookingDate?.toISOString(),
+          destinationName: travelPackage.name,
+          price: travelPackage.price
+        }),
       })
-
-      if (!response.ok) {
-        throw new Error('Failed to create booking')
-      }
-
-      toast.success('Booking Successful', {
-        description: 'Your package booking has been sent!',
-        duration: 5000,
-      })
-      
-      // Clear form after successful submission
-      clearForm()
+      if (!response.ok) throw new Error('Booking failed')
+      toast.success('Đặt tour thành công!')
+      formRef.current?.reset()
+      setBookingDate(undefined)
       setErrors({})
-      
     } catch (error) {
-      console.error('Error submitting booking:', error)
-      toast.error('Booking Failed', {
-        description: 'Unable to process your booking. Please try again.',
-        duration: 5000,
-      })
+      toast.error('Đặt tour thất bại. Vui lòng thử lại.')
     } finally {
       setIsLoading(false)
     }
@@ -381,75 +559,100 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
 
   return (
     <div className="min-h-screen bg-[#f8fafc] pb-20">
-      {/* Hero Section Upgrade */}
-      <section className="relative h-[55vh] md:h-[70vh] w-full overflow-hidden">
+      {/* Hero Section */}
+      <section className="relative h-[60vh] md:h-[80vh] w-full overflow-hidden">
         <motion.div 
-          initial={{ scale: 1.1 }}
-          animate={{ scale: 1 }}
-          transition={{ duration: 1.5 }}
+          initial={{ scale: 1.2 }} 
+          animate={{ scale: 1 }} 
+          transition={{ duration: 2, ease: "easeOut" }} 
           className="absolute inset-0"
         >
           <Image 
-            src={typeof travelPackage.imageUrl === 'string' && travelPackage.imageUrl.trim().length > 0 && travelPackage.imageUrl !== '/images/saigon.jpg' ? travelPackage.imageUrl : "/images/travel_detsinations.jpg"} 
+            src={travelPackage.imageUrl || "/images/travel_detsinations.jpg"} 
             alt={travelPackage.name} 
-            fill
-            className="object-cover"
-            priority
+            fill 
+            className="object-cover" 
+            priority 
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-[#f8fafc]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/20 to-[#f8fafc]" />
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/40 via-transparent to-transparent" />
         </motion.div>
 
-        <div className="container mx-auto px-4 h-full relative z-10 flex flex-col justify-end pb-8 md:pb-20">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
+        <div className="container mx-auto px-4 h-full relative z-10 flex flex-col justify-end pb-12 md:pb-24">
+          <motion.div 
+            initial={{ opacity: 0, x: -30 }} 
+            animate={{ opacity: 1, x: 0 }} 
+            transition={{ delay: 0.5, duration: 0.8 }}
           >
             <Link href="/packages">
-              <Button variant="ghost" className="text-white hover:bg-white/20 mb-4 md:mb-8 backdrop-blur-md border border-white/30 rounded-full px-4 md:px-6 h-9 md:h-11 text-xs md:text-sm">
-                <ArrowLeft className="mr-2 h-4 w-4" /> Quay lại
+              <Button variant="ghost" className="text-white hover:bg-white/20 mb-8 backdrop-blur-xl border border-white/30 rounded-full h-10 px-6 text-[10px] font-black uppercase tracking-widest group">
+                <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" /> Quay lại khám phá
               </Button>
             </Link>
-            
-            <div className="flex flex-wrap items-center gap-2 md:gap-4 mb-3 md:mb-6">
-              <span className="bg-secondary text-secondary-foreground px-2 md:px-4 py-0.5 md:py-1 rounded-full text-[8px] md:text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 md:gap-2 shadow-xl">
-                <Crown size={10} className="md:w-3 md:h-3" /> Gói Tour VIP
-              </span>
+
+            <div className="flex flex-wrap items-center gap-3 mb-6">
+              <motion.span 
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", delay: 1 }}
+                className="bg-secondary text-primary px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 shadow-xl shadow-secondary/20"
+              >
+                <Crown size={12} /> Eco-VIP Experience
+              </motion.span>
               {itinerarySummary.totalSavings > 0 && (
-                <span className="bg-primary text-primary-foreground px-2 md:px-4 py-0.5 md:py-1 rounded-full text-[8px] md:text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 md:gap-2 shadow-xl animate-pulse">
-                  <Leaf size={10} className="md:w-3 md:h-3" /> -{itinerarySummary.totalSavings.toFixed(1)}kg CO2
-                </span>
+                <motion.span 
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", delay: 1.2 }}
+                  className="bg-primary/80 backdrop-blur-md text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 border border-white/20 shadow-xl shadow-primary/20"
+                >
+                  <Leaf size={12} className="text-secondary" /> -{itinerarySummary.totalSavings.toFixed(1)}kg CO2 Saved
+                </motion.span>
               )}
             </div>
 
-            <h1 className="text-3xl md:text-7xl font-serif font-black text-white mb-3 md:mb-6 leading-tight drop-shadow-2xl">
-              {travelPackage.name}
+            <h1 className="text-4xl md:text-8xl font-serif font-black text-white mb-8 leading-[0.9] drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)] max-w-4xl">
+              {travelPackage.name.split(' ').map((word, i) => (
+                <span key={i} className={i % 2 === 1 ? "text-secondary italic" : ""}>{word} </span>
+              ))}
             </h1>
-            
-            <div className="flex flex-wrap items-center gap-4 md:gap-8 text-white/90">
-              <div className="flex items-center gap-2 md:gap-3 bg-white/10 backdrop-blur-md px-3 md:px-5 py-1.5 md:py-2.5 rounded-xl md:rounded-2xl border border-white/20">
-                <MapPin className="text-secondary h-4 w-4 md:h-5 md:w-5" />
-                <span className="font-bold tracking-wide text-xs md:text-base">{travelPackage.location}</span>
+
+            <div className="flex flex-wrap items-center gap-6 text-white">
+              <div className="flex items-center gap-3 bg-white/10 backdrop-blur-xl px-6 py-3 rounded-2xl border border-white/20 shadow-2xl">
+                <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
+                  <MapPin className="text-primary h-4 w-4" />
+                </div>
+                <span className="font-black text-sm uppercase tracking-widest">{travelPackage.location}</span>
               </div>
-              <div className="flex gap-2 md:gap-4">
-                <button 
-                  onClick={() => setIsLiked(!isLiked)}
-                  className={`p-2 md:p-3 rounded-full backdrop-blur-md border border-white/30 transition-all ${isLiked ? 'bg-red-500 border-red-500 text-white' : 'bg-white/10 text-white hover:bg-white/20'}`}
+              
+              <div className="flex gap-3">
+                <motion.button 
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setIsLiked(!isLiked)} 
+                  className={`p-4 rounded-2xl backdrop-blur-xl border border-white/20 transition-all shadow-2xl ${isLiked ? 'bg-red-500 border-red-500 text-white' : 'bg-white/10 text-white hover:bg-white/20'}`}
                 >
-                  <Heart size={16} className="md:w-5 md:h-5" fill={isLiked ? "currentColor" : "none"} />
-                </button>
-                <button className="p-2 md:p-3 rounded-full bg-white/10 backdrop-blur-md border border-white/30 text-white hover:bg-white/20 transition-all">
-                  <Share2 size={16} className="md:w-5 md:h-5" />
-                </button>
+                  <Heart size={20} fill={isLiked ? "currentColor" : "none"} />
+                </motion.button>
+                <motion.button 
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  className="p-4 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 text-white hover:bg-white/20 shadow-2xl"
+                >
+                  <Share2 size={20} />
+                </motion.button>
               </div>
             </div>
           </motion.div>
         </div>
+
+        {/* Bottom Decorative Wave */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#f8fafc] to-transparent z-10" />
       </section>
 
       {/* Mobile Tab Navigation */}
-      <div className="sticky top-[64px] md:top-[80px] z-40 lg:hidden bg-white/80 backdrop-blur-xl border-b border-gray-100">
-        <div className="flex items-center justify-between px-2 overflow-x-auto no-scrollbar">
+      <div className="sticky top-[64px] z-40 lg:hidden bg-white/80 backdrop-blur-xl border-b border-gray-100">
+        <div className="flex items-center justify-around">
           {[
             { id: 'info', label: 'Thông tin', icon: Info },
             { id: 'itinerary', label: 'Lộ trình', icon: Navigation },
@@ -457,501 +660,116 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
           ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as 'info' | 'itinerary' | 'booking')}
-              className={`flex-1 flex flex-col items-center py-3 px-1 transition-all relative ${
-                activeTab === tab.id ? 'text-primary' : 'text-gray-400'
-              }`}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`flex-1 flex flex-col items-center py-4 transition-all relative ${activeTab === tab.id ? 'text-primary' : 'text-gray-400'}`}
             >
-              <tab.icon size={18} className="mb-1" />
+              <tab.icon size={20} className="mb-1" />
               <span className="text-[10px] font-black uppercase tracking-widest">{tab.label}</span>
-              {activeTab === tab.id && (
-                <motion.div 
-                  layoutId="activeTab"
-                  className="absolute bottom-0 left-0 right-0 h-1 bg-secondary rounded-t-full"
-                />
-              )}
+              {activeTab === tab.id && <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-1 bg-secondary" />}
             </button>
           ))}
         </div>
       </div>
 
-      <div className="container mx-auto px-4 mt-6 md:-mt-10 relative z-20">
+      <div className="container mx-auto px-4 mt-8 lg:-mt-10 relative z-20">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12">
-          {/* Main Content (Changes on Mobile) */}
-          <div className="lg:col-span-8 space-y-8 md:space-y-12">
-            <AnimatePresence mode="wait">
-              {/* Info Tab Content */}
-              {(activeTab === 'info' || typeof window !== 'undefined' && window.innerWidth >= 1024) && (
-                <motion.div
-                  key="info-tab"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  className={`${activeTab !== 'info' ? 'hidden lg:block' : 'block'} space-y-8 md:space-y-12`}
-                >
-                  {/* Quick Info Bar */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-                    {[
-                      { icon: Clock, label: "Thời lượng", value: travelPackage.duration, color: "text-blue-500", bg: "bg-blue-50" },
-                      { icon: Users, label: "Số lượng", value: travelPackage.groupSize, color: "text-green-500", bg: "bg-green-50" },
-                      { icon: DollarSign, label: "Giá gói", value: `${travelPackage.price.toLocaleString()} VNĐ`, color: "text-secondary", bg: "bg-secondary/10" },
-                      { icon: ShieldCheck, label: "Bảo hiểm", value: "Gói Cao Cấp", color: "text-purple-500", bg: "bg-purple-50" },
-                    ].map((item, i) => (
-                      <div key={i} className={`${item.bg} p-4 md:p-6 rounded-2xl md:rounded-[2rem] border border-white shadow-sm flex flex-col items-center text-center group hover:shadow-xl transition-all duration-500`}>
-                        <div className={`${item.color} mb-2 md:mb-4 p-2 md:p-3 bg-white rounded-xl md:rounded-2xl shadow-sm group-hover:scale-110 transition-transform`}>
-                          <item.icon size={16} className="md:w-6 md:h-6" />
-                        </div>
-                        <p className="text-[7px] md:text-[10px] font-black uppercase tracking-[0.15em] text-gray-400 mb-0.5 md:mb-1">{item.label}</p>
-                        <p className="font-bold text-[10px] md:text-base text-gray-900 leading-tight">{item.value}</p>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Description Section */}
-                  <div className="bg-white p-6 md:p-14 rounded-3xl md:rounded-[3rem] shadow-sm border border-gray-100 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 opacity-[0.03] vn-pattern w-48 md:w-64 h-48 md:h-64 rotate-12" />
-                    <h2 className="text-xl md:text-3xl font-serif font-black mb-5 md:mb-8 flex items-center gap-3 md:gap-4 text-primary">
-                      <div className="h-6 md:h-8 w-1.5 bg-secondary rounded-full" />
-                      Về gói hành trình
-                    </h2>
-                    <div className="mb-6 md:mb-8">
-                      <p className="text-base md:text-2xl font-serif font-bold text-gray-800 mb-1 md:mb-2 italic leading-snug">
-                        &quot;{travelPackage.name} - Trải nghiệm du hành xanh&quot;
-                      </p>
-                      <div className="h-1 w-12 md:w-20 bg-secondary rounded-full" />
-                    </div>
-                    <div className="prose prose-sm md:prose-lg max-w-none text-gray-600 leading-relaxed italic mb-8 md:mb-10">
-                      {travelPackage.description}
-                    </div>
-
-                    <h3 className="text-xs md:text-xl font-black mb-5 md:mb-8 uppercase tracking-[0.15em] text-gray-400">Trải nghiệm đặc sắc:</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                      {[
-                        { 
-                          icon: <Leaf size={18} />, 
-                          title: "Di chuyển xanh", 
-                          desc: "Toàn bộ bằng xe điện VinBus và xe đạp.",
-                          color: "text-amber-600", bg: "bg-amber-50"
-                        },
-                        { 
-                          icon: <Compass size={18} />, 
-                          title: "Lộ trình linh hoạt", 
-                          desc: "Tùy chỉnh điểm dừng theo sở thích của bạn.",
-                          color: "text-yellow-600", bg: "bg-yellow-50"
-                        },
-                        { 
-                          icon: <Utensils size={18} />, 
-                          title: "Ẩm thực bản địa", 
-                          desc: "Khám phá đặc sản tại các quán Eco-friendly.",
-                          color: "text-orange-600", bg: "bg-orange-50"
-                        },
-                        { 
-                          icon: <Award size={18} />, 
-                          title: "Chứng chỉ Net-Zero", 
-                          desc: "Nhận chứng chỉ bảo vệ môi trường sau tour.",
-                          color: "text-secondary", bg: "bg-secondary/10"
-                        }
-                      ].map((item, index) => (
-                        <div key={index} className={`${item.bg} p-5 md:p-8 rounded-2xl md:rounded-[2.5rem] border border-white flex gap-4 md:gap-5 transition-all hover:shadow-lg`}>
-                          <div className={`${item.color} p-3 md:p-4 bg-white rounded-xl md:rounded-2xl h-fit shadow-sm`}>
-                            {item.icon}
-                          </div>
-                          <div>
-                            <h4 className="font-black text-sm md:text-xl text-gray-900 mb-1">{item.title}</h4>
-                            <p className="text-[10px] md:text-sm text-gray-500 font-medium italic leading-relaxed">
-                              {item.desc}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* Itinerary Tab Content */}
-              {(activeTab === 'itinerary' || typeof window !== 'undefined' && window.innerWidth >= 1024) && (
-                <motion.div
-                  key="itinerary-tab"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  className={`${activeTab !== 'itinerary' ? 'hidden lg:block' : 'block'} space-y-8 md:space-y-12`}
-                >
-                  {/* Tour Map Section */}
-                  <div className="bg-white p-5 md:p-10 rounded-3xl md:rounded-[3rem] shadow-sm border border-gray-100">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 md:mb-8 gap-4">
-                      <div>
-                        <h2 className="text-xl md:text-3xl font-serif font-black flex items-center gap-3 md:gap-4 text-primary">
-                          <div className="h-6 md:h-8 w-1.5 bg-secondary rounded-full" />
-                          Lộ trình di chuyển
-                        </h2>
-                        <p className="text-muted-foreground text-[10px] md:text-sm mt-1 italic">Bản đồ mô phỏng lộ trình du hành</p>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-2 md:gap-4">
-                        {googleTripUrl && (
-                          <Button asChild variant="outline" className="rounded-full h-8 md:h-10 px-3 md:px-6 text-[9px] md:text-xs font-bold border-primary/20 text-primary">
-                            <a href={googleTripUrl} target="_blank" rel="noreferrer">Google Maps</a>
-                          </Button>
-                        )}
-                        <Button 
-                          onClick={() => setShowMapPanel(!showMapPanel)}
-                          variant="outline"
-                          className={`rounded-full h-8 md:h-10 px-3 md:px-6 text-[9px] md:text-xs font-bold transition-all ${showMapPanel ? 'bg-primary text-white' : 'border-primary/20 text-primary'}`}
-                        >
-                          {showMapPanel ? 'Đóng' : 'Chỉnh sửa'}
-                        </Button>
-                      </div>
-                    </div>
-
-                    <div className="h-[300px] md:h-[500px] w-full rounded-2xl md:rounded-[2.5rem] overflow-hidden border-2 md:border-4 border-white shadow-xl relative bg-gray-50">
-                      <RouteMapLoader 
-                        location={travelPackage.location} 
-                        name={travelPackage.name} 
-                        showPanel={showMapPanel}
-                        points={mapPoints}
+          {/* Main Content Area */}
+          <div className="lg:col-span-8">
+            {!hasMounted ? (
+              <div className="space-y-8"><InfoTabContent travelPackage={travelPackage} /></div>
+            ) : (
+              <div className="space-y-8 md:space-y-12">
+                {window.innerWidth >= 1024 ? (
+                  <>
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+                      <InfoTabContent travelPackage={travelPackage} />
+                    </motion.div>
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
+                      <ItineraryTabContent 
+                        travelPackage={travelPackage}
+                        googleTripUrl={googleTripUrl}
+                        showMapPanel={showMapPanel}
+                        setShowMapPanel={setShowMapPanel}
+                        mapPoints={aiPoints || mapPoints}
+                        isTracking={isTracking}
+                        setIsTracking={setIsTracking}
+                        trackedDistance={trackedDistance}
+                        trackedEmissions={trackedEmissions}
+                        trackingMode={trackingMode}
+                        setTrackingMode={setTrackingMode}
+                        itinerarySummary={itinerarySummary}
                       />
-                    </div>
-
-                    {/* Live Tracker Integration */}
-                    <div className="mt-6 md:mt-8 rounded-2xl md:rounded-[2.5rem] border border-primary/10 bg-primary/5 p-5 md:p-8">
-                      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 md:mb-8">
-                        <div>
-                          <div className="text-[9px] md:text-xs font-black uppercase tracking-[0.2em] text-gray-400">Live Tracker</div>
-                          <div className="text-lg md:text-xl font-black text-primary">Theo dõi thực tế</div>
-                        </div>
-                        <div className="flex items-center gap-2 md:gap-3">
-                          {!isTracking ? (
-                            <Button onClick={() => setIsTracking(true)} className="rounded-full h-10 md:h-12 bg-green-600 hover:bg-green-700 text-white font-bold flex items-center gap-2 text-[10px] md:text-sm px-4 md:px-6">
-                              <Play size={14} className="md:w-4 md:h-4" /> Bắt đầu
-                            </Button>
-                          ) : (
-                            <Button onClick={() => setIsTracking(false)} variant="destructive" className="rounded-full h-10 md:h-12 font-bold flex items-center gap-2 text-[10px] md:text-sm px-4 md:px-6">
-                              <Square size={14} className="md:w-4 md:h-4" /> Dừng
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6 mb-6">
-                        <div className="rounded-xl md:rounded-2xl bg-white p-3 md:p-5 border border-white shadow-sm">
-                          <div className="text-[8px] md:text-[10px] font-black uppercase tracking-wider text-gray-400 mb-1">Quãng đường</div>
-                          <div className="text-base md:text-2xl font-black text-primary">
-                            {trackedDistance.toFixed(2)} <span className="text-[10px] md:text-xs font-bold uppercase">km</span>
-                          </div>
-                        </div>
-                        <div className="rounded-xl md:rounded-2xl bg-white p-3 md:p-5 border border-white shadow-sm">
-                          <div className="text-[8px] md:text-[10px] font-black uppercase tracking-wider text-gray-400 mb-1">Khí thải</div>
-                          <div className="text-base md:text-2xl font-black text-secondary">
-                            {trackedEmissions.toFixed(2)} <span className="text-[10px] md:text-xs font-bold uppercase">kg</span>
-                          </div>
-                        </div>
-                        <div className="col-span-2 md:col-span-1 rounded-xl md:rounded-2xl bg-white p-3 md:p-5 border border-white shadow-sm">
-                          <div className="text-[8px] md:text-[10px] font-black uppercase tracking-wider text-gray-400 mb-1">Phương tiện</div>
-                          <select 
-                            value={trackingMode}
-                            onChange={(e) => setTrackingMode(e.target.value as TransportMode)}
-                            className="text-[10px] md:text-sm font-bold text-primary bg-transparent focus:outline-none w-full cursor-pointer"
-                          >
-                            {Object.entries(transportModeLabels).map(([key, label]) => (
-                              <option key={key} value={key}>{label}</option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-
-                      {isTracking && (
-                        <div className="mb-6 space-y-3">
-                          <motion.div animate={{ opacity: [0.4, 1, 0.4] }} transition={{ repeat: Infinity, duration: 2 }} className="flex items-center gap-2 text-green-600 text-[9px] md:text-[10px] font-black uppercase tracking-widest">
-                            <span className="w-2 h-2 bg-green-600 rounded-full animate-ping" />
-                            Đang GPS Tracking...
-                          </motion.div>
-                          <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 flex items-start gap-3">
-                            <Info size={14} className="text-amber-600 shrink-0 mt-0.5" />
-                            <p className="text-[9px] md:text-[10px] text-amber-700 font-medium leading-relaxed italic">
-                              Giữ màn hình luôn sáng để theo dõi chính xác nhất. Eco-Tour sẽ tự động cập nhật quãng đường của bạn.
-                            </p>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Itinerary Steps */}
-                      <div className="mt-8 md:mt-12 space-y-6 md:space-y-8 relative pl-6 md:pl-8 border-l-2 border-dashed border-primary/20">
-                        {itinerarySummary.legs.map((leg, index) => (
-                          <div key={leg.id} className="relative">
-                            <div className="absolute -left-[35px] md:-left-[41px] top-0 bg-white p-1.5 md:p-2 rounded-full border-2 border-primary shadow-sm z-10">
-                              <div className="text-primary"><Navigation size={12} className="md:w-4 md:h-4" /></div>
-                            </div>
-                            <div className="bg-white rounded-2xl md:rounded-3xl p-4 md:p-6 border border-gray-100 shadow-sm">
-                              <div className="flex flex-col sm:flex-row justify-between gap-3">
-                                <div>
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-primary">Chặng {index + 1}</span>
-                                    <span className="text-[8px] md:text-[10px] font-bold text-gray-400 italic">~{leg.distanceKm?.toFixed(1)} km</span>
-                                  </div>
-                                  <h4 className="text-sm md:text-lg font-bold text-gray-900">{leg.fromName} → {leg.toName}</h4>
-                                  <p className="text-[10px] md:text-sm text-gray-500 italic mt-1">{transportModeLabels[leg.mode]} - Du hành xanh</p>
-                                </div>
-                                <div className="bg-primary/5 rounded-xl md:rounded-2xl p-2 md:p-4 text-center min-w-[80px] md:min-w-[100px]">
-                                  <div className="text-[8px] md:text-[9px] font-black uppercase text-gray-400">Khí thải</div>
-                                  <div className="text-base md:text-xl font-black text-primary">{leg.kgCo2e?.toFixed(2) || '0.00'}</div>
-                                  <div className="text-[8px] md:text-[9px] font-bold text-primary/60 uppercase">kg CO2e</div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* Booking Tab Content (Only Mobile) */}
-              {(activeTab === 'booking' && typeof window !== 'undefined' && window.innerWidth < 1024) && (
-                <motion.div
-                  key="booking-tab"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  className="block lg:hidden"
-                >
-                  <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-                    <div className="mb-8 text-center">
-                      <h3 className="text-2xl font-serif font-black text-primary mb-2">Đặt Gói Hành Trình</h3>
-                      <p className="text-gray-400 text-[8px] font-black uppercase tracking-[0.2em]">Cùng xây dựng tương lai xanh</p>
-                    </div>
-
-                    <form ref={formRef} onSubmit={handleSubmit} className="space-y-5">
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1.5">
-                          <Label className="text-[9px] font-black uppercase ml-1 text-gray-400">Tên</Label>
-                          <Input name="firstname" placeholder="Tên" className="rounded-xl h-12 bg-gray-50 border-none" required />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-[9px] font-black uppercase ml-1 text-gray-400">Họ</Label>
-                          <Input name="lastname" placeholder="Họ" className="rounded-xl h-12 bg-gray-50 border-none" required />
-                        </div>
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <Label className="text-[9px] font-black uppercase ml-1 text-gray-400">Email</Label>
-                        <Input name="email" type="email" placeholder="Email liên hệ" className="rounded-xl h-12 bg-gray-50 border-none" required />
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <Label className="text-[9px] font-black uppercase ml-1 text-gray-400">Số điện thoại</Label>
-                        <Input name="phone" type="tel" placeholder="Số điện thoại" className="rounded-xl h-12 bg-gray-50 border-none" required />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1.5">
-                          <Label className="text-[9px] font-black uppercase ml-1 text-gray-400">Khởi hành</Label>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Button variant="outline" className="w-full h-12 rounded-xl bg-gray-50 border-none justify-start text-[10px] font-bold">
-                                <Calendar className="mr-2 h-3 w-3 text-secondary" />
-                                {bookingDate ? format(bookingDate, 'dd/MM/yyyy') : 'Chọn ngày'}
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0 rounded-2xl border-none">
-                              <CalendarComponent mode="single" selected={bookingDate} onSelect={setBookingDate} disabled={(date) => date < new Date()} />
-                            </PopoverContent>
-                          </Popover>
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-[9px] font-black uppercase ml-1 text-gray-400">Số khách</Label>
-                          <Input name="guests" type="number" min="1" defaultValue={travelerCount} className="rounded-xl h-12 bg-gray-50 border-none" required onChange={(e) => setTravelerCount(Number(e.target.value) || 1)} />
-                        </div>
-                      </div>
-
-                      <Button type="submit" className="w-full bg-primary hover:bg-gray-900 text-white h-14 rounded-xl font-black text-xs uppercase tracking-widest shadow-lg" disabled={isLoading}>
-                        {isLoading ? 'Đang xử lý...' : 'Xác nhận đặt tour'}
-                      </Button>
-                    </form>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                    </motion.div>
+                  </>
+                ) : (
+                  <AnimatePresence mode="wait">
+                    {activeTab === 'info' && (
+                      <motion.div key="info" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}>
+                        <InfoTabContent travelPackage={travelPackage} />
+                      </motion.div>
+                    )}
+                    {activeTab === 'itinerary' && (
+                      <motion.div key="itinerary" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}>
+                        <ItineraryTabContent 
+                          travelPackage={travelPackage}
+                          googleTripUrl={googleTripUrl}
+                          showMapPanel={showMapPanel}
+                          setShowMapPanel={setShowMapPanel}
+                          mapPoints={aiPoints || mapPoints}
+                          isTracking={isTracking}
+                          setIsTracking={setIsTracking}
+                          trackedDistance={trackedDistance}
+                          trackedEmissions={trackedEmissions}
+                          trackingMode={trackingMode}
+                          setTrackingMode={setTrackingMode}
+                          itinerarySummary={itinerarySummary}
+                        />
+                      </motion.div>
+                    )}
+                    {activeTab === 'booking' && (
+                      <motion.div key="booking" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}>
+                        <BookingForm 
+                          isMobile 
+                          formRef={formRef}
+                          handleSubmit={handleSubmit}
+                          bookingDate={bookingDate}
+                          setBookingDate={setBookingDate}
+                          travelerCount={travelerCount}
+                          setTravelerCount={setTravelerCount}
+                          isLoading={isLoading}
+                        />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                )}
+              </div>
+            )}
           </div>
 
-          {/* Booking Sidebar (Desktop Only) */}
-          <div id="booking-section" className="hidden lg:block lg:col-span-4">
-            <motion.div 
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="sticky top-32"
-            >
-              <div className="bg-white p-8 md:p-10 rounded-[2.5rem] shadow-[0_20px_80px_rgba(0,0,0,0.08)] border border-gray-100 relative overflow-hidden">
-                <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-primary via-secondary to-primary" />
-                
-                <div className="mb-10 text-center">
-                  <h3 className="text-3xl font-serif font-black text-primary mb-2">Đặt Gói Ngay</h3>
-                  <p className="text-gray-400 text-[10px] font-black uppercase tracking-[0.2em]">Khởi đầu hành trình xanh của bạn</p>
-                </div>
-
-                <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-[10px] font-black uppercase ml-2 text-gray-400" htmlFor="firstname">Tên</Label>
-                      <Input 
-                        id="firstname" 
-                        name="firstname" 
-                        placeholder="VD: Anh" 
-                        className={`rounded-2xl h-14 bg-gray-50 border-none focus:ring-2 focus:ring-secondary ${errors.firstname ? 'ring-2 ring-red-500' : ''}`}
-                        required 
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-[10px] font-black uppercase ml-2 text-gray-400" htmlFor="lastname">Họ</Label>
-                      <Input 
-                        id="lastname" 
-                        name="lastname" 
-                        placeholder="VD: Nguyễn" 
-                        className={`rounded-2xl h-14 bg-gray-50 border-none focus:ring-2 focus:ring-secondary ${errors.lastname ? 'ring-2 ring-red-500' : ''}`}
-                        required 
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase ml-2 text-gray-400" htmlFor="email">Email liên hệ</Label>
-                    <Input 
-                      id="email" 
-                      name="email" 
-                      type="email" 
-                      placeholder="example@gmail.com" 
-                      className={`rounded-2xl h-14 bg-gray-50 border-none focus:ring-2 focus:ring-secondary ${errors.email ? 'ring-2 ring-red-500' : ''}`}
-                      required 
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase ml-2 text-gray-400" htmlFor="phone">Số điện thoại</Label>
-                    <Input 
-                      id="phone" 
-                      name="phone" 
-                      type="tel" 
-                      placeholder="+84 ..." 
-                      className={`rounded-2xl h-14 bg-gray-50 border-none focus:ring-2 focus:ring-secondary ${errors.phone ? 'ring-2 ring-red-500' : ''}`}
-                      required 
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-[10px] font-black uppercase ml-2 text-gray-400">Ngày khởi hành</Label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button 
-                            variant="outline" 
-                            className={`w-full h-14 rounded-2xl bg-gray-50 border-none justify-start text-left font-normal ${
-                              errors.bookingDate ? 'ring-2 ring-red-500' : ''
-                            }`}
-                          >
-                            <Calendar className="mr-2 h-4 w-4 text-secondary" />
-                            {bookingDate ? format(bookingDate, 'dd/MM/yyyy', { locale: vi }) : <span className="text-gray-400">Chọn ngày</span>}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0 rounded-3xl overflow-hidden border-none shadow-2xl">
-                          <CalendarComponent
-                            mode="single"
-                            selected={bookingDate}
-                            onSelect={setBookingDate}
-                            disabled={(date) => date < new Date()}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label className="text-[10px] font-black uppercase ml-2 text-gray-400" htmlFor="guests">Số khách</Label>
-                      <Input 
-                        id="guests" 
-                        name="guests" 
-                        type="number" 
-                        min="1" 
-                        max="50"
-                        placeholder="2" 
-                        defaultValue={travelerCount}
-                        className={`rounded-2xl h-14 bg-gray-50 border-none focus:ring-2 focus:ring-secondary ${errors.numberOfGuests ? 'ring-2 ring-red-500' : ''}`}
-                        onChange={(e) => {
-                          const n = Number(e.target.value)
-                          setTravelerCount(Number.isFinite(n) && n > 0 ? Math.floor(n) : 1)
-                        }}
-                        required 
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase ml-2 text-gray-400" htmlFor="special-requests">Yêu cầu đặc biệt</Label>
-                    <Textarea 
-                      id="special-requests" 
-                      name="special-requests" 
-                      placeholder="Ghi chú thêm cho chúng tôi..." 
-                      className="rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-secondary min-h-[100px]"
-                    />
-                  </div>
-
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-primary hover:bg-gray-900 text-white h-16 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl group"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }}>
-                        <Clock size={20} />
-                      </motion.div>
-                    ) : (
-                      <span className="flex items-center gap-3">
-                        Xác nhận đặt ngay
-                        <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                      </span>
-                    )}
-                  </Button>
-                  
-                  <p className="text-[9px] text-center text-gray-400 px-4">
-                    Bằng cách nhấn xác nhận, bạn đồng ý với các <Link href="/terms" className="text-secondary underline">điều khoản dịch vụ</Link> của Eco-Tour Việt Nam.
-                  </p>
-                </form>
-              </div>
-
-              {/* Support Badge */}
-              <div className="mt-6 flex items-center justify-center gap-4 text-gray-400">
-                <div className="flex items-center gap-2">
-                  <ShieldCheck size={16} />
-                  <span className="text-[10px] font-bold uppercase tracking-tight">Thanh toán an toàn</span>
-                </div>
-                <div className="h-4 w-[1px] bg-gray-200" />
-                <div className="flex items-center gap-2">
-                  <Clock size={16} />
-                  <span className="text-[10px] font-bold uppercase tracking-tight">Hỗ trợ 24/7</span>
-                </div>
-              </div>
-            </motion.div>
+          {/* Desktop Sidebar */}
+          <div className="hidden lg:block lg:col-span-4">
+            <BookingForm 
+              formRef={formRef}
+              handleSubmit={handleSubmit}
+              bookingDate={bookingDate}
+              setBookingDate={setBookingDate}
+              travelerCount={travelerCount}
+              setTravelerCount={setTravelerCount}
+              isLoading={isLoading}
+            />
           </div>
         </div>
       </div>
 
       {/* Mobile Sticky Booking Bar */}
-      <motion.div 
-        initial={{ y: 100 }}
-        animate={{ y: 0 }}
-        className="fixed bottom-0 left-0 right-0 z-[100] lg:hidden bg-white/90 backdrop-blur-xl border-t border-gray-100 p-4 pb-[calc(env(safe-area-inset-bottom)+16px)]"
-      >
+      <motion.div initial={{ y: 100 }} animate={{ y: 0 }} className="fixed bottom-0 left-0 right-0 z-[100] lg:hidden bg-white/90 backdrop-blur-xl border-t border-gray-100 p-4 pb-[calc(env(safe-area-inset-bottom)+16px)]">
         <div className="flex items-center justify-between gap-4 max-w-md mx-auto">
           <div className="flex flex-col">
-            <span className="text-[9px] font-black uppercase text-gray-400 leading-none mb-1">Giá chỉ từ</span>
-            <span className="text-base font-black text-primary leading-none">{travelPackage.price.toLocaleString()} VNĐ</span>
+            <span className="text-[10px] font-black uppercase text-gray-400">Giá chỉ từ</span>
+            <span className="text-lg font-black text-primary">{travelPackage.price.toLocaleString()} VNĐ</span>
           </div>
-          <Button 
-            onClick={() => setActiveTab('booking')}
-            className="flex-1 bg-primary hover:bg-gray-900 text-white h-12 rounded-xl font-black text-[10px] uppercase tracking-[0.15em] shadow-xl flex items-center justify-center gap-2 group"
-          >
-            Đặt Ngay
-            <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
+          <Button onClick={() => setActiveTab('booking')} className="flex-1 bg-primary text-white h-12 rounded-xl font-black text-xs uppercase tracking-widest shadow-xl">
+            Đặt Ngay <ChevronRight size={16} className="ml-2" />
           </Button>
         </div>
       </motion.div>

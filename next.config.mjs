@@ -6,7 +6,7 @@ const makeConfig = (phase) => {
   const nextConfig = {
     distDir: phase === PHASE_DEVELOPMENT_SERVER ? '.next-dev' : '.next',
     images: {
-      domains: ['images.unsplash.com', 'cms.travelworld.nl'],
+      domains: ['images.unsplash.com', 'cms.travelworld.nl', 'tse2.mm.bing.net', 'handmadeak.com', 'battrangplaza.com'],
     },
     webpack: (config, { dev }) => {
       if (dev) {

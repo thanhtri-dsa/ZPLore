@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { MapContainer, Polyline as LeafletPolyline, TileLayer } from 'react-leaflet'
+import { MapContainer, Polyline as LeafletPolyline, TileLayer, useMap, Marker, Popup, Polygon, Pane } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 import RoutingMachine from './RoutingMachine'
@@ -137,14 +137,57 @@ interface RoutePoint {
   label?: string;
 }
 
+// Add a Controller to update map view when points change
+function MapController({ points }: { points: RoutePoint[] }) {
+  const map = useMap()
+
+  useEffect(() => {
+    if (points.length === 0) return
+
+    const bounds = L.latLngBounds(points.map((p) => [p.lat, p.lng]))
+    map.fitBounds(bounds, { padding: [50, 50] })
+  }, [points, map])
+
+  return null
+}
+
 interface RouteMapProps {
   points: RoutePoint[];
   center?: [number, number];
   zoom?: number;
   showPanel?: boolean;
+  ecoPoints?: Array<{ lat: number, lng: number, label: string, type: string }>;
 }
 
-const RouteMap: React.FC<RouteMapProps> = ({ points, center, zoom = 10, showPanel = false }) => {
+const RouteMap: React.FC<RouteMapProps> = ({ points: initialPoints, center, zoom = 10, showPanel = false, ecoPoints: initialEcoPoints }) => {
+  const [points, setPoints] = useState<RoutePoint[]>(initialPoints)
+  const [ecoPoints, setEcoPoints] = useState<Array<{ lat: number, lng: number, label: string, type: string }>>(initialEcoPoints || [])
+
+  useEffect(() => {
+    setPoints(initialPoints)
+  }, [initialPoints])
+
+  useEffect(() => {
+    if (initialEcoPoints) {
+      setEcoPoints(initialEcoPoints)
+    }
+  }, [initialEcoPoints])
+
+  useEffect(() => {
+    const handleAiMapCommand = (e: any) => {
+      const { action, points: newPoints, eco_points: newEcoPoints } = e.detail
+      if (action === 'draw_route' && Array.isArray(newPoints)) {
+        setPoints(newPoints)
+      }
+      if (Array.isArray(newEcoPoints)) {
+        setEcoPoints(newEcoPoints)
+      }
+    }
+
+    window.addEventListener('ai-map-command', handleAiMapCommand)
+    return () => window.removeEventListener('ai-map-command', handleAiMapCommand)
+  }, [])
+
   const googleKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
   const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN
   const providerRaw = process.env.NEXT_PUBLIC_MAP_PROVIDER?.toLowerCase()
@@ -156,11 +199,9 @@ const RouteMap: React.FC<RouteMapProps> = ({ points, center, zoom = 10, showPane
         ? 'google'
         : providerRaw === 'mapbox'
           ? 'mapbox'
-          : mapboxToken
-            ? 'mapbox'
-            : googleKey
-              ? 'google'
-              : 'osm'
+          : googleKey
+            ? 'google' // Default to google if key exists
+            : 'osm'
   const provider =
     providerWanted === 'mapbox' && !mapboxToken
       ? 'osm'
@@ -241,12 +282,16 @@ const RouteMap: React.FC<RouteMapProps> = ({ points, center, zoom = 10, showPane
         map = new google.maps.Map(el, {
           center: { lat: initial[0], lng: initial[1] } as unknown as Record<string, unknown>,
           zoom,
-          mapTypeControl: false,
-          streetViewControl: false,
-          fullscreenControl: false,
-          clickableIcons: false,
+          mapTypeId: 'roadmap',
+          mapTypeControl: true, // Enable map type control for global exploration
+          streetViewControl: true,
+          fullscreenControl: true,
+          clickableIcons: true,
           gestureHandling: 'greedy',
           backgroundColor: '#f8fafc',
+          // REMOVED RESTRICTIONS FOR GLOBAL REACH
+          minZoom: 2,
+          styles: [] // Standard clean Google Maps style
         })
 
         const bounds = new google.maps.LatLngBounds()
@@ -359,7 +404,7 @@ const RouteMap: React.FC<RouteMapProps> = ({ points, center, zoom = 10, showPane
         const initial = (center ?? focusPoints[0]) as [number, number]
         map = new mapboxgl.Map({
           container: el,
-          style: 'mapbox://styles/mapbox/streets-v12',
+          style: 'mapbox://styles/mapbox/light-v11',
           center: [initial[1], initial[0]],
           zoom: Math.max(3, Math.min(12, zoom)),
         }) as unknown as { remove: () => void }
@@ -441,16 +486,18 @@ const RouteMap: React.FC<RouteMapProps> = ({ points, center, zoom = 10, showPane
 
   if (provider === 'osm') {
     const leafletCenter: [number, number] =
-      center ?? (points.length > 0 ? ([points[0].lat, points[0].lng] as [number, number]) : ([-1.2921, 36.8219] as [number, number]))
+      center ?? (points.length > 0 ? ([points[0].lat, points[0].lng] as [number, number]) : ([10.762622, 106.660172] as [number, number]))
 
     return (
       <LeafletRoute
         center={leafletCenter}
         zoom={zoom}
+        points={points}
         waypoints={leafletWaypoints}
         routeProvider={routeProvider}
         fetchOrsLine={fetchOrsLine}
         showPanel={showPanel}
+        ecoPoints={ecoPoints}
       />
     )
   }
@@ -474,21 +521,40 @@ export default RouteMap
 function LeafletRoute({
   center,
   zoom,
+  points,
   waypoints,
   routeProvider,
   fetchOrsLine,
   showPanel,
+  ecoPoints,
 }: {
   center: [number, number]
   zoom: number
+  points: RoutePoint[]
   waypoints: L.LatLng[]
   routeProvider: 'ors' | 'native'
   fetchOrsLine: (latLngPoints: Array<[number, number]>) => Promise<number[][] | null>
   showPanel: boolean
+  ecoPoints: Array<{ lat: number, lng: number, label: string, type: string }>
 }) {
   const [orsPositions, setOrsPositions] = useState<Array<[number, number]> | null>(null)
 
+  const VIETNAM_BOUNDS = useMemo(() => L.latLngBounds(
+    L.latLng(8.0, 102.0), // Southwest
+    L.latLng(24.0, 110.0)  // Northeast
+  ), [])
+
   const key = useMemo(() => waypoints.map((p) => `${p.lat.toFixed(5)},${p.lng.toFixed(5)}`).join('|'), [waypoints])
+
+  const VIETNAM_MASK = useMemo(() => [
+    [[-90, -180], [-90, 180], [90, 180], [90, -180]], // World
+    [
+      [23.4, 105.3], [22.8, 106.5], [21.5, 108.0], [20.5, 106.5], [19.0, 106.0],
+      [17.5, 106.6], [16.0, 108.3], [14.5, 109.2], [12.5, 109.5], [11.0, 108.8],
+      [10.0, 107.5], [8.5, 104.8], [9.5, 104.0], [10.5, 104.5], [12.5, 107.5],
+      [14.5, 107.5], [16.0, 107.0], [18.0, 105.5], [21.5, 102.1], [22.5, 103.0]
+    ] // Vietnam hole
+  ], [])
 
   useEffect(() => {
     let cancelled = false
@@ -497,8 +563,8 @@ function LeafletRoute({
       return
     }
 
-    const points = waypoints.map((p) => [p.lat, p.lng] as [number, number])
-    fetchOrsLine(points)
+    const pts = waypoints.map((p) => [p.lat, p.lng] as [number, number])
+    fetchOrsLine(pts)
       .then((line) => {
         if (cancelled) return
         if (!line || line.length < 2) {
@@ -517,17 +583,54 @@ function LeafletRoute({
   }, [fetchOrsLine, key, routeProvider, waypoints])
 
   return (
-    <MapContainer center={center} zoom={zoom} scrollWheelZoom={false} style={{ height: '100%', width: '100%', borderRadius: '1rem' }}>
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-        subdomains="abcd"
-      />
-      {orsPositions ? (
-        <LeafletPolyline pathOptions={{ color: '#16a34a', weight: 6, opacity: 0.85 }} positions={orsPositions} />
-      ) : (
-        waypoints.length >= 2 && <RoutingMachine waypoints={waypoints} showPanel={showPanel} />
-      )}
-    </MapContainer>
-  )
+      <MapContainer 
+        center={center} 
+        zoom={zoom} 
+        scrollWheelZoom={false} 
+        style={{ height: '100%', width: '100%', borderRadius: '1rem', background: '#f8fafc' }}
+        minZoom={2}
+      >
+        <MapController points={points} />
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+          subdomains="abcd"
+        />
+
+        <Pane name="route-pane" style={{ zIndex: 500 }}>
+          {orsPositions ? (
+            <LeafletPolyline pathOptions={{ color: '#16a34a', weight: 6, opacity: 0.9 }} positions={orsPositions} />
+          ) : (
+            waypoints.length >= 2 && <RoutingMachine waypoints={waypoints} showPanel={showPanel} />
+          )}
+        </Pane>
+        
+        <Pane name="marker-pane" style={{ zIndex: 700 }}>
+          {ecoPoints.map((p, idx) => (
+            <Marker 
+              key={`eco-${idx}`} 
+              position={[p.lat, p.lng]} 
+              icon={L.divIcon({
+                className: 'eco-poi-marker',
+                html: `<div class="relative group">
+                        <div class="w-10 h-10 rounded-full ${p.type === 'restaurant' ? 'bg-orange-500 shadow-orange-200' : 'bg-emerald-500 shadow-emerald-200'} border-2 border-white shadow-xl flex items-center justify-center transform group-hover:scale-110 transition-all duration-300">
+                          <span class="text-lg">${p.type === 'restaurant' ? '🍱' : (p.type === 'charging' ? '⚡' : '🌿')}</span>
+                        </div>
+                        <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] ${p.type === 'restaurant' ? 'border-t-orange-500' : 'border-t-emerald-500'}"></div>
+                       </div>`,
+                iconSize: [40, 40],
+                iconAnchor: [20, 40]
+              })}
+            >
+              <Popup>
+                <div className="p-1">
+                  <p className="font-bold text-emerald-700 m-0">{p.label}</p>
+                  <p className="text-[10px] text-gray-500 m-0 capitalize italic">{p.type}</p>
+                </div>
+              </Popup>
+            </Marker>
+          ))}
+        </Pane>
+      </MapContainer>
+    )
 }

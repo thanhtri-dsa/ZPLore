@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { ArrowLeft, MapPin, Calendar, Clock, Users, DollarSign, CheckCircle2, ShieldCheck, Crown, Star, Share2, Heart, ChevronRight } from 'lucide-react'
+import { ArrowLeft, MapPin, Calendar, Clock, Users, DollarSign, CheckCircle2, ShieldCheck, Bike, Star, Share2, Heart, ChevronRight } from 'lucide-react'
 import dynamic from 'next/dynamic'
 
 const RouteMapLoader = dynamic(
@@ -157,8 +157,8 @@ export default function DestinationDetail({ destination }: DestinationDetailProp
             </Link>
             
             <div className="flex flex-wrap items-center gap-4 mb-6">
-              <span className="bg-secondary text-secondary-foreground px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-xl">
-                <Crown size={12} /> Khám phá VIP
+              <span className="bg-secondary text-primary px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2 shadow-xl">
+                <Crown size={12} /> Hành Trình VIP
               </span>
               <div className="flex items-center gap-1 text-secondary">
                 {[1, 2, 3, 4, 5].map((s) => <Star key={s} size={14} fill="currentColor" />)}
@@ -249,11 +249,11 @@ export default function DestinationDetail({ destination }: DestinationDetailProp
               <div className="absolute inset-0 opacity-10 vn-pattern scale-150" />
               <div className="relative z-10 flex flex-col md:flex-row items-center gap-8 text-center md:text-left">
                 <div className="bg-secondary/20 p-6 rounded-full border border-secondary/30">
-                  <Crown size={48} className="text-secondary" />
+                  <Bike size={48} className="text-secondary" />
                 </div>
                 <div>
                   <h3 className="text-2xl font-serif font-black mb-2">Đặc quyền Thành viên VIP</h3>
-                  <p className="text-white/60 text-sm leading-relaxed">Nhận ngay xe đưa đón hạng sang tại sân bay, hướng dẫn viên riêng và bữa tối 5 sao khi đặt tour qua hệ thống Eco-Tour VIP.</p>
+                  <p className="text-white/60 text-sm leading-relaxed">Nhận ngay xe đưa đón hạng sang tại sân bay, hướng dẫn viên riêng và bữa tối 5 sao khi đặt tour qua hệ thống ZPLore VIP.</p>
                 </div>
                 <Button className="bg-secondary text-primary font-black px-8 py-6 rounded-2xl whitespace-nowrap hover:bg-white transition-all">Nâng cấp VIP</Button>
               </div>
@@ -423,7 +423,7 @@ export default function DestinationDetail({ destination }: DestinationDetailProp
                   </Button>
                   
                   <p className="text-[9px] text-center text-gray-400 px-4">
-                    Bằng cách nhấn xác nhận, bạn đồng ý với các <Link href="/terms" className="text-secondary underline">điều khoản dịch vụ</Link> của Eco-Tour Việt Nam.
+                    Bằng cách nhấn xác nhận, bạn đồng ý với các <Link href="/terms" className="text-secondary underline">điều khoản dịch vụ</Link> của ZPLore Việt Nam.
                   </p>
                 </form>
               </div>

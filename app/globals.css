@@ -89,23 +89,85 @@
   }
 
   .glass-morphism {
-    @apply bg-white/10 backdrop-blur-md border border-white/20 shadow-xl;
+    @apply bg-white/40 backdrop-blur-xl border border-white/40 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)];
+  }
+
+  .glass-morphism-gold {
+    @apply bg-secondary/20 backdrop-blur-xl border border-secondary/30 shadow-[0_8px_32px_0_rgba(255,184,0,0.1)];
   }
 
   .glass-morphism-dark {
-    @apply bg-black/20 backdrop-blur-lg border border-white/10 shadow-2xl;
+    @apply bg-black/40 backdrop-blur-xl border border-white/10 shadow-2xl;
+  }
+
+  /* Custom Scrollbar for Chat Box */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: hsla(159, 100%, 19%, 0.2); /* --primary with opacity */
+    border-radius: 10px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: hsla(159, 100%, 19%, 0.4);
   }
 
   .vn-title {
-    @apply font-serif text-primary;
+    @apply font-serif text-primary tracking-tight;
     position: relative;
-    padding-bottom: 0.5rem;
+    padding-bottom: 0.75rem;
   }
 
   .vn-title-gold {
-    @apply font-serif text-secondary;
+    @apply font-serif text-secondary tracking-tight;
     position: relative;
-    padding-bottom: 0.5rem;
+    padding-bottom: 0.75rem;
+  }
+
+  /* Premium Shine Effect */
+  .shine-effect {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .shine-effect::after {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+      to bottom right,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.1) 40%,
+      rgba(255, 255, 255, 0.4) 50%,
+      rgba(255, 255, 255, 0.1) 60%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    transform: rotate(45deg);
+    transition: all 0.7s;
+    opacity: 0;
+  }
+
+  .shine-effect:hover::after {
+    left: 100%;
+    top: 100%;
+    opacity: 1;
+  }
+
+  /* Parallax Background Helper */
+  .parallax-bg {
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
   }
 
   .vn-title::after {
@@ -193,6 +255,32 @@
   ::-webkit-scrollbar-thumb:hover {
     background: theme('colors.secondary.DEFAULT');
   }
+
+/* Shine Animation for VIP Cards */
+@keyframes shine-gold {
+  0% { transform: translateX(-100%) rotate(45deg); }
+  100% { transform: translateX(100%) rotate(45deg); }
+}
+
+.animate-shine-gold {
+  position: relative;
+  overflow: hidden;
+}
+
+.animate-shine-gold::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 184, 0, 0.2),
+    transparent
+  );
+  animation: shine-gold 3s infinite;
 }
 
 /* Floating Animation */
@@ -329,6 +417,7 @@
 .leaflet-control-geocoder-alternatives li:hover {
   background: #f0fdf4 !important;
   color: #059669 !important;
+}
 }
 
 /* Apply theme variables */

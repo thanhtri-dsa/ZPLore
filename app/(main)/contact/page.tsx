@@ -156,22 +156,22 @@ export default function ContactSection() {
                   {
                     icon: Mail,
                     title: "Email",
-                    content: "ecotour@gmail.com",
+                    content: "phamthanhtri@gmail.com",
                   },
                   {
                     icon: Phone,
-                    title: "Phone",
-                    content: "+2547000000",
+                    title: "Số điện thoại",
+                    content: "+84 901 234 567",
                   },
                   {
                     icon: MapPin,
-                    title: "Location",
-                    content: "Nairobi, Kenya",
+                    title: "Địa chỉ",
+                    content: "TP. Hồ Chí Minh, Việt Nam",
                   },
                   {
                     icon: Clock,
-                    title: "Hours",
-                    content: "Mon - Sat: 9AM - 6PM",
+                    title: "Giờ làm việc",
+                    content: "Thứ 2 - Thứ 7: 8:00 - 18:00",
                   },
                 ].map(({ icon: Icon, title, content }, index) => (
                   <div key={index} className="flex items-center space-x-3">

@@ -71,7 +71,7 @@ const EcoTourismFeatures: React.FC = () => {
           <div className="lg:col-span-4 order-1 lg:order-2">
             <div className="relative w-full max-w-md mx-auto aspect-[3/4] rounded-3xl overflow-hidden shadow-2xl border border-white/60">
               <Image
-                src="/images/masaai_women.jpg"
+                src="/images/benthanhsaigon.jpg"
                 alt="Eco-tourism"
                 fill
                 className="object-cover"

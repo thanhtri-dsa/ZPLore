@@ -12,7 +12,7 @@ const products = [
     id: 1,
     name: "Ống hút Tre Tự Nhiên",
     price: "45.000",
-    image: "https://images.unsplash.com/photo-1594498653385-d5172c532c00?q=80&w=400&h=400&auto=format&fit=crop",
+    image: "https://tse2.mm.bing.net/th/id/OIP.DJvn_ZX7d8TRAupQHLWCLgHaE7?pid=Api&h=220&P=0",
     rating: 5,
     tag: "Eco-Friendly"
   },
@@ -20,15 +20,15 @@ const products = [
     id: 2,
     name: "Nón Lá Truyền Thống",
     price: "120.000",
-    image: "https://images.unsplash.com/photo-1583417319070-4a69db38a482?q=80&w=400&h=400&auto=format&fit=crop",
+    image: "https://tse2.mm.bing.net/th/id/OIP.q9iGzV91NkyFsxsYCiRIFAHaE6?pid=Api&h=220&P=0",
     rating: 5,
     tag: "Handmade"
   },
   {
     id: 3,
-    name: "Túi Cói Đi Biển",
+    name: "Túi Dây Đan ",
     price: "250.000",
-    image: "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?q=80&w=400&h=400&auto=format&fit=crop",
+    image: "https://handmadeak.com/wp-content/uploads/2020/03/qua-tang-tui-luc-binh.jpg",
     rating: 4,
     tag: "Sustainable"
   },
@@ -36,7 +36,7 @@ const products = [
     id: 4,
     name: "Bộ Trà Gốm Bát Tràng",
     price: "850.000",
-    image: "https://images.unsplash.com/photo-1576092768241-dec231879fc3?q=80&w=400&h=400&auto=format&fit=crop",
+    image: "https://battrangplaza.com/wp-content/uploads/2023/04/am-chen-bat-trang-men-hoa-bien-goc-cay.jpg",
     rating: 5,
     tag: "Premium"
   }

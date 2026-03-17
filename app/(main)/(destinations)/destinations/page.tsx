@@ -4,8 +4,8 @@ import DestinationsPage from '@/components/destinations/destinations-page'
 import { DestinationCardSkeleton } from '@/components/destinations/destinations-card-skeleton'
 
 export const metadata = {
-  title: 'Explore Destinations | Forestline Tours',
-  description: 'Discover amazing travel destinations around the world with Forestline Tours.',
+  title: 'Hành trình ước mơ | Forestline Tours',
+  description: 'Khám phá những hành trình ước mơ tuyệt vời trên thế giới cùng Forestline Tours.',
 }
 
 export default async function DestinationsRoute() {
