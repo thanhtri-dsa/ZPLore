@@ -169,19 +169,20 @@ const DestinationsMap: React.FC<DestinationsMapProps> = ({ destinations, highlig
   const [ecoPoints, setEcoPoints] = useState<Array<{ lat: number, lng: number, label: string, type: string }>>([])
 
   useEffect(() => {
-        const handleAiMapCommand = (e: { detail: { action: string; points: { lat: number; lng: number; }[]; eco_points: { lat: number; lng: number; label: string; type: string; }[]; }; }) => {
-      const { action, points: newPoints, eco_points: newEcoPoints } = e.detail
+    const handleAiMapCommand = (e: Event) => {
+      const { detail } = e as CustomEvent<{ action: string; points: { lat: number; lng: number }[]; eco_points: { lat: number; lng: number; label: string; type: string }[] }>;
+      const { action, points: newPoints, eco_points: newEcoPoints } = detail;
       if (action === 'draw_route' && Array.isArray(newPoints)) {
-        setAiWaypoints(newPoints.map(p => L.latLng(p.lat, p.lng)))
+        setAiWaypoints(newPoints.map(p => L.latLng(p.lat, p.lng)));
       }
       if (Array.isArray(newEcoPoints)) {
-        setEcoPoints(newEcoPoints)
+        setEcoPoints(newEcoPoints);
       }
-    }
+    };
 
-        window.addEventListener('ai-map-command', handleAiMapCommand as unknown as EventListener)
-    return () => window.removeEventListener('ai-map-command', handleAiMapCommand as unknown as EventListener)
-  }, [])
+    window.addEventListener('ai-map-command', handleAiMapCommand);
+    return () => window.removeEventListener('ai-map-command', handleAiMapCommand);
+  }, []);
 
   const googleKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
   const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN

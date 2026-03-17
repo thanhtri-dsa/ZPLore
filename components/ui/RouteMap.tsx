@@ -174,19 +174,20 @@ const RouteMap: React.FC<RouteMapProps> = ({ points: initialPoints, center, zoom
   }, [initialEcoPoints])
 
   useEffect(() => {
-        const handleAiMapCommand = (e: { detail: { action: string; points: { lat: number; lng: number; }[]; eco_points: { lat: number; lng: number; label: string; type: string; }[]; }; }) => {
-      const { action, points: newPoints, eco_points: newEcoPoints } = e.detail
+    const handleAiMapCommand = (e: Event) => {
+      const { detail } = e as CustomEvent<{ action: string; points: { lat: number; lng: number }[]; eco_points: { lat: number; lng: number; label: string; type: string }[] }>;
+      const { action, points: newPoints, eco_points: newEcoPoints } = detail;
       if (action === 'draw_route' && Array.isArray(newPoints)) {
-        setPoints(newPoints)
+        setPoints(newPoints);
       }
       if (Array.isArray(newEcoPoints)) {
-        setEcoPoints(newEcoPoints)
+        setEcoPoints(newEcoPoints);
       }
-    }
+    };
 
-    window.addEventListener('ai-map-command', handleAiMapCommand as unknown as EventListener)
-    return () => window.removeEventListener('ai-map-command', handleAiMapCommand as unknown as EventListener)
-  }, [])
+    window.addEventListener('ai-map-command', handleAiMapCommand);
+    return () => window.removeEventListener('ai-map-command', handleAiMapCommand);
+  }, []);
 
   const googleKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
   const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN
@@ -539,24 +540,11 @@ function LeafletRoute({
 }) {
   const [orsPositions, setOrsPositions] = useState<Array<[number, number]> | null>(null)
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const _VIETNAM_BOUNDS = useMemo(() => L.latLngBounds(
-    L.latLng(8.0, 102.0), // Southwest
-    L.latLng(24.0, 110.0)  // Northeast
-  ), [])
+
 
   const key = useMemo(() => waypoints.map((p) => `${p.lat.toFixed(5)},${p.lng.toFixed(5)}`).join('|'), [waypoints])
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const _VIETNAM_MASK = useMemo(() => [
-    [[-90, -180], [-90, 180], [90, 180], [90, -180]], // World
-    [
-      [23.4, 105.3], [22.8, 106.5], [21.5, 108.0], [20.5, 106.5], [19.0, 106.0],
-      [17.5, 106.6], [16.0, 108.3], [14.5, 109.2], [12.5, 109.5], [11.0, 108.8],
-      [10.0, 107.5], [8.5, 104.8], [9.5, 104.0], [10.5, 104.5], [12.5, 107.5],
-      [14.5, 107.5], [16.0, 107.0], [18.0, 105.5], [21.5, 102.1], [22.5, 103.0]
-    ] // Vietnam hole
-  ], [])
+
 
   useEffect(() => {
     let cancelled = false

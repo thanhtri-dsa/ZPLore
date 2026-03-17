@@ -391,14 +391,15 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
 
   // Listen for AI Map Commands
     useEffect(() => {
-    const handleAiMapCommand = (e: { detail: { action: string; points: { lat: number; lng: number; }[]; }; }) => {
-      if (e.detail && e.detail.action === 'draw_route' && e.detail.points) {
-        setAiPoints(e.detail.points);
+    const handleAiMapCommand = (e: Event) => {
+      const { detail } = e as CustomEvent<{ action: string; points: { lat: number; lng: number }[] }>;
+      if (detail && detail.action === 'draw_route' && detail.points) {
+        setAiPoints(detail.points);
         setActiveTab('itinerary'); // Switch to itinerary tab to show map
       }
     };
-        window.addEventListener('ai-map-command', handleAiMapCommand as unknown as EventListener);
-    return () => window.removeEventListener('ai-map-command', handleAiMapCommand as unknown as EventListener);
+    window.addEventListener('ai-map-command', handleAiMapCommand);
+    return () => window.removeEventListener('ai-map-command', handleAiMapCommand);
   }, []);
 
   // Broadcast current tour info for AIAssistant
@@ -452,10 +453,10 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
     const requestWakeLock = async () => {
       if ('wakeLock' in navigator && isTracking) {
         try {
-                    const lock = await (navigator as any).wakeLock.request('screen');
+          const lock = await (navigator as any).wakeLock.request('screen');
           setWakeLock(lock);
-        } catch (err: unknown) {
-          console.error(`Wake Lock Error: ${err}`);
+        } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+          console.error(`Wake Lock Error: ${err.name}, ${err.message}`);
         }
       }
     };
@@ -550,7 +551,7 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
       formRef.current?.reset()
       setBookingDate(undefined)
       setErrors({})
-    } catch (error) {
+    } catch {
       toast.error('Đặt tour thất bại. Vui lòng thử lại.')
     } finally {
       setIsLoading(false)
@@ -657,7 +658,7 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
             { id: 'info', label: 'Thông tin', icon: Info },
             { id: 'itinerary', label: 'Lộ trình', icon: Navigation },
             { id: 'booking', label: 'Đặt Tour', icon: Calendar },
-          ].map((tab) => (
+          ].map((tab: { id: string; label: string; icon: React.ElementType }) => (
             <button
                             key={tab.id}
               onClick={() => setActiveTab(tab.id as 'info' | 'itinerary' | 'booking')}

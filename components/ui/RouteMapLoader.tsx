@@ -22,13 +22,14 @@ const RouteMapLoader = ({
   const [userLocation, setUserLocation] = useState<{ lat: number, lng: number } | null>(null);
 
   useEffect(() => {
-        const handleUserLocationUpdate = (e: { detail: React.SetStateAction<{ lat: number; lng: number; } | null>; }) => {
-      setUserLocation(e.detail);
+    const handleUserLocationUpdate = (e: Event) => {
+      const { detail } = e as CustomEvent<{ lat: number; lng: number } | null>;
+      setUserLocation(detail);
     };
-    window.addEventListener('user-location-updated', handleUserLocationUpdate as unknown as EventListener);
+    window.addEventListener('user-location-updated', handleUserLocationUpdate);
     
-    if (disableGeolocation) return
-    if (Array.isArray(points) && points.length >= 2) return
+    if (disableGeolocation) return;
+    if (Array.isArray(points) && points.length >= 2) return;
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -43,7 +44,7 @@ const RouteMapLoader = ({
       );
     }
     return () => {
-      window.removeEventListener('user-location-updated', handleUserLocationUpdate as unknown as EventListener);
+      window.removeEventListener('user-location-updated', handleUserLocationUpdate);
     };
   }, [disableGeolocation, points]);
 
