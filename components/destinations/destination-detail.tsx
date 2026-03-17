@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { ArrowLeft, MapPin, Calendar, Clock, Users, DollarSign, CheckCircle2, ShieldCheck, Bike, Star, Share2, Heart, ChevronRight } from 'lucide-react'
+import { ArrowLeft, MapPin, Calendar, Clock, Users, DollarSign, CheckCircle2, ShieldCheck, Bike, Star, Share2, Heart, ChevronRight, Crown } from 'lucide-react'
 import dynamic from 'next/dynamic'
 
 const RouteMapLoader = dynamic(

@@ -1,32 +1,22 @@
 'use client'
 
-import React, { useState, useEffect, useRef, useMemo } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { 
   MapPin, 
   Calendar, 
   Users, 
   ChevronRight, 
-  Leaf, 
-  Compass, 
-  Utensils, 
-  Award, 
-  Navigation, 
   Sparkles,
-  ArrowLeft,
   Share2,
   Heart,
   Crown,
   Bus,
   Zap,
-  Footprints,
-  Info,
-  History,
-  Coffee
+  Footprints
 } from "lucide-react"
 import Link from 'next/link'
-import Image from 'next/image'
 import { format } from 'date-fns'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -46,10 +36,10 @@ export default function AIPlannerPage() {
   const [travelerCount, setTravelerCount] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
   const [isLiked, setIsLiked] = useState(false)
-  const [aiRoutePoints, setAiRoutePoints] = useState<any[]>([])
-  const [emissionsInfo, setEmissionsInfo] = useState<any>(null)
-  const [ecoPoints, setEcoPoints] = useState<any[]>([])
-  const [expertInsights, setExpertInsights] = useState<any[]>([])
+    const [aiRoutePoints, setAiRoutePoints] = useState<{ lat: number; lng: number; }[]>([])
+  const [emissionsInfo, setEmissionsInfo] = useState<{ total_emissions: number; transport_breakdown: Record<string, unknown>; } | null>(null)
+  const [ecoPoints, setEcoPoints] = useState<{ lat: number; lng: number; label: string; type: string; }[]>([])
+  const [expertInsights, setExpertInsights] = useState<{ title: string; content: string; }[]>([])
   
   const formRef = useRef<HTMLFormElement>(null)
 
@@ -65,8 +55,8 @@ export default function AIPlannerPage() {
     }
   }, [start, end, transport, searchParams]);
 
-  useEffect(() => {
-    const handleAiMapCommand = (e: any) => {
+    useEffect(() => {
+    const handleAiMapCommand = (e: { detail: { action: string; points: { lat: number; lng: number; }[]; emissions_info: { total_emissions: number; transport_breakdown: Record<string, unknown>; }; eco_points: { lat: number; lng: number; label: string; type: string; }[]; expert_insights: { title: string; content: string; }[]; }; }) => {
       console.log("Received AI Map Command:", e.detail);
       const { action, points, emissions_info, eco_points, expert_insights } = e.detail;
       if (action === 'draw_route' && Array.isArray(points)) {
@@ -77,8 +67,8 @@ export default function AIPlannerPage() {
       }
     };
 
-    window.addEventListener('ai-map-command', handleAiMapCommand);
-    return () => window.removeEventListener('ai-map-command', handleAiMapCommand);
+        window.addEventListener('ai-map-command', handleAiMapCommand as unknown as EventListener);
+    return () => window.removeEventListener('ai-map-command', handleAiMapCommand as unknown as EventListener);
   }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -100,8 +90,8 @@ export default function AIPlannerPage() {
       startLocation: start,
       endLocation: end,
       transportMode: transport,
-      distanceKm: emissionsInfo?.distance_km || 0,
-      co2Kg: emissionsInfo?.co2_kg || 0,
+            distanceKm: emissionsInfo?.total_emissions || 0,
+            co2Kg: emissionsInfo?.transport_breakdown || 0,
       routePoints: aiRoutePoints,
       ecoPoints: ecoPoints,
       expertInsights: expertInsights

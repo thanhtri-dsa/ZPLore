@@ -1,9 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
-import { transportModeFactorsGCo2ePerPkm, transportModeLabels } from "@/lib/emissions";
-import prisma from "@/lib/prisma";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+    const _genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 export async function POST(req: Request) {
   try {
@@ -30,7 +28,7 @@ export async function POST(req: Request) {
 
     let text = "";
     let success = false;
-    let errorHistory: string[] = [];
+        const errorHistory: string[] = [];
 
     // Official Google API format
     for (const { version, model } of endpointsToTry) {
@@ -94,7 +92,7 @@ export async function POST(req: Request) {
                   role: "model",
                   parts: [{ text: "Tôi đã hiểu. Tôi sẵn sàng hỗ trợ." }]
                 },
-                ...(history || []).map((h: any) => ({
+                                ...(history || []).map((h: { role: string; parts: any; }) => ({
                   role: h.role === "model" ? "model" : "user",
                   parts: h.parts
                 })),
@@ -125,7 +123,7 @@ export async function POST(req: Request) {
             break; 
           }
         }
-      } catch (e: any) {
+            } catch (e: any) {
         errorHistory.push(`${model} (${version}): Fetch failed - ${e.message}`);
         console.error(`AI DEBUG Fetch Error for ${model} (${version}):`, e.message);
       }

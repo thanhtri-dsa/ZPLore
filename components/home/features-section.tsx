@@ -1,8 +1,6 @@
-import { Button } from "@/components/ui/button"
 import { Clock, Building2, FileText, Search } from 'lucide-react'
 import Image from 'next/image'
 import Link from "next/link"
-import UserAvatars from '@/components/home/user-avartar'
 import { motion } from 'framer-motion'
 
 export function FeaturesSection() {

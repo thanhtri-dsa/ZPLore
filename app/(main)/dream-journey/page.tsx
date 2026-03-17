@@ -52,9 +52,9 @@ export default function DreamJourneyFormPage() {
                   Hành trình <br/>
                   <span className="text-secondary italic">Ước mơ</span>
                 </h1>
-                <p className="text-white/60 text-lg md:text-2xl leading-relaxed italic mb-12 max-w-sm">
-                  "Vượt xa một chuyến đi, đây là bản hòa ca giữa con người và thiên nhiên."
-                </p>
+                                  <p className="text-white/60 text-lg md:text-2xl leading-relaxed italic mb-12 max-w-sm">
+                    &quot;Vượt xa một chuyến đi, đây là bản hòa ca giữa con người và thiên nhiên.&quot;
+                  </p>
                 
                 <div className="grid grid-cols-1 gap-8">
                   {[

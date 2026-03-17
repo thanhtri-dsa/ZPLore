@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { MapContainer, Polyline as LeafletPolyline, TileLayer, useMap, Marker, Popup, Polygon, Pane } from 'react-leaflet'
+import { MapContainer, Polyline as LeafletPolyline, TileLayer, useMap, Marker, Popup, Pane } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 import RoutingMachine from './RoutingMachine'
@@ -174,7 +174,7 @@ const RouteMap: React.FC<RouteMapProps> = ({ points: initialPoints, center, zoom
   }, [initialEcoPoints])
 
   useEffect(() => {
-    const handleAiMapCommand = (e: any) => {
+        const handleAiMapCommand = (e: { detail: { action: string; points: { lat: number; lng: number; }[]; eco_points: { lat: number; lng: number; label: string; type: string; }[]; }; }) => {
       const { action, points: newPoints, eco_points: newEcoPoints } = e.detail
       if (action === 'draw_route' && Array.isArray(newPoints)) {
         setPoints(newPoints)
@@ -184,8 +184,8 @@ const RouteMap: React.FC<RouteMapProps> = ({ points: initialPoints, center, zoom
       }
     }
 
-    window.addEventListener('ai-map-command', handleAiMapCommand)
-    return () => window.removeEventListener('ai-map-command', handleAiMapCommand)
+    window.addEventListener('ai-map-command', handleAiMapCommand as unknown as EventListener)
+    return () => window.removeEventListener('ai-map-command', handleAiMapCommand as unknown as EventListener)
   }, [])
 
   const googleKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
@@ -539,14 +539,16 @@ function LeafletRoute({
 }) {
   const [orsPositions, setOrsPositions] = useState<Array<[number, number]> | null>(null)
 
-  const VIETNAM_BOUNDS = useMemo(() => L.latLngBounds(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const _VIETNAM_BOUNDS = useMemo(() => L.latLngBounds(
     L.latLng(8.0, 102.0), // Southwest
     L.latLng(24.0, 110.0)  // Northeast
   ), [])
 
   const key = useMemo(() => waypoints.map((p) => `${p.lat.toFixed(5)},${p.lng.toFixed(5)}`).join('|'), [waypoints])
 
-  const VIETNAM_MASK = useMemo(() => [
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const _VIETNAM_MASK = useMemo(() => [
     [[-90, -180], [-90, 180], [90, 180], [90, -180]], // World
     [
       [23.4, 105.3], [22.8, 106.5], [21.5, 108.0], [20.5, 106.5], [19.0, 106.0],

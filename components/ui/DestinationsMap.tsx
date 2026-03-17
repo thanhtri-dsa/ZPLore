@@ -169,7 +169,7 @@ const DestinationsMap: React.FC<DestinationsMapProps> = ({ destinations, highlig
   const [ecoPoints, setEcoPoints] = useState<Array<{ lat: number, lng: number, label: string, type: string }>>([])
 
   useEffect(() => {
-    const handleAiMapCommand = (e: any) => {
+        const handleAiMapCommand = (e: { detail: { action: string; points: { lat: number; lng: number; }[]; eco_points: { lat: number; lng: number; label: string; type: string; }[]; }; }) => {
       const { action, points: newPoints, eco_points: newEcoPoints } = e.detail
       if (action === 'draw_route' && Array.isArray(newPoints)) {
         setAiWaypoints(newPoints.map(p => L.latLng(p.lat, p.lng)))
@@ -179,8 +179,8 @@ const DestinationsMap: React.FC<DestinationsMapProps> = ({ destinations, highlig
       }
     }
 
-    window.addEventListener('ai-map-command', handleAiMapCommand)
-    return () => window.removeEventListener('ai-map-command', handleAiMapCommand)
+        window.addEventListener('ai-map-command', handleAiMapCommand as unknown as EventListener)
+    return () => window.removeEventListener('ai-map-command', handleAiMapCommand as unknown as EventListener)
   }, [])
 
   const googleKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY

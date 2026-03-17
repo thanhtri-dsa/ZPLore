@@ -22,10 +22,10 @@ const RouteMapLoader = ({
   const [userLocation, setUserLocation] = useState<{ lat: number, lng: number } | null>(null);
 
   useEffect(() => {
-    const handleUserLocationUpdate = (e: any) => {
+        const handleUserLocationUpdate = (e: { detail: React.SetStateAction<{ lat: number; lng: number; } | null>; }) => {
       setUserLocation(e.detail);
     };
-    window.addEventListener('user-location-updated', handleUserLocationUpdate);
+    window.addEventListener('user-location-updated', handleUserLocationUpdate as unknown as EventListener);
     
     if (disableGeolocation) return
     if (Array.isArray(points) && points.length >= 2) return
@@ -43,7 +43,7 @@ const RouteMapLoader = ({
       );
     }
     return () => {
-      window.removeEventListener('user-location-updated', handleUserLocationUpdate);
+      window.removeEventListener('user-location-updated', handleUserLocationUpdate as unknown as EventListener);
     };
   }, [disableGeolocation, points]);
 

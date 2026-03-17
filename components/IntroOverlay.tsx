@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Sparkles, Leaf, Crown, Bike } from 'lucide-react'
+import { Sparkles, Bike } from 'lucide-react'
 
 export default function IntroOverlay() {
   const [isVisible, setIsVisible] = useState(false)
@@ -118,8 +118,8 @@ export default function IntroOverlay() {
                 <div className="h-[1px] w-12 bg-secondary/40" />
               </div>
 
-              <p className="text-white/60 text-sm md:text-lg max-w-md font-medium italic leading-relaxed">
-                "Kiến tạo di sản xanh qua từng hành trình đẳng cấp."
+                            <p className="text-white/60 text-sm md:text-lg max-w-md font-medium italic leading-relaxed">
+                &quot;Kiến tạo di sản xanh qua từng hành trình đẳng cấp.&quot;
               </p>
             </motion.div>
 

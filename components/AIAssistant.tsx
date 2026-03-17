@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MessageSquare, X, Send, Sparkles, Leaf, Bot, User, Minus, MapPin, History, Coffee, Info, Headphones, Bike } from 'lucide-react'
+import { MessageSquare, X, Send, Sparkles, Leaf, Bot, User, Minus, MapPin, History, Coffee, Info, Headphones, Bike, Zap } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -18,31 +18,31 @@ export default function AIAssistant() {
   const [isMinimized, setIsMinimized] = useState(false)
   const [input, setInput] = useState('')
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null)
-  const [currentTour, setCurrentTour] = useState<any>(null)
+  const [currentTour, setCurrentTour] = useState<Record<string, unknown> | null>(null)
   const [messages, setMessages] = useState<Message[]>([
     { role: 'model', text: 'Xin chào quý khách! Tôi là Trợ lý ZPLore AI, chuyên gia du lịch sinh thái toàn cầu. Tôi có thể giúp bạn thiết kế những "Hành trình ước mơ" độc bản, tính toán lượng phát thải CO2, gợi ý các hành trình xanh, hoặc vẽ lộ trình trực tiếp lên bản đồ cho bạn. Nếu cần hỗ trợ trực tiếp từ nhân viên, hãy nhấn vào biểu tượng tai nghe 🎧 phía trên nhé!' }
   ])
   const [isLoading, setIsLoading] = useState(false)
   const [emissionsInfo, setEmissionsInfo] = useState<{ distance_km: number, co2_kg: number, transport: string } | null>(null)
-  const [expertInsights, setExpertInsights] = useState<any[] | null>(null)
+  const [expertInsights, setExpertInsights] = useState<{title: string, content: string}[] | null>(null)
   const [showEcoDashboard, setShowEcoDashboard] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const handleTourInfo = (e: any) => {
-      setCurrentTour(e.detail);
+    const handleTourInfo = (e: { detail: Record<string, unknown> } | Event) => {
+      if ('detail' in e) setCurrentTour((e as CustomEvent).detail);
     };
-    const handleAiAskRoute = (e: any) => {
+    const handleAiAskRoute = (e: { detail: { tourName: string } } | Event) => {
       setIsOpen(true);
       setIsMinimized(false);
-      setInput(`Chỉ đường cho tôi đến tour ${e.detail.tourName} từ vị trí của tôi.`);
+      if ('detail' in e) setInput(`Chỉ đường cho tôi đến tour ${e.detail.tourName} từ vị trí của tôi.`);
     };
 
-    const handleOpenAiChat = (e: any) => {
+    const handleOpenAiChat = (e: { detail: { prompt: string } } | Event) => {
       setIsOpen(true);
       setIsMinimized(false);
-      if (e.detail.prompt) {
+      if ('detail' in e && e.detail.prompt) {
         // We use a small timeout to ensure the UI is open before sending
         setTimeout(() => {
           triggerAiResponse(e.detail.prompt);
@@ -138,7 +138,7 @@ export default function AIAssistant() {
             const command = JSON.parse(jsonStr);
             if (command.action === 'draw_route' && command.points) {
               // GEOFENCING: Validate points are in Vietnam
-              let validPoints = command.points.filter((p: any) => isInsideVietnam(p.lat, p.lng));
+              let validPoints = command.points.filter((p: { lat: number, lng: number }) => isInsideVietnam(p.lat, p.lng));
               
               // HARD FIX: Force Da Nang for North-South trips if missing
               const startPoint = validPoints[0];
@@ -147,7 +147,7 @@ export default function AIAssistant() {
               const isNorthToSouth = startPoint && endPoint && 
                                     startPoint.lat > 19 && endPoint.lat < 12;
               
-              const hasDanang = validPoints.some((p: any) => 
+              const hasDanang = validPoints.some((p: { lat: number, lng: number }) => 
                 p.lat > 15.5 && p.lat < 16.5 && p.lng > 107.5 && p.lng < 108.5
               );
 
@@ -157,7 +157,7 @@ export default function AIAssistant() {
                 validPoints.push(danangPoint);
                 
                 // Sort points by latitude descending (North to South) to ensure correct route order
-                validPoints.sort((a: any, b: any) => b.lat - a.lat);
+                validPoints.sort((a: { lat: number }, b: { lat: number }) => b.lat - a.lat);
               }
 
               if (validPoints.length < command.points.length) {
@@ -517,8 +517,8 @@ export default function AIAssistant() {
             setIsOpen(true)
             setIsMinimized(false)
           }}
-          className="fixed bottom-[100px] right-6 w-16 h-16 bg-primary text-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex items-center justify-center z-[9999] group overflow-hidden"
-         >>
+                    className="fixed bottom-[100px] right-6 w-16 h-16 bg-primary text-white rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex items-center justify-center z-[9999] group overflow-hidden"
+         >
           <div className="absolute inset-0 bg-gradient-to-tr from-primary via-primary to-emerald-800 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           <div className="relative z-10">
             <MessageSquare size={28} className="group-hover:scale-110 transition-transform duration-500" />

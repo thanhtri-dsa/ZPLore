@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { ArrowLeft, MapPin, Calendar, Clock, Users, DollarSign, Crown, Share2, Heart, ShieldCheck, ChevronRight, Leaf, Compass, Utensils, Award, Navigation, Play, Square, Info, Sparkles } from "lucide-react"
+import { ArrowLeft, MapPin, Calendar, Users, Crown, Share2, Heart, ChevronRight, Leaf, Navigation, Play, Square, Info, Sparkles } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { computeDistanceKm, computeLegKgCo2e, normalizeMode, transportModeLabels, haversineDistanceKm, TransportMode } from '@/lib/emissions'
 import { format } from "date-fns"
@@ -63,7 +63,7 @@ interface FormErrors {
 
 // --- Sub-components moved outside to ensure stability ---
 
-const InfoTabContent = ({ travelPackage }: { travelPackage: PackageDestinationProps['package'] }) => (
+const InfoTabContent = ({ travelPackage: _travelPackage }: { travelPackage: PackageDestinationProps['package'] }) => (
   
     <div className="bg-white/80 backdrop-blur-md p-8 md:p-16 rounded-[3rem] shadow-sm border border-white relative overflow-hidden">
       <div className="absolute top-0 right-0 opacity-[0.05] vn-pattern w-64 h-64 rotate-12 -mr-10 -mt-10" />
@@ -89,14 +89,14 @@ const ItineraryTabContent = ({
   googleTripUrl: string | null
   showMapPanel: boolean
   setShowMapPanel: (v: boolean) => void
-  mapPoints: any
+  mapPoints: { lat: number; lng: number; label?: string }[] | undefined
   isTracking: boolean
   setIsTracking: (v: boolean) => void
   trackedDistance: number
   trackedEmissions: number
   trackingMode: TransportMode
   setTrackingMode: (v: TransportMode) => void
-  itinerarySummary: any
+  itinerarySummary: { legs: { id: string, fromName: string, toName: string, mode: string, kgCo2e?: number | null }[] }
 }) => (
   <div className="space-y-8 md:space-y-12">
     <div className="bg-white p-5 md:p-10 rounded-3xl md:rounded-[3rem] shadow-sm border border-gray-100">
@@ -169,7 +169,7 @@ const ItineraryTabContent = ({
           </motion.div>
         )}
         <div className="mt-8 space-y-6 relative pl-8 border-l-2 border-dashed border-primary/20">
-          {itinerarySummary.legs.map((leg: any, index: number) => (
+          {itinerarySummary.legs.map((leg: { id: string, fromName: string, toName: string, mode: string, kgCo2e?: number | null }, index: number) => (
             <div key={leg.id} className="relative">
               <div className="absolute -left-[41px] top-0 bg-white p-2 rounded-full border-2 border-primary text-primary">
                 <Navigation size={14} />
@@ -315,10 +315,10 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
   const [bookingDate, setBookingDate] = useState<Date>()
   const [isLoading, setIsLoading] = useState(false)
   const [showMapPanel, setShowMapPanel] = useState(false)
-  const [errors, setErrors] = useState<FormErrors>({})
+    const [_errors, setErrors] = useState<FormErrors>({})
   const [isLiked, setIsLiked] = useState(false)
   const [travelerCount, setTravelerCount] = useState(1)
-  const [aiPoints, setAiPoints] = useState<any[] | null>(null)
+    const [aiPoints, setAiPoints] = useState<{ lat: number; lng: number; }[] | null>(null)
   const formRef = useRef<HTMLFormElement>(null)
 
   // Mobile Tab State
@@ -390,15 +390,15 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
   }, [itinerarySummary.legs])
 
   // Listen for AI Map Commands
-  useEffect(() => {
-    const handleAiMapCommand = (e: any) => {
+    useEffect(() => {
+    const handleAiMapCommand = (e: { detail: { action: string; points: { lat: number; lng: number; }[]; }; }) => {
       if (e.detail && e.detail.action === 'draw_route' && e.detail.points) {
         setAiPoints(e.detail.points);
         setActiveTab('itinerary'); // Switch to itinerary tab to show map
       }
     };
-    window.addEventListener('ai-map-command', handleAiMapCommand);
-    return () => window.removeEventListener('ai-map-command', handleAiMapCommand);
+        window.addEventListener('ai-map-command', handleAiMapCommand as unknown as EventListener);
+    return () => window.removeEventListener('ai-map-command', handleAiMapCommand as unknown as EventListener);
   }, []);
 
   // Broadcast current tour info for AIAssistant
@@ -452,9 +452,9 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
     const requestWakeLock = async () => {
       if ('wakeLock' in navigator && isTracking) {
         try {
-          const lock = await (navigator as any).wakeLock.request('screen');
+                    const lock = await (navigator as any).wakeLock.request('screen');
           setWakeLock(lock);
-        } catch (err) {
+        } catch (err: unknown) {
           console.error(`Wake Lock Error: ${err}`);
         }
       }
@@ -492,7 +492,7 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
             setLastCoords(newCoords);
           }
         },
-        (error) => {
+                (error: GeolocationPositionError) => {
           console.error("Tracking error:", error);
           toast.error("Lỗi định vị. Vui lòng kiểm tra GPS.");
           setIsTracking(false);
@@ -659,8 +659,8 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
             { id: 'booking', label: 'Đặt Tour', icon: Calendar },
           ].map((tab) => (
             <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+                            key={tab.id}
+              onClick={() => setActiveTab(tab.id as 'info' | 'itinerary' | 'booking')}
               className={`flex-1 flex flex-col items-center py-4 transition-all relative ${activeTab === tab.id ? 'text-primary' : 'text-gray-400'}`}
             >
               <tab.icon size={20} className="mb-1" />
