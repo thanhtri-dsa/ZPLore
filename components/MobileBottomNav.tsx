@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, MapPin, Package, BookOpen, User } from 'lucide-react'
+import { Home, MapPin, Package, BookOpen, User, Sparkles } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 const MobileBottomNav = () => {
@@ -12,6 +12,7 @@ const MobileBottomNav = () => {
   const navItems = [
     { label: 'Trang chủ', href: '/', icon: Home },
     { label: 'Hành trình', href: '/destinations', icon: MapPin },
+    { label: 'Ước mơ', href: '/dream-journey', icon: Sparkles },
     { label: 'Gói tour', href: '/packages', icon: Package },
     { label: 'Tin tức', href: '/blogs', icon: BookOpen },
     { label: 'Cá nhân', href: '/management-portal/dashboard', icon: User },

@@ -202,6 +202,7 @@ const Navbar = () => {
 const MobileNav = ({ onClose }: { onClose: () => void }) => {
   const navItems = [
     { label: 'Trang chủ', href: '/' },
+    { label: 'Hành trình ước mơ', href: '/dream-journey' },
     { label: 'Hành trình', href: '/destinations' },
     { label: 'Gói du lịch', href: '/packages' },
     { label: 'Tin tức', href: '/blogs' },

@@ -1053,6 +1053,9 @@ body {
 .z-\[60\] {
   z-index: 60;
 }
+.z-\[90\] {
+  z-index: 90;
+}
 .z-\[9999\] {
   z-index: 9999;
 }
@@ -3070,6 +3073,9 @@ body {
 .pb-6 {
   padding-bottom: 1.5rem;
 }
+.pb-\[calc\(env\(safe-area-inset-bottom\)\+12px\)\] {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 12px);
+}
 .pb-\[calc\(env\(safe-area-inset-bottom\)\+16px\)\] {
   padding-bottom: calc(env(safe-area-inset-bottom) + 16px);
 }
@@ -3628,6 +3634,11 @@ body {
 .shadow-\[0_-5px_20px_rgba\(0\2c 0\2c 0\2c 0\.05\)\] {
   --tw-shadow: 0 -5px 20px rgba(0,0,0,0.05);
   --tw-shadow-colored: 0 -5px 20px var(--tw-shadow-color);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+.shadow-\[0_-8px_30px_rgba\(0\2c 0\2c 0\2c 0\.08\)\] {
+  --tw-shadow: 0 -8px 30px rgba(0,0,0,0.08);
+  --tw-shadow-colored: 0 -8px 30px var(--tw-shadow-color);
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
 .shadow-\[0_0_0_1px_hsl\(var\(--sidebar-border\)\)\] {

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { FeaturesSection } from "@/components/home/features-section"
 import { BlogsSection } from "@/components/home/offers-section"
 import { CategoriesSection } from "@/components/home/categories-section"
@@ -199,6 +200,18 @@ export default function HomePage() {
       <EcoProductsSection />
       <BlogsSection />
       <WorldMap />
+      
+      {/* Mobile Quick Actions */}
+      <div className="fixed bottom-0 left-0 right-0 z-[90] md:hidden px-4 pb-[calc(env(safe-area-inset-bottom)+12px)] pt-2 bg-white/80 backdrop-blur-xl border-t border-gray-100 shadow-[0_-8px_30px_rgba(0,0,0,0.08)]">
+        <div className="flex items-center gap-3">
+          <Link href="/dream-journey" className="flex-1 h-12 rounded-2xl bg-secondary text-primary font-black uppercase tracking-widest text-[10px] shadow-2xl flex items-center justify-center">
+            Khám phá ngay
+          </Link>
+          <Link href="/contact" className="h-12 px-4 rounded-2xl bg-primary text-white font-black uppercase tracking-widest text-[10px] flex items-center justify-center">
+            Liên hệ
+          </Link>
+        </div>
+      </div>
     </main>
   )
 }

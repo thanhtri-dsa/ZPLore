@@ -65,7 +65,7 @@ model PackageBooking {
 }
 
 model Package {
-  id          String           @id @default(cuid())
+  id          String                @id @default(cuid())
   name        String
   location    String
   imageData   String?
@@ -73,8 +73,8 @@ model Package {
   groupSize   String
   price       Float
   description String
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
   authorId    String
   authorName  String
   included    Included[]
@@ -90,22 +90,21 @@ model Included {
 }
 
 model PackageItineraryLeg {
-  id          String   @id @default(cuid())
-  packageId   String
-  order       Int
-  mode        String
-  fromName    String
-  toName      String
-  distanceKm  Float?
-  fromLat     Float?
-  fromLng     Float?
-  toLat       Float?
-  toLng       Float?
-  note        String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  package     Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  id         String   @id @default(cuid())
+  packageId  String
+  order      Int
+  mode       String
+  fromName   String
+  toName     String
+  distanceKm Float?
+  fromLat    Float?
+  fromLng    Float?
+  toLat      Float?
+  toLng      Float?
+  note       String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  package    Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
 }
 
 model KeepAlive {
@@ -115,29 +114,24 @@ model KeepAlive {
 }
 
 model AIPlannerBooking {
-  id              String    @id @default(cuid())
-  firstname       String
-  lastname        String
-  email           String
-  phone           String?
-  status          String    @default("PENDING")
-  bookingDate     DateTime?
-  numberOfGuests  Int       @default(1)
-  
-  // Journey Details
-  startLocation   String
-  endLocation     String
-  transportMode   String
-  distanceKm      Float?
-  co2Kg           Float?
-  
-  // AI Generated Data (JSON stringified)
-  routePoints     String?   @db.Text
-  ecoPoints       String?   @db.Text
-  expertInsights  String?   @db.Text
-  
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id             String    @id @default(cuid())
+  firstname      String
+  lastname       String
+  email          String
+  phone          String?
+  status         String    @default("PENDING")
+  bookingDate    DateTime?
+  numberOfGuests Int       @default(1)
+  startLocation  String
+  endLocation    String
+  transportMode  String
+  distanceKm     Float?
+  co2Kg          Float?
+  routePoints    String?
+  ecoPoints      String?
+  expertInsights String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 }
 
 model Destination {

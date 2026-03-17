@@ -21,15 +21,10 @@
       "static/chunks/main-app.js",
       "static/chunks/app/not-found.js"
     ],
-    "/(main)/dream-journey/page": [
+    "/_not-found/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(main)/dream-journey/page.js"
-    ],
-    "/(main)/ai-planner/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(main)/ai-planner/page.js"
+      "static/chunks/app/_not-found/page.js"
     ]
   }
 }

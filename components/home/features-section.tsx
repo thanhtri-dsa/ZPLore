@@ -67,7 +67,7 @@ export function FeaturesSection() {
                   Đặt hành trình ngay
                 </motion.button>
               </Link>
-              <Link href="/about">
+              {/* <Link href="/about">
                 <motion.button 
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -75,7 +75,7 @@ export function FeaturesSection() {
                 >
                   Về chúng tôi
                 </motion.button>
-              </Link>
+              </Link> */}
             </div>
           </motion.div>
 
