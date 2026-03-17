@@ -1,0 +1,158 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  role      String   @default("ADMIN")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Blog {
+  id         String   @id @default(cuid())
+  title      String
+  content    String
+  authorId   String
+  tags       String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  authorName String
+  imageData  String?
+}
+
+model Booking {
+  id              String    @id @default(cuid())
+  firstname       String
+  lastname        String
+  email           String
+  phone           String
+  country         String?
+  status          String    @default("PENDING")
+  bookingDate     DateTime?
+  numberOfGuests  Int       @default(1)
+  specialRequests String?
+  destinationName String?
+  price           Float?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model PackageBooking {
+  id              String    @id @default(cuid())
+  firstname       String
+  lastname        String
+  email           String
+  phone           String
+  country         String?
+  status          String    @default("PENDING")
+  bookingDate     DateTime?
+  numberOfGuests  Int       @default(1)
+  specialRequests String?
+  packageId       String
+  price           Float
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  package         Package   @relation(fields: [packageId], references: [id])
+}
+
+model Package {
+  id          String           @id @default(cuid())
+  name        String
+  location    String
+  imageData   String?
+  duration    String
+  groupSize   String
+  price       Float
+  description String
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  authorId    String
+  authorName  String
+  included    Included[]
+  bookings    PackageBooking[]
+  itinerary   PackageItineraryLeg[]
+}
+
+model Included {
+  id        String  @id @default(cuid())
+  item      String
+  packageId String
+  package   Package @relation(fields: [packageId], references: [id])
+}
+
+model PackageItineraryLeg {
+  id          String   @id @default(cuid())
+  packageId   String
+  order       Int
+  mode        String
+  fromName    String
+  toName      String
+  distanceKm  Float?
+  fromLat     Float?
+  fromLng     Float?
+  toLat       Float?
+  toLng       Float?
+  note        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  package     Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
+}
+
+model KeepAlive {
+  id     Int     @id @default(autoincrement())
+  name   String? @default("")
+  random String? @default(uuid())
+}
+
+model AIPlannerBooking {
+  id              String    @id @default(cuid())
+  firstname       String
+  lastname        String
+  email           String
+  phone           String?
+  status          String    @default("PENDING")
+  bookingDate     DateTime?
+  numberOfGuests  Int       @default(1)
+  
+  // Journey Details
+  startLocation   String
+  endLocation     String
+  transportMode   String
+  distanceKm      Float?
+  co2Kg           Float?
+  
+  // AI Generated Data (JSON stringified)
+  routePoints     String?   @db.Text
+  ecoPoints       String?   @db.Text
+  expertInsights  String?   @db.Text
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model Destination {
+  id          String   @id @default(cuid())
+  name        String
+  country     String
+  city        String
+  amount      Float
+  tags        String
+  imageData   String?
+  description String
+  daysNights  Int
+  tourType    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  latitude    Float?
+  longitude   Float?
+}

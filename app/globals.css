@@ -1,0 +1,449 @@
+/* Tailwind base styles */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Define custom color variables for the light and dark modes */
+@layer base {
+  :root {
+    --background: 140 40% 96%; /* Very light eco green background */
+    --foreground: 0 0% 10%; 
+    --card: 140 40% 96%; 
+    --card-foreground: 0 0% 10%; 
+    --popover: 140 40% 96%; 
+    --popover-foreground: 0 0% 10%; 
+    --primary: 159 100% 19%; /* Traditional Deep Green (#006241) */
+    --primary-foreground: 140 40% 96%; /* Light green text on green */
+    --secondary: 45 100% 50%; /* Vibrant Golden Yellow (#FFB800) */
+    --secondary-foreground: 175 77% 15%; 
+    --muted: 140 20% 90%; 
+    --muted-foreground: 0 0% 40%; 
+    --accent: 45 100% 50%; /* Golden Accent */
+    --accent-foreground: 140 40% 96%; 
+    --destructive: 0 84.2% 60.2%; 
+    --destructive-foreground: 0 0% 98%; 
+    --border: 140 20% 85%; 
+    --input: 140 20% 85%; 
+    --ring: 159 100% 19%; 
+    --radius: 0.5rem; 
+    --chart-1: 159 100% 19%; 
+    --chart-2: 60 100% 50%; 
+    --chart-3: 2 83% 49%; 
+    --chart-4: 43 74% 66%; 
+    --chart-5: 27 87% 67%; 
+    --sidebar-background: 140 40% 96%; 
+    --sidebar-foreground: 0 0% 10%; 
+    --sidebar-primary: 159 100% 19%; 
+    --sidebar-primary-foreground: 140 40% 96%; 
+    --sidebar-accent: 140 20% 90%; 
+    --sidebar-accent-foreground: 0 0% 10%; 
+    --sidebar-border: 140 20% 85%; 
+    --sidebar-ring: 159 100% 19%;
+  }
+
+  /* Dark theme variables */
+  .dark {
+    --background: 159 100% 5%; /* Very dark green background */
+    --foreground: 45 100% 98%; /* Cream text */
+    --card: 159 100% 5%; 
+    --card-foreground: 45 100% 98%; 
+    --popover: 159 100% 5%; 
+    --popover-foreground: 45 100% 98%; 
+    --primary: 159 100% 19%; 
+    --primary-foreground: 45 100% 98%; 
+    --secondary: 45 100% 50%; /* Golden Yellow in dark mode too */
+    --secondary-foreground: 159 100% 5%; 
+    --muted: 159 50% 15%; 
+    --muted-foreground: 45 20% 70%; 
+    --accent: 45 100% 40%; /* Darker gold accent */
+    --accent-foreground: 45 100% 98%; 
+    --destructive: 0 62.8% 30.6%; 
+    --destructive-foreground: 0 0% 98%; 
+    --border: 159 50% 20%; 
+    --input: 159 50% 20%; 
+    --ring: 2 83% 49%; 
+    --chart-1: 2 83% 49%; 
+    --chart-2: 60 100% 50%; 
+    --chart-3: 159 100% 19%; 
+    --chart-4: 280 65% 60%; 
+    --chart-5: 340 75% 55%; 
+    --sidebar-background: 159 100% 5%; 
+    --sidebar-foreground: 45 100% 98%; 
+    --sidebar-primary: 2 83% 49%; 
+    --sidebar-primary-foreground: 45 100% 98%; 
+    --sidebar-accent: 159 50% 15%; 
+    --sidebar-accent-foreground: 45 100% 98%; 
+    --sidebar-border: 159 50% 20%; 
+    --sidebar-ring: 2 83% 49%;
+  }
+}
+
+/* Vietnamese Traditional Patterns & Styles */
+@layer components {
+  .vn-pattern {
+    background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 20.5V18l2.5-2.5L25 18v2.5l-2.5 2.5L20 20.5zm0-15V3l2.5-2.5L25 3v2.5l-2.5 2.5L20 5.5zm0 30V33l2.5-2.5L25 33v2.5l-2.5 2.5L20 35.5zM5.5 20.5V18l2.5-2.5L10.5 18v2.5l-2.5 2.5L5.5 20.5zm30 0V18l2.5-2.5L40.5 18v2.5l-2.5 2.5L35.5 20.5z' fill='%23006241' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
+  }
+
+  .vn-pattern-gold {
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 30c0-16.57 13.43-30 30-30v60c-16.57 0-30-13.43-30-30zM0 30c0 16.57 13.43 30 30 30V0C13.43 0 0 13.43 0 30z' fill='%23FFB800' fill-opacity='0.03'/%3E%3C/svg%3E");
+  }
+
+  .glass-morphism {
+    @apply bg-white/40 backdrop-blur-xl border border-white/40 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)];
+  }
+
+  .glass-morphism-gold {
+    @apply bg-secondary/20 backdrop-blur-xl border border-secondary/30 shadow-[0_8px_32px_0_rgba(255,184,0,0.1)];
+  }
+
+  .glass-morphism-dark {
+    @apply bg-black/40 backdrop-blur-xl border border-white/10 shadow-2xl;
+  }
+
+  /* Custom Scrollbar for Chat Box */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: hsla(159, 100%, 19%, 0.2); /* --primary with opacity */
+    border-radius: 10px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: hsla(159, 100%, 19%, 0.4);
+  }
+
+  .vn-title {
+    @apply font-serif text-primary tracking-tight;
+    position: relative;
+    padding-bottom: 0.75rem;
+  }
+
+  .vn-title-gold {
+    @apply font-serif text-secondary tracking-tight;
+    position: relative;
+    padding-bottom: 0.75rem;
+  }
+
+  /* Premium Shine Effect */
+  .shine-effect {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .shine-effect::after {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+      to bottom right,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.1) 40%,
+      rgba(255, 255, 255, 0.4) 50%,
+      rgba(255, 255, 255, 0.1) 60%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    transform: rotate(45deg);
+    transition: all 0.7s;
+    opacity: 0;
+  }
+
+  .shine-effect:hover::after {
+    left: 100%;
+    top: 100%;
+    opacity: 1;
+  }
+
+  /* Parallax Background Helper */
+  .parallax-bg {
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+
+  .vn-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 60px;
+    height: 4px;
+    background: theme('colors.secondary.DEFAULT');
+    border-radius: 2px;
+  }
+
+  .vn-title-gold::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 60px;
+    height: 4px;
+    background: theme('colors.primary.DEFAULT');
+    border-radius: 2px;
+  }
+
+  .vn-card {
+    @apply bg-card border border-border rounded-2xl shadow-sm hover:shadow-2xl transition-all duration-500 overflow-hidden;
+    position: relative;
+    backdrop-filter: blur(10px);
+  }
+
+  .vn-card:hover {
+    transform: translateY(-10px);
+    border-color: theme('colors.secondary.DEFAULT');
+  }
+
+  .vn-card-vip {
+    @apply vn-card border-secondary/30 bg-gradient-to-br from-primary/5 to-secondary/5;
+  }
+
+  .vn-card-vip:hover {
+    @apply border-secondary shadow-[0_0_30px_rgba(255,255,0,0.15)];
+  }
+
+  .vn-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.05));
+    pointer-events: none;
+  }
+
+  .vn-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 120px;
+    height: 120px;
+    background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M100 0L0 100h100V0z' fill='%23FFB800' fill-opacity='0.05'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Custom Smooth Scroll & Selection */
+  ::selection {
+    background-color: theme('colors.primary.DEFAULT');
+    color: white;
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: theme('colors.background');
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: theme('colors.primary.DEFAULT');
+    border-radius: 5px;
+    border: 3px solid theme('colors.background');
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: theme('colors.secondary.DEFAULT');
+  }
+
+/* Shine Animation for VIP Cards */
+@keyframes shine-gold {
+  0% { transform: translateX(-100%) rotate(45deg); }
+  100% { transform: translateX(100%) rotate(45deg); }
+}
+
+.animate-shine-gold {
+  position: relative;
+  overflow: hidden;
+}
+
+.animate-shine-gold::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 184, 0, 0.2),
+    transparent
+  );
+  animation: shine-gold 3s infinite;
+}
+
+/* Floating Animation */
+@keyframes floating {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-floating {
+  animation: floating 3s ease-in-out infinite;
+}
+
+/* Modern & Premium Styles for Leaflet Routing Machine */
+.leaflet-routing-container {
+  border: none !important;
+  background: rgba(255, 255, 255, 0.85) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border-radius: 24px !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1) !important;
+  font-family: inherit !important;
+  max-width: 340px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+  padding: 10px !important;
+}
+
+/* Hide the turn-by-turn itinerary completely */
+.leaflet-routing-itinerary, 
+.leaflet-routing-alt, 
+.leaflet-routing-alt-table,
+.leaflet-routing-itinerary-container {
+  display: none !important;
+}
+
+.leaflet-routing-geocoders {
+  padding: 5px !important;
+}
+
+.leaflet-routing-geocoder {
+  position: relative !important;
+  margin-bottom: 12px !important;
+}
+
+.leaflet-routing-geocoder:first-child::before {
+  content: 'FROM';
+  position: absolute;
+  left: 12px;
+  top: -8px;
+  font-size: 9px;
+  font-weight: 800;
+  color: #10b981;
+  background: white;
+  padding: 0 6px;
+  border-radius: 4px;
+  z-index: 10;
+  letter-spacing: 0.05em;
+}
+
+.leaflet-routing-geocoder:last-child::before {
+  content: 'TO';
+  position: absolute;
+  left: 12px;
+  top: -8px;
+  font-size: 9px;
+  font-weight: 800;
+  color: #ef4444;
+  background: white;
+  padding: 0 6px;
+  border-radius: 4px;
+  z-index: 10;
+  letter-spacing: 0.05em;
+}
+
+.leaflet-routing-geocoder input {
+  border: 2px solid #f1f5f9 !important;
+  border-radius: 14px !important;
+  padding: 12px 16px !important;
+  outline: none !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  width: 100% !important;
+  background: white !important;
+  font-size: 14px !important;
+  color: #1e293b !important;
+  font-weight: 500 !important;
+}
+
+.leaflet-routing-geocoder input:focus {
+  border-color: #10b981 !important;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1) !important;
+  transform: translateY(-1px) !important;
+}
+
+.leaflet-routing-add-waypoint {
+  background-color: #10b981 !important;
+  color: white !important;
+  border-radius: 10px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  padding: 8px 16px !important;
+  border: none !important;
+  margin-top: 4px !important;
+  cursor: pointer !important;
+  transition: all 0.2s !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+}
+
+.leaflet-routing-add-waypoint:hover {
+  background-color: #059669 !important;
+  transform: scale(1.02) !important;
+}
+
+/* Geocoder search results list */
+.leaflet-control-geocoder-alternatives {
+  background: white !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+  margin-top: 8px !important;
+  border: 1px solid #f1f5f9 !important;
+  overflow: hidden !important;
+}
+
+.leaflet-control-geocoder-alternatives li {
+  padding: 10px 15px !important;
+  font-size: 13px !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  transition: background 0.2s !important;
+}
+
+.leaflet-control-geocoder-alternatives li:hover {
+  background: #f0fdf4 !important;
+  color: #059669 !important;
+}
+}
+
+/* Apply theme variables */
+body {
+  color: hsl(var(--foreground));
+  background-color: hsl(var(--background));
+  font-family: Georgia, 'Times New Roman', serif, Helvetica, sans-serif;
+}
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply text-foreground;
+  }
+}
+
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: hsl(var(--border));
+  stroke-opacity: 0.2;
+}
+
+.recharts-tooltip {
+  border-radius: var(--radius);
+  background: hsl(var(--background));
+  border: 1px solid hsl(var(--border));
+  box-shadow: var(--shadow);
+}
