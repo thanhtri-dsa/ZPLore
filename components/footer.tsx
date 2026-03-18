@@ -27,12 +27,14 @@ const TawkToWidget = () => {
     
     const style = document.createElement('style');
     style.textContent = `
-      /* Wrap container that Tawk uses for the floating button */
-      #tawk-to-widget, #tawkchat-minified-container, .tawk-min-container {
-        bottom: calc(env(safe-area-inset-bottom, 0px) + 76px) !important;
-        right: 16px !important;
+      /* Vị trí widget chat: nổi hẳn lên trên khung bottom nav */
+      #tawk-to-widget,
+      #tawkchat-minified-container,
+      .tawk-min-container {
+        bottom: calc(env(safe-area-inset-bottom, 0px) + 150px) !important; /* cao hơn hẳn nav */
+        right: 20px !important;
         margin: 0 !important;
-        z-index: 90 !important; /* dưới bottom nav (100) để không che icon */
+        z-index: 120 !important; /* nổi trên nav nhưng không che phím hệ điều hành */
       }
 
       #tawk-to-widget {
@@ -41,10 +43,13 @@ const TawkToWidget = () => {
       }
 
       @media (max-width: 640px) {
-        #tawk-to-widget, #tawkchat-minified-container, .tawk-min-container {
-          bottom: calc(env(safe-area-inset-bottom, 0px) + 88px) !important;
-          right: 14px !important;
+        #tawk-to-widget,
+        #tawkchat-minified-container,
+        .tawk-min-container {
+          bottom: calc(env(safe-area-inset-bottom, 0px) + 160px) !important;
+          right: 24px !important;
         }
+
         #tawk-to-widget {
           height: 44px !important;
           width: 44px !important;
