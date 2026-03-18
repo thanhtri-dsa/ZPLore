@@ -1,6 +1,7 @@
 'use client'
 import React, { useState, useEffect } from 'react';
-import { Facebook, Instagram, Twitter, Linkedin, Send, ChevronUp, Star, Bike } from 'lucide-react';
+import Image from 'next/image'
+import { Facebook, Instagram, Twitter, Linkedin, Send, ChevronUp, Star } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import {
   Accordion,
@@ -115,7 +116,7 @@ const ScrollToTopButton: React.FC = () => {
   );
 };
 
-const EcoTourismFooter: React.FC = () => {
+const LangNgheTravelFooter: React.FC = () => {
   const currentYear = new Date().getFullYear();
   const [email, setEmail] = useState('');
   const [subscribeStatus, setSubscribeStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
@@ -163,7 +164,7 @@ const EcoTourismFooter: React.FC = () => {
       <div className="relative z-10 overflow-hidden text-white">
         <div
           className="relative z-20 h-16 sm:h-24 md:h-32 w-full -scale-y-[1] bg-contain bg-repeat-x"
-          style={{ backgroundImage: "url('/images/footer.png')" }}
+          style={{ backgroundImage: "url('/images/banner_style.png')" }}
         />
       </div>
 
@@ -177,13 +178,21 @@ const EcoTourismFooter: React.FC = () => {
                   <div className="mb-6 md:mb-8">
                     <div className="flex items-center gap-3 justify-center lg:justify-start mb-4">
                       <div className="p-2 bg-secondary/10 rounded-xl border border-secondary/20">
-                        <Bike className="w-6 h-6 text-secondary" />
+                        <div className="relative w-7 h-7">
+                          <Image
+                            src="/images/lang-nghe-travel-logo.svg.png"
+                            alt="Làng Nghề Travel"
+                            fill
+                            sizes="28px"
+                            className="object-contain"
+                          />
+                        </div>
                       </div>
                       <h2 className="text-2xl md:text-3xl font-bold text-secondary font-serif">
-                        ZPLore Việt Nam
+                        Làng Nghề Travel
                       </h2>
                     </div>
-                    <p className="text-xs md:text-sm text-white/90 uppercase tracking-widest mt-1">Trải nghiệm du lịch bền vững</p>
+                    <p className="text-xs md:text-sm text-white/90 uppercase tracking-widest mt-1">Tour làng nghề & văn hóa Việt</p>
                   </div>
                   <h3 className="font-heading text-4xl md:text-6xl font-bold text-white mb-6 leading-tight">
                     <span>Sẵn sàng cho </span>
@@ -192,8 +201,8 @@ const EcoTourismFooter: React.FC = () => {
                     <span>?</span>
                   </h3>
                   <p className="text-sm md:text-base text-white/70 mb-8 leading-relaxed">
-                    Đăng ký nhận tin để cập nhật những mẹo du lịch thân thiện với môi trường, 
-                    ưu đãi đặc biệt và thông tin về các điểm đến bền vững.
+                    Đăng ký nhận tin để cập nhật lịch tour làng nghề, workshop trải nghiệm,
+                    ưu đãi đặc biệt và các câu chuyện văn hóa địa phương.
                   </p>
                   
                   {/* Newsletter Form */}
@@ -262,31 +271,31 @@ const EcoTourismFooter: React.FC = () => {
                     Hỏi đáp du lịch
                   </div>
                   <h4 className="text-2xl md:text-3xl font-serif font-bold text-white mb-8">
-                    Giải đáp thắc mắc về <br/>du lịch xanh
+                    Giải đáp thắc mắc về <br/>tour làng nghề
                   </h4>
                   <Accordion type="single" collapsible className="w-full space-y-4">
                     <AccordionItem value="item-1" className="border-white/10 bg-white/5 px-6 rounded-2xl overflow-hidden">
                       <AccordionTrigger className="text-sm md:text-base font-bold hover:no-underline hover:text-secondary py-5">
-                        Du lịch sinh thái là gì?
+                        Tour làng nghề là gì?
                       </AccordionTrigger>
                       <AccordionContent className="text-sm md:text-base text-white/60 leading-relaxed pb-6">
-                        Du lịch sinh thái là loại hình du lịch dựa vào thiên nhiên, gắn với bản sắc văn hóa địa phương với sự tham gia của cộng đồng nhằm bảo tồn môi trường và phát triển bền vững.
+                        Tour làng nghề là hành trình khám phá các làng nghề truyền thống, gặp gỡ nghệ nhân, tìm hiểu quy trình thủ công và trải nghiệm làm sản phẩm gắn với văn hóa địa phương.
                       </AccordionContent>
                     </AccordionItem>
                     <AccordionItem value="item-2" className="border-white/10 bg-white/5 px-6 rounded-2xl overflow-hidden">
                       <AccordionTrigger className="text-sm md:text-base font-bold hover:no-underline hover:text-secondary py-5">
-                        Làm sao để giảm thiểu tác động?
+                        Có thể trải nghiệm những gì?
                       </AccordionTrigger>
                       <AccordionContent className="text-sm md:text-base text-white/60 leading-relaxed pb-6">
-                        Chúng tôi giảm thiểu tác động thông qua các hoạt động như sử dụng năng lượng tái tạo, hạn chế rác thải nhựa, hỗ trợ bảo tồn địa phương và giáo dục du khách về trách nhiệm bảo vệ môi trường.
+                        Tùy điểm đến, bạn có thể tham gia workshop (gốm, mây tre đan, dệt), thưởng thức ẩm thực địa phương, tham quan xưởng, chụp ảnh làng nghề và mua sản phẩm chính gốc.
                       </AccordionContent>
                     </AccordionItem>
                     <AccordionItem value="item-3" className="border-white/10 bg-white/5 px-6 rounded-2xl overflow-hidden">
                       <AccordionTrigger className="text-sm md:text-base font-bold hover:no-underline hover:text-secondary py-5">
-                        Dịch vụ lưu trú xanh là thế nào?
+                        Đi tour có phù hợp gia đình không?
                       </AccordionTrigger>
                       <AccordionContent className="text-sm md:text-base text-white/60 leading-relaxed pb-6">
-                        Các cơ sở lưu trú xanh của chúng tôi ưu tiên sử dụng vật liệu tự nhiên, hệ thống xử lý nước hiện đại, thực phẩm hữu cơ địa phương và không gian mở hòa hợp với thiên nhiên.
+                        Phù hợp. Nhiều tour thiết kế cho gia đình và nhóm bạn, có hoạt động nhẹ nhàng cho trẻ em, thời gian linh hoạt và hướng dẫn viên hỗ trợ suốt hành trình.
                       </AccordionContent>
                     </AccordionItem>
                   </Accordion>
@@ -330,8 +339,8 @@ const EcoTourismFooter: React.FC = () => {
 
                 {/* Copyright */}
                 <div className="text-center lg:text-right">
-                  <p className="text-[10px] text-white/30 uppercase tracking-[0.2em]">© {currentYear} PHẠM THÀNH TRI - ZPLore Việt Nam</p>
-                  <p className="text-[10px] text-white/20 mt-1 italic">Kiến tạo hành trình bền vững</p>
+                  <p className="text-[10px] text-white/30 uppercase tracking-[0.2em]">© {currentYear} Làng Nghề Travel</p>
+                  <p className="text-[10px] text-white/20 mt-1 italic">Hành trình về nguồn cội</p>
                 </div>
               </div>
             </div>
@@ -343,4 +352,4 @@ const EcoTourismFooter: React.FC = () => {
   );
 };
 
-export default EcoTourismFooter;
+export default LangNgheTravelFooter;

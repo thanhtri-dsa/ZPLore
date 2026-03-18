@@ -76,18 +76,21 @@ export default function GreenTravelPage() {
       {/* 🌿 Banner */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0">
-          <Image src="/images/forest.jpg" alt="Du lịch xanh" fill className="object-cover" priority />
+          <Image
+            src="/images/forest.jpg"
+            alt="Du lịch xanh"
+            fill
+            sizes="100vw"
+            className="object-cover"
+            priority
+          />
           <div className="absolute inset-0 bg-gradient-to-b from-primary/85 via-primary/55 to-background" />
           <div className="absolute inset-0 vn-pattern opacity-[0.10]" />
         </div>
 
         <div className="container mx-auto px-4 pt-28 md:pt-32 pb-16 md:pb-20 relative">
           <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 rounded-full bg-secondary/20 px-4 py-2 text-[10px] md:text-xs font-black text-white uppercase tracking-[0.22em] border border-white/15 backdrop-blur-xl">
-              <Leaf className="w-4 h-4 text-secondary" />
-              DU LỊCH XANH
-            </div>
-
+            <div className="inline-flex items-center gap-2 rounded-full bg-secondary/20 px-4 py-2 text-[10px] md:text-xs font-black text-white uppercase tracking-[0.22em] border border-white/15 backdrop-blur-xl"></div>
             <h1 className="mt-6 text-4xl sm:text-5xl md:text-6xl font-serif font-black tracking-tight text-white leading-[1.05] drop-shadow-2xl">
               Du lịch không phát thải
             </h1>
@@ -157,7 +160,13 @@ export default function GreenTravelPage() {
             ].map((c) => (
               <Link key={c.title} href={c.href} className="vn-card group overflow-hidden">
                 <div className="relative h-44">
-                  <Image src={c.img} alt={c.title} fill className="object-cover transition-transform duration-700 group-hover:scale-105" />
+                  <Image
+                    src={c.img}
+                    alt={c.title}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
                   <div className="absolute inset-0 bg-gradient-to-t from-primary/70 via-primary/10 to-transparent" />
                 </div>
                 <div className="p-6 relative z-10">
@@ -225,7 +234,13 @@ export default function GreenTravelPage() {
             <div className="lg:col-span-7">
               <div className="vn-card-vip overflow-hidden">
                 <div className="relative h-[340px] md:h-[420px]">
-                  <Image src="/images/travel_detsinations.jpg" alt="Green impact" fill className="object-cover" />
+                  <Image
+                    src="/images/travel_detsinations.jpg"
+                    alt="Green impact"
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 60vw"
+                    className="object-cover"
+                  />
                   <div className="absolute inset-0 bg-gradient-to-t from-primary/70 via-primary/20 to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10">
                     <div className="glass-morphism-dark rounded-[2.5rem] p-6 border border-white/10">

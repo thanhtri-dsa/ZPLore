@@ -27,7 +27,7 @@ type BookingWithEmail = {
 async function sendStatusEmail(booking: BookingWithEmail) {
   const emailContent = {
     APPROVED: {
-        subject: 'Booking Update - Forestline Tours and Travels',
+        subject: 'Booking Update - Làng Nghề Travel',
       text: `Dear ${booking.firstname},
 
 We are pleased to inform you that your booking has been confirmed. Here are your booking details:
@@ -36,15 +36,15 @@ Date: ${booking.bookingDate ? new Date(booking.bookingDate).toLocaleDateString()
 Number of Guests: ${booking.numberOfGuests}
 ${booking.destinationName ? `Destination: ${booking.destinationName}` : ''}
 ${booking.specialRequests ? `Special Requests: ${booking.specialRequests}` : ''}
-${booking.price ? `Total Amount: KES ${booking.price.toLocaleString()}` : ''}
+${booking.price ? `Total Amount: ${booking.price.toLocaleString()}` : ''}
 
 We're looking forward to hosting you!
 
 Best regards,
-Forestline Tours and Travels Team`
+Làng Nghề Travel Team`
     },
     REJECTED: {
-      subject: 'Booking Update - Forestline Tours and Travels',
+      subject: 'Booking Update - Làng Nghề Travel',
       text: `Dear ${booking.firstname},
 
 We regret to inform you that we are unable to accommodate your booking request at this time.
@@ -52,7 +52,7 @@ We regret to inform you that we are unable to accommodate your booking request a
 If you have any questions or would like to explore alternative options, please don't hesitate to contact us.
 
 Best regards,
-Forestline Tours and Travels Team` 
+Làng Nghề Travel Team` 
     }
   }
 

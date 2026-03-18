@@ -1,8 +1,8 @@
-- Dashboard admin: /management-portal/dashboard
-- Tạo tour (gói du lịch / package): /management-portal/create-packages
-- Quản lý tour đã tạo: /management-portal/manage-packages
-- Tạo điểm đến: /management-portal/create-destinations
-- Quản lý điểm đến: /management-portal/manage-destinations
+- Dashboard admin: /admin/dashboard
+- Tạo tour (gói du lịch / package): /admin/create-packages
+- Quản lý tour đã tạo: /admin/manage-packages
+- Tạo điểm đến: /admin/create-destinations
+- Quản lý điểm đến: /admin/manage-destinations
 - Chạy lại:
 - npx prisma generate ✅ 
 - npx prisma db push ✅ 

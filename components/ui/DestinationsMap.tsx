@@ -3,9 +3,13 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Destination } from '@/types/destinations'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Circle as LeafletCircle, CircleMarker as LeafletCircleMarker, MapContainer, Marker, TileLayer, Tooltip, useMap, useMapEvents } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
+import leafletMarkerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
+import leafletMarkerIcon from 'leaflet/dist/images/marker-icon.png'
+import leafletMarkerShadow from 'leaflet/dist/images/marker-shadow.png'
 import RoutingMachine from './RoutingMachine'
 
 type GoogleMaps = {
@@ -280,16 +284,28 @@ const DestinationsMap: React.FC<DestinationsMapProps> = ({ destinations, highlig
   const leafletIcon = useMemo(
     () =>
       L.icon({
-        iconUrl: '/images/marker-icon.png',
+        iconUrl: leafletMarkerIcon.src ?? (leafletMarkerIcon as unknown as string),
         iconSize: [25, 41],
         iconAnchor: [12, 41],
         // Open popup BELOW the marker (per UX request)
         popupAnchor: [0, 18],
-        shadowUrl: '/images/marker-shadow.png',
+        shadowUrl: leafletMarkerShadow.src ?? (leafletMarkerShadow as unknown as string),
         shadowSize: [41, 41],
       }),
     []
   )
+
+  // Ensure Leaflet's default icon URLs are wired when markers are created elsewhere.
+  // This avoids 404s for `/images/marker-*.png` in Next.js.
+  useEffect(() => {
+    // @ts-expect-error Leaflet's icon default typing is loose; this is a standard override.
+    delete L.Icon.Default.prototype._getIconUrl
+    L.Icon.Default.mergeOptions({
+      iconRetinaUrl: leafletMarkerIcon2x.src ?? (leafletMarkerIcon2x as unknown as string),
+      iconUrl: leafletMarkerIcon.src ?? (leafletMarkerIcon as unknown as string),
+      shadowUrl: leafletMarkerShadow.src ?? (leafletMarkerShadow as unknown as string),
+    })
+  }, [])
 
   useEffect(() => {
     let isCancelled = false
@@ -500,7 +516,7 @@ const DestinationsMap: React.FC<DestinationsMapProps> = ({ destinations, highlig
       }
       map = null
     }
-  }, [allPoints, googleKey, googleReady, highlightCenter, highlightRadius, highlightedPoints, isClient, provider, validDestinations])
+  }, [allPoints, googleKey, googleReady, highlightCenter, highlightRadius, highlightedPoints, isClient, provider, validDestinations, extraMarkers, extraPoints, fixedBounds])
 
   useEffect(() => {
     if (provider !== 'mapbox') return
@@ -618,7 +634,7 @@ const DestinationsMap: React.FC<DestinationsMapProps> = ({ destinations, highlig
       } catch {}
       map = null
     }
-  }, [allPoints, highlightCenter, highlightRadius, highlightedPoints, isClient, mapboxReady, mapboxToken, provider, validDestinations])
+  }, [allPoints, highlightCenter, highlightRadius, highlightedPoints, isClient, mapboxReady, mapboxToken, provider, validDestinations, extraPoints, extraMarkers, fixedBounds])
 
   if (!isClient) return null
 
@@ -733,15 +749,17 @@ const DestinationsMap: React.FC<DestinationsMapProps> = ({ destinations, highlig
             {activeId === dest.id ? (
               <Tooltip direction="bottom" offset={[0, 20]} opacity={1} interactive>
                 <div className="p-1 w-[240px]">
-                  <div className="w-full h-28 rounded-xl overflow-hidden border border-white/50 mb-3 bg-muted/30">
-                    <img
+                  <div className="w-full h-28 rounded-xl overflow-hidden border border-white/50 mb-3 bg-muted/30 relative">
+                    <Image
                       src={
                         typeof dest.imageData === 'string' && dest.imageData.trim().length > 0 && dest.imageData !== '/images/saigon.jpg'
                           ? dest.imageData
                           : "/images/travel_detsinations.jpg"
                       }
                       alt={dest.name}
-                      className="w-full h-full object-cover"
+                      fill
+                      sizes="240px"
+                      className="object-cover"
                     />
                   </div>
                   <h3 className="font-black text-primary m-0 leading-snug">{dest.name}</h3>

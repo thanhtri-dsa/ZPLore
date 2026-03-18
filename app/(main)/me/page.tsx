@@ -24,7 +24,7 @@ export default function MePage() {
                   Xem gói tour
                 </Button>
               </Link>
-              <a href="/management-portal/dashboard">
+              <a href="/admin/dashboard">
                 <Button variant="outline" className="rounded-2xl font-black uppercase tracking-[0.18em] text-[11px]">
                   Mở Dashboard
                 </Button>

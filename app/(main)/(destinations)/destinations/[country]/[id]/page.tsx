@@ -5,11 +5,11 @@ import DestinationDetail from '@/components/destinations/destination-detail'
 
 export async function generateMetadata({ params }: { params: { id: string } }) {
   const destination = await getDestinationById(params.id)
-  if (!destination) return { title: 'Destination Not Found' }
+  if (!destination) return { title: 'Không tìm thấy điểm đến' }
 
   return {
-    title: `${destination.name} | Forestline Tours`,
-    description: `Explore ${destination.name} in ${destination.country} with Forestline Tours.`,
+    title: `${destination.name} | Làng Nghề Travel`,
+    description: `Khám phá ${destination.name} tại ${destination.country} cùng Làng Nghề Travel.`,
   }
 }
 

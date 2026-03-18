@@ -44,8 +44,8 @@ function SignUpWithClerk() {
     <div className="min-h-screen w-full flex items-center justify-center bg-green-100 p-4">
       <div className="w-full max-w-md">
         <SignUp 
-          fallbackRedirectUrl="/" 
-          signInFallbackRedirectUrl="/management-portal/dashboard" 
+          forceRedirectUrl="/admin"
+          signInUrl="/sign-in"
         />
       </div>
     </div>

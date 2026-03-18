@@ -38,10 +38,10 @@ type PackageBookingWithEmail = {
 async function sendPackageStatusEmail(booking: PackageBookingWithEmail) {
   const emailContent = {
     APPROVED: {
-      subject: 'Package Booking Confirmation - Forestline Tours and Travels',
+      subject: 'Package Booking Confirmation - Làng Nghề Travel',
       text: `Dear ${booking.firstname} ${booking.lastname},
 
-Thank you for choosing Forestline Tours and Travels. We are delighted to confirm your package booking.
+Thank you for choosing Làng Nghề Travel. We are delighted to confirm your package booking.
 
 Booking Details:
 ---------------
@@ -62,19 +62,19 @@ Next Steps:
 4. Our team will reach out shortly with additional information about your itinerary
 
 For any queries, please contact us at:
-Phone: ${process.env.COMPANY_PHONE || '+254 XXX XXX XXX'}
+Phone: ${process.env.COMPANY_PHONE || '+84 XXX XXX XXX'}
 Email: ${process.env.EMAIL_USER}
 
 We're excited to help you create unforgettable travel memories!
 
 Best regards,
-Forestline Tours and Travels Team`,
+Làng Nghề Travel Team`,
     },
     REJECTED: {
-      subject: 'Package Booking Update - Forestline Tours and Travels',
+      subject: 'Package Booking Update - Làng Nghề Travel',
       text: `Dear ${booking.firstname} ${booking.lastname},
 
-Thank you for your interest in booking a package with Forestline Tours and Travels.
+Thank you for your interest in booking a package with Làng Nghề Travel.
 
 We regret to inform you that we are unable to confirm your package booking request at this time for the following destination: ${booking.destinationName || 'requested package'}.
 
@@ -90,13 +90,13 @@ We would be happy to:
 3. Work with you to create a custom package that better suits your needs
 
 Please feel free to contact us to discuss alternatives or for any clarification:
-Phone: ${process.env.COMPANY_PHONE || '+254 XXX XXX XXX'}
+Phone: ${process.env.COMPANY_PHONE || '+84 XXX XXX XXX'}
 Email: ${process.env.EMAIL_USER}
 
 We appreciate your understanding and hope to serve you in the future.
 
 Best regards,
-Forestline Tours and Travels Team`,
+Làng Nghề Travel Team`,
     }
   }
 

@@ -1,21 +1,22 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Sparkles, Bike } from 'lucide-react'
+import { Sparkles } from 'lucide-react'
 
 export default function IntroOverlay() {
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
     // Check if intro has been shown in this session
-    const hasShownIntro = sessionStorage.getItem('ecoTourIntroShown')
+    const hasShownIntro = sessionStorage.getItem('langNgheTravelIntroShown')
     if (!hasShownIntro) {
       setIsVisible(true)
       // Hide after 4 seconds and save to session
       const timer = setTimeout(() => {
         setIsVisible(false)
-        sessionStorage.setItem('ecoTourIntroShown', 'true')
+        sessionStorage.setItem('langNgheTravelIntroShown', 'true')
       }, 4500)
       return () => clearTimeout(timer)
     }
@@ -61,7 +62,7 @@ export default function IntroOverlay() {
                 left: `${Math.random() * 100}%` 
               }}
             >
-              <Bike size={40 + i * 20} />
+              <Sparkles size={40 + i * 20} />
             </motion.div>
           ))}
 
@@ -78,13 +79,20 @@ export default function IntroOverlay() {
               }}
               className="mb-8 relative"
             >
-              <div className="w-24 h-24 md:w-32 md:h-32 bg-secondary rounded-[2rem] flex items-center justify-center shadow-[0_0_50px_rgba(212,175,55,0.3)] relative z-10">
-                <Bike className="w-12 h-12 md:w-16 md:h-16 text-primary" strokeWidth={2.5} />
+              <div className="w-24 h-24 md:w-32 md:h-32 bg-white rounded-[2rem] flex items-center justify-center shadow-[0_0_50px_rgba(212,175,55,0.18)] relative z-10 border border-white/10 overflow-hidden">
+                <Image
+                  src="/images/lang-nghe-travel-logo.svg.png"
+                  alt="Làng Nghề Travel"
+                  width={96}
+                  height={96}
+                  className="w-16 h-16 md:w-20 md:h-20 object-contain"
+                  priority
+                />
               </div>
               <motion.div 
                 animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
                 transition={{ duration: 2, repeat: Infinity }}
-                className="absolute inset-0 bg-secondary rounded-[2rem] blur-2xl -z-10"
+                className="absolute inset-0 bg-secondary/40 rounded-[2rem] blur-2xl -z-10"
               />
               <div className="absolute -inset-4 border border-secondary/20 rounded-[2.5rem] animate-[spin_10s_linear_infinite]" />
             </motion.div>
@@ -97,7 +105,7 @@ export default function IntroOverlay() {
                 transition={{ duration: 0.8, ease: "easeOut", delay: 0.5 }}
                 className="text-5xl md:text-8xl font-serif font-black text-white tracking-tighter"
               >
-                ZPLore <span className="text-secondary italic">VIP</span>
+                Làng Nghề <span className="text-secondary italic">Travel</span>
               </motion.h1>
             </div>
 
@@ -112,14 +120,14 @@ export default function IntroOverlay() {
                 <div className="h-[1px] w-12 bg-secondary/40" />
                 <div className="flex items-center gap-1.5">
                   <Sparkles size={14} className="text-secondary animate-pulse" />
-                  <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.4em] text-secondary/80">Premium Sustainable Travel</span>
+                  <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.4em] text-secondary/80">Hành Trình Về Nguồn Cội</span>
                   <Sparkles size={14} className="text-secondary animate-pulse" />
                 </div>
                 <div className="h-[1px] w-12 bg-secondary/40" />
               </div>
 
                             <p className="text-white/60 text-sm md:text-lg max-w-md font-medium italic leading-relaxed">
-                &quot;Kiến tạo di sản xanh qua từng hành trình đẳng cấp.&quot;
+                &quot;Khám phá làng nghề, gặp gỡ nghệ nhân và lưu giữ tinh hoa Việt.&quot;
               </p>
             </motion.div>
 

@@ -74,8 +74,8 @@ type StoredPackage = {
   updatedAt: number
 }
 
-const RECENT_PACKAGES_KEY = 'ecoTour.recent.packages.v1'
-const FAVORITE_PACKAGES_KEY = 'ecoTour.favorites.packages.v1'
+const RECENT_PACKAGES_KEY = 'langNgheTravel.recent.packages.v1'
+const FAVORITE_PACKAGES_KEY = 'langNgheTravel.favorites.packages.v1'
 const MAX_RECENT_PACKAGES = 12
 const MAX_FAVORITE_PACKAGES = 50
 
@@ -336,7 +336,7 @@ const ItineraryTabContent = ({
                             <img src={img} alt={title} className="w-full h-full object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-xs font-black text-primary/40">
-                              ZPLore
+                              Làng Nghề
                             </div>
                           )}
                         </div>
@@ -602,7 +602,7 @@ const BookingForm = ({
       </motion.div>
 
       <p className="text-[9px] text-center text-gray-400 font-medium px-4">
-        Bằng cách nhấn xác nhận, bạn đồng ý với các <span className="text-primary font-bold">Điều khoản & Chính sách</span> bảo mật của ZPLore VIP.
+        Bằng cách nhấn xác nhận, bạn đồng ý với các <span className="text-primary font-bold">Điều khoản & Chính sách</span> bảo mật của Làng Nghề Travel.
       </p>
     </form>
   </div>

@@ -52,8 +52,8 @@ type StoredDestination = {
   updatedAt: number
 }
 
-const RECENT_DESTINATIONS_KEY = 'ecoTour.recent.destinations.v1'
-const FAVORITE_DESTINATIONS_KEY = 'ecoTour.favorites.destinations.v1'
+const RECENT_DESTINATIONS_KEY = 'langNgheTravel.recent.destinations.v1'
+const FAVORITE_DESTINATIONS_KEY = 'langNgheTravel.favorites.destinations.v1'
 const MAX_RECENT_DESTINATIONS = 12
 const MAX_FAVORITE_DESTINATIONS = 50
 
@@ -354,10 +354,10 @@ export default function DestinationDetail({ destination }: DestinationDetailProp
                   <Bike size={48} className="text-secondary" />
                 </div>
                 <div>
-                  <h3 className="text-2xl font-serif font-black mb-2">Đặc quyền Thành viên VIP</h3>
-                  <p className="text-white/60 text-sm leading-relaxed">Nhận ngay xe đưa đón hạng sang tại sân bay, hướng dẫn viên riêng và bữa tối 5 sao khi đặt tour qua hệ thống ZPLore VIP.</p>
+                  <h3 className="text-2xl font-serif font-black mb-2">Đặc quyền thành viên</h3>
+                  <p className="text-white/60 text-sm leading-relaxed">Ưu tiên hỗ trợ đặt lịch workshop, hướng dẫn viên am hiểu làng nghề và quà tặng lưu niệm khi đặt tour qua Làng Nghề Travel.</p>
                 </div>
-                <Button className="bg-secondary text-primary font-black px-8 py-6 rounded-2xl whitespace-nowrap hover:bg-white transition-all">Nâng cấp VIP</Button>
+                <Button className="bg-secondary text-primary font-black px-8 py-6 rounded-2xl whitespace-nowrap hover:bg-white transition-all">Xem ưu đãi</Button>
               </div>
             </div>
 
@@ -525,7 +525,7 @@ export default function DestinationDetail({ destination }: DestinationDetailProp
                   </Button>
                   
                   <p className="text-[9px] text-center text-gray-400 px-4">
-                    Bằng cách nhấn xác nhận, bạn đồng ý với các <Link href="/terms" className="text-secondary underline">điều khoản dịch vụ</Link> của ZPLore Việt Nam.
+                    Bằng cách nhấn xác nhận, bạn đồng ý với các <Link href="/terms" className="text-secondary underline">điều khoản dịch vụ</Link> của Làng Nghề Travel.
                   </p>
                 </form>
               </div>

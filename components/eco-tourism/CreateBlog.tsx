@@ -172,7 +172,7 @@ function CreateBlogInner({ isSignedIn, userId, redirectToSignIn }: { isSignedIn:
         description: "Blog post created successfully",
       })
 
-      router.push('/management-portal/manage-blogs')
+      router.push('/admin/manage-blogs')
     } catch (error) {
       console.error('Error in handleSubmit:', error)
       toast({

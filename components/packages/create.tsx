@@ -146,7 +146,7 @@ export function CreatePackageForm() {
       }
 
       toast.success('Package created successfully')
-      router.push(`/management-portal/manage-packages`)
+      router.push(`/admin/manage-packages`)
     } catch (error) {
       console.error('Error creating package:', error)
       toast.error('Failed to create package')

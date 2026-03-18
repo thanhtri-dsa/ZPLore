@@ -8,18 +8,18 @@ import { Button } from "@/components/ui/button";
 export default function AboutPage() {
   const teamMembers = [
     {
-      name: "Amani Ochieng",
-      role: "Founder & CEO",
+      name: "Ngọc Anh",
+      role: "Điều phối tour & vận hành",
       img: "1539701938214-0d9736e1c16b",
     },
     {
-      name: "Zuri Kimani",
-      role: "Head of Conservation",
+      name: "Hải Nam",
+      role: "Trải nghiệm làng nghề",
       img: "1573497019940-1c28c88b4f3e",
     },
     {
-      name: "Jabari Muthomi",
-      role: "Community Liaison",
+      name: "Thu Trang",
+      role: "Cộng đồng & đối tác địa phương",
       img: "1560250097-0b93528c311a",
     },
   ];
@@ -27,15 +27,15 @@ export default function AboutPage() {
   const coreValues = [
     {
       icon: TreePine,
-      title: "Environmental Conservation",
+      title: "Tôn trọng di sản",
       description:
-        "Leading efforts in helping Africa transition to a green economy through eco-friendly travel solutions.",
+        "Gìn giữ bản sắc làng nghề bằng cách tôn trọng văn hóa địa phương và lan tỏa giá trị thủ công truyền thống.",
     },
     {
       icon: Users,
-      title: "Memorable Experiences",
+      title: "Trải nghiệm chân thật",
       description:
-        "Creating unforgettable adventures while maintaining focus on environmental conservation.",
+        "Thiết kế hành trình gần gũi, có chiều sâu: gặp nghệ nhân, trải nghiệm làm nghề và kết nối cộng đồng.",
     },
   ];
   
@@ -54,7 +54,7 @@ export default function AboutPage() {
           />
           <div className="absolute inset-0 flex items-center justify-center">
             <h1 className="text-4xl md:text-5xl font-bold text-white drop-shadow-lg text-center px-4 capitalize">
-              About Us
+              Về Làng Nghề Travel
             </h1>
           </div>
         </div>
@@ -74,11 +74,11 @@ export default function AboutPage() {
         <div className="text-center mb-8 md:mb-12 lg:mb-16">
           <div className="inline-flex items-center justify-center mb-4 md:mb-6">
             <span className="text-xs sm:text-sm md:text-base font-semibold uppercase tracking-wide text-green-800 bg-green-100 px-2 sm:px-3 py-1 rounded-full">
-              Nurture Nature and Experience the Adventure
+              Hành trình về nguồn cội
             </span>
           </div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 md:mb-6 leading-tight">
-            Welcome to <span className="text-green-600">Forestline</span> Tours
+            Chào mừng đến với <span className="text-green-600">Làng Nghề</span> Travel
           </h2>
         </div>
 
@@ -96,22 +96,22 @@ export default function AboutPage() {
                     </span>
                   </div>
                   <h3 className="text-2xl md:text-3xl font-bold text-gray-800">
-                    Leading Eco-Friendly Tourism
+                    Kết nối tinh hoa làng nghề Việt
                   </h3>
                   <p className="text-gray-600 text-base md:text-lg leading-relaxed">
-                    Được sáng lập bởi chuyên gia Phạm Thành Tri, ZPLore đang vươn mình trở thành công ty du lịch hàng đầu với phương pháp tiếp cận thân thiện với môi trường. Chúng tôi tận tâm cách mạng hóa trải nghiệm du lịch của bạn để thúc đẩy những kỷ niệm đáng nhớ đồng thời bảo tồn môi trường.
+                    Làng Nghề Travel được xây dựng để đưa bạn đến gần hơn với những giá trị truyền thống: từ gốm, dệt, mây tre đan đến các nghề thủ công đặc sắc trên khắp Việt Nam. Chúng tôi tập trung vào trải nghiệm chân thật, có hướng dẫn, và tôn trọng cộng đồng địa phương.
                   </p>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex items-center gap-3">
                       <Globe className="text-green-500" size={20} />
                       <span className="text-gray-700 text-sm md:text-base">
-                        Eco-Friendly
+                        Bản sắc
                       </span>
                     </div>
                     <div className="flex items-center gap-3">
                       <TreePine className="text-green-500" size={20} />
                       <span className="text-gray-700 text-sm md:text-base">
-                        Conservation
+                        Trải nghiệm
                       </span>
                     </div>
                   </div>
@@ -119,7 +119,7 @@ export default function AboutPage() {
                 <div className="relative aspect-square md:aspect-[4/5]">
                   <Image
                     src="https://images.unsplash.com/photo-1516426122078-c23e76319801"
-                    alt="Eco-tourism landscape"
+                    alt="Làng nghề Việt Nam"
                     fill
                     className="rounded-2xl object-cover shadow-lg transition-transform hover:scale-[1.02]"
                   />
@@ -134,20 +134,20 @@ export default function AboutPage() {
             <div className="bg-green-50 rounded-2xl shadow-lg p-6 md:p-8">
               <div className="text-center mb-8">
                 <h3 className="text-2xl md:text-3xl font-bold text-gray-800 mb-3">
-                  Our Services
+                  Dịch vụ
                 </h3>
                 <p className="text-gray-600">
-                  Comprehensive eco-friendly travel solutions
+                  Hành trình làng nghề, workshop và trải nghiệm văn hóa
                 </p>
               </div>
               <div className="space-y-4">
                 <div className="bg-white/50 p-4 rounded-xl">
                   <ul className="list-disc ml-5 text-gray-700">
-                    <li>Wildlife Safaris</li>
-                    <li>Adventure Tours</li>
-                    <li>Cultural Experiences</li>
-                    <li>Event and Conference Management</li>
-                    <li>Flight Bookings and Travel Planning</li>
+                    <li>Tour làng nghề truyền thống</li>
+                    <li>Workshop trải nghiệm thủ công</li>
+                    <li>Tour văn hóa & ẩm thực địa phương</li>
+                    <li>Thiết kế hành trình theo nhóm/đoàn</li>
+                    <li>Đặt xe, hướng dẫn viên và hỗ trợ lịch trình</li>
                   </ul>
                 </div>
               </div>
@@ -156,10 +156,10 @@ export default function AboutPage() {
             {/* Environmental Impact */}
             <div className="bg-green-50 rounded-2xl shadow-lg p-6 md:p-8">
               <h3 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4">
-                Environmental Impact
+                Tác động cộng đồng
               </h3>
               <p className="text-gray-600 text-sm leading-relaxed">
-                Biến đổi khí hậu đặt ra thách thức lớn cho ngành du lịch. Thông qua cách tiếp cận thân thiện với môi trường, Phạm Thành Tri và đội ngũ ZPLore cam kết hỗ trợ quá trình chuyển đổi sang nền kinh tế xanh của Việt Nam trong khi vẫn giữ gìn vẻ đẹp tự nhiên của các điểm đến.
+                Chúng tôi ưu tiên hợp tác trực tiếp với nghệ nhân và hộ gia đình làm nghề, giúp trải nghiệm du lịch mang lại giá trị thực cho cộng đồng địa phương và góp phần lan tỏa, bảo tồn nghề truyền thống.
               </p>
             </div>
           </div>
@@ -169,10 +169,10 @@ export default function AboutPage() {
         <div className="mb-16">
           <div className="text-center mb-8">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-              Our Core Values
+              Giá trị cốt lõi
             </h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              Dedicated to sustainable tourism and environmental conservation
+              Tôn trọng di sản – trải nghiệm chân thật – kết nối cộng đồng
             </p>
           </div>
           <div className="grid md:grid-cols-2 gap-8">
@@ -203,10 +203,10 @@ export default function AboutPage() {
         {/* Team Section */}
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-            Meet Our Team
+            Đội ngũ của chúng tôi
           </h2>
           <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
-            Passionate Kenyans dedicated to sustainable tourism and conservation
+            Những con người yêu văn hóa Việt, đồng hành cùng bạn trong từng trải nghiệm làng nghề.
           </p>
           <Link href="/careers">
             <Button
@@ -214,7 +214,7 @@ export default function AboutPage() {
               size="lg"
               className="bg-green-500 hover:bg-green-600 text-white transform transition hover:scale-105"
             >
-              Join Our Team
+              Gia nhập đội ngũ
             </Button>
           </Link>
         </div>

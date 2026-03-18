@@ -27,23 +27,23 @@ export function FeaturesSection() {
             <div>
               <div className="inline-flex items-center gap-3 rounded-full bg-secondary/10 px-6 py-2 text-[10px] text-primary font-black uppercase tracking-[0.2em] mb-8 shadow-sm border border-secondary/20">
                 <span className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
-                Dịch vụ thượng lưu
+                Trải nghiệm làng nghề
               </div>
               <h2 className="text-4xl md:text-6xl font-serif font-black leading-tight mb-8 text-primary">
                 Định nghĩa lại <br/>
-                <span className="text-secondary italic">sự sang trọng</span> bền vững
+                <span className="text-secondary italic">trải nghiệm</span> làng nghề
               </h2>
               <p className="text-muted-foreground text-xl leading-relaxed italic border-l-4 border-secondary pl-8">
-                &quot;Mỗi hành trình tại ZPLore không chỉ là một kỳ nghỉ, mà là một sự kết nối sâu sắc với di sản và thiên nhiên và kết nối khách hàng với mô hình tour mới nhất .&quot;
+                &quot;Mỗi hành trình tại Làng Nghề Travel không chỉ là chuyến đi, mà là một kết nối sâu sắc với di sản, con người và văn hóa địa phương.&quot;
               </p>
             </div>
 
             <div className="grid gap-8 sm:grid-cols-2">
               {[
-                { icon: Clock, title: "Hỗ trợ 24/7", desc: "Chuyên gia phục vụ riêng biệt" },
-                { icon: Building2, title: "Địa điểm phong phú ", desc: "Tinh hoa kiến trúc Việt" },
-                { icon: FileText, title: "Lịch trình độc lập ", desc: "Thiết kế riêng cho bạn" },
-                { icon: Search, title: "Khám phá bí mật", desc: "Những điểm đến ẩn giấu" },
+                { icon: Clock, title: "Hỗ trợ 24/7", desc: "Giải đáp nhanh, hỗ trợ suốt hành trình" },
+                { icon: Building2, title: "Làng nghề đặc sắc", desc: "Gốm, dệt, mây tre đan và hơn thế nữa" },
+                { icon: FileText, title: "Lịch trình linh hoạt", desc: "Thiết kế theo nhóm, gia đình, đoàn" },
+                { icon: Search, title: "Trải nghiệm thực hành", desc: "Workshop làm nghề cùng nghệ nhân" },
               ].map((item, idx) => (
                 <div key={idx} className="flex gap-6 p-6 rounded-3xl bg-gray-50 hover:bg-secondary/10 transition-all duration-500 group border border-transparent hover:border-secondary/20">
                   <div className="flex-shrink-0 rounded-2xl bg-white p-4 shadow-xl shadow-gray-200/50 group-hover:scale-110 transition-transform">

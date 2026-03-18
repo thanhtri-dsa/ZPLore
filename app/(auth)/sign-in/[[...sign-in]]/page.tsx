@@ -17,7 +17,7 @@ export default function Page() {
             Trang admin đang chạy chế độ dev không cần Clerk. Vào thẳng dashboard để tạo tour.
           </div>
           <a
-            href="/management-portal/dashboard"
+            href="/admin"
             className="inline-flex items-center justify-center w-full h-11 rounded-xl bg-primary text-white font-bold"
           >
             Mở Dashboard
@@ -36,14 +36,17 @@ function SignInWithClerk() {
 
   useEffect(() => {
     if (isSignedIn) {
-      router.push('/management-portal/dashboard')
+      router.push('/admin')
     }
   }, [isSignedIn, router])
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-green-100 p-4">
       <div className="w-full max-w-md">
-        <SignIn />
+        <SignIn
+          forceRedirectUrl="/admin"
+          signUpUrl="/sign-up"
+        />
       </div>
     </div>
   )

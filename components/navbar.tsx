@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { Menu, ChevronRight, Phone, Mail, Search, User, Globe, X, Star, Sparkles, Bike, ArrowUpRight } from 'lucide-react'
 import { Button } from "@/components/ui/button"
@@ -45,22 +46,22 @@ const Navbar = () => {
   }, [])
 
   const promotions = [
-    "🌟 Ưu đãi 20% cho tour khám phá Tây Bắc",
-    "🍃 Trải nghiệm du lịch bền vững tại Hội An",
-    "💎 Thành viên VIP được giảm thêm 10% tất cả dịch vụ",
-    "🌍 Khám phá thế giới cùng ZPLore Việt Nam"
+    "🌾 Khám phá làng nghề truyền thống – ưu đãi hấp dẫn",
+    "🏺 Trải nghiệm làm gốm, dệt lụa cùng nghệ nhân",
+    "🌿 Du lịch xanh kết hợp văn hóa làng nghề " ,
+    "🎨 Workshop thủ công – tự tay tạo sản phẩm độc đáo"
   ]
 
   return (
     <div className="fixed top-0 left-0 right-0 z-[9999] w-full transition-all duration-500">
       {/* Scroll Progress Bar */}
       <motion.div 
-        className="absolute bottom-0 left-0 h-[3px] bg-secondary z-[10000]"
+        className="absolute bottom-0 left-0 h-[3px] bg-emerald-500 z-[10000]"
         style={{ scaleX, originX: 0 }}
       />
 
       {/* Top Bar Ticker */}
-      <div className={`hidden md:block bg-primary text-white/80 border-b border-white/5 transition-all duration-700 overflow-hidden ${isScrolled ? 'h-7 opacity-90' : 'h-10 opacity-100'}`}>
+      <div className={`hidden md:block bg-white/80 text-primary border-b border-primary/10 backdrop-blur-2xl transition-all duration-700 overflow-hidden ${isScrolled ? 'h-7 opacity-95' : 'h-10 opacity-100'}`}>
         <div className="container mx-auto px-4 h-full flex justify-between items-center text-[10px] font-bold tracking-[0.1em] uppercase">
           <div className="flex items-center space-x-6">
             <div className="flex items-center gap-4 overflow-hidden w-[300px] relative">
@@ -70,34 +71,36 @@ const Navbar = () => {
                 className="whitespace-nowrap flex gap-8"
               >
                 {promotions.map((promo, idx) => (
-                  <span key={idx} className="text-secondary">{promo}</span>
+                  <span key={idx} className="text-emerald-700">{promo}</span>
                 ))}
               </motion.div>
             </div>
           </div>
           
           <div className="flex items-center space-x-6">
-            <div className="flex items-center gap-4 border-r border-white/10 pr-6">
-              <a href="tel:+84901234567" className="flex items-center gap-2 hover:text-secondary transition-colors">
-                <Phone size={isScrolled ? 8 : 10} className="text-secondary" />
-                <span className={isScrolled ? 'text-[9px]' : ''}>+84 901 234 567</span>
+            <div className="flex items-center gap-4 border-r border-primary/10 pr-6">
+              <a href="tel:+84901234567" className="flex items-center gap-2 hover:text-emerald-700 transition-colors">
+                <Phone size={isScrolled ? 8 : 10} className="text-emerald-600" />
+                <span className={isScrolled ? 'text-[9px]' : ''}>+84 931 254 118 </span>
               </a>
-              <a href="mailto:phamthanhtri@gmail.com" className="flex items-center gap-2 hover:text-secondary transition-colors">
-                <Mail size={isScrolled ? 8 : 10} className="text-secondary" />
-                <span className={isScrolled ? 'text-[9px]' : ''}>phamthanhtri@gmail.com</span>
+              <a href="mailto:phamthanhtri@gmail.com" className="flex items-center gap-2 hover:text-emerald-700 transition-colors">
+                <Mail size={isScrolled ? 8 : 10} className="text-emerald-600" />
+                <span className={isScrolled ? 'text-[9px]' : ''}>langnghetravel.1898@gmail.com</span>
               </a>
             </div>
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 cursor-pointer hover:text-secondary transition-colors group">
-                <Globe size={isScrolled ? 8 : 10} className="text-secondary group-hover:rotate-180 transition-transform duration-700" />
+              <div className="flex items-center gap-2 cursor-pointer hover:text-emerald-700 transition-colors group">
+                <Globe size={isScrolled ? 8 : 10} className="text-emerald-600 group-hover:rotate-180 transition-transform duration-700" />
                 <span className={isScrolled ? 'text-[9px]' : ''}>Tiếng Việt</span>
               </div>
-              <div className="flex items-center space-x-1.5 md:space-x-3 bg-white/5 px-2 md:px-4 py-1.5 md:py-2.5 rounded-full border border-white/10 hover:bg-white/10 transition-colors group cursor-pointer shadow-xl backdrop-blur-md">
-                <Bike className="w-3.5 h-3.5 md:w-5 md:h-5 text-secondary group-hover:animate-bounce" />
-                <span className="text-[10px] md:text-[13px] font-black uppercase tracking-widest text-secondary hidden sm:inline">
-                  VIP Member
+              <a href="/me" className="inline-block">
+              <div  className="flex items-center space-x-1.5 md:space-x-3 bg-emerald-50 px-2 md:px-4 py-1.5 md:py-2.5 rounded-full border border-emerald-100 hover:bg-emerald-100 transition-colors group cursor-pointer shadow-lg">
+                <Bike className="w-3.5 h-3.5 md:w-5 md:h-5 text-emerald-700 group-hover:animate-bounce" />
+                <span className="text-[10px] md:text-[13px] font-black uppercase tracking-widest text-emerald-800 hidden sm:inline">
+                  Cá Nhân 
                 </span>
               </div>
+              </a>
             </div>
           </div>
         </div>
@@ -106,32 +109,39 @@ const Navbar = () => {
       <header
         className={`w-full transition-all duration-700 relative ${
           isScrolled || forceSolid
-            ? 'bg-primary/95 backdrop-blur-2xl shadow-[0_10px_50px_rgba(0,0,0,0.35)] py-2 md:py-3 border-b border-white/10'
-            : 'bg-transparent py-3 md:py-8'
+            ? 'bg-white/85 backdrop-blur-2xl shadow-[0_10px_50px_rgba(2,44,34,0.12)] py-2 md:py-3 border-b border-primary/10'
+            : 'bg-white/35 backdrop-blur-xl py-3 md:py-6 border-b border-white/60'
         }`}
       >
         {/* Subtle Vietnamese Pattern Overlay */}
-        <div className="absolute inset-0 opacity-[0.03] pointer-events-none vn-pattern rotate-180 overflow-hidden" />
+        <div className="absolute inset-0 opacity-[0.05] pointer-events-none vn-pattern rotate-180 overflow-hidden" />
         
         <nav className="container mx-auto px-4 relative z-[101]">
           <div className="flex items-center justify-between gap-4">
             {/* Logo */}
             <Link href="/" className="flex items-center space-x-3 md:space-x-5 group shrink-0">
-              <div className="relative p-2 md:p-4 bg-white/5 rounded-[1rem] md:rounded-[1.5rem] group-hover:bg-secondary/20 transition-all duration-700 border border-white/10 group-hover:border-secondary/40 shadow-2xl overflow-hidden">
-                <Bike className="h-6 w-6 md:h-9 md:w-9 text-secondary group-hover:rotate-[25deg] transition-transform duration-700 relative z-10" />
-                <div className="absolute inset-0 bg-gradient-to-br from-secondary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                <div className="absolute -bottom-2 -right-2 w-8 h-8 md:w-12 md:h-12 bg-secondary/10 rounded-full blur-xl group-hover:bg-secondary/30 transition-all" />
+              <div className="relative w-11 h-11 md:w-16 md:h-16 bg-white/70 rounded-[1rem] md:rounded-[1.5rem] group-hover:bg-emerald-50 transition-all duration-700 border border-white/70 group-hover:border-emerald-200 shadow-sm overflow-hidden">
+                <Image
+                  src="/images/lang-nghe-travel-logo.svg.png"
+                  alt="Làng Nghề Travel"
+                  fill
+                  sizes="(max-width: 768px) 44px, 64px"
+                  className="object-contain p-2 md:p-2.5"
+                  priority
+                />
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="absolute -bottom-2 -right-2 w-8 h-8 md:w-12 md:h-12 bg-emerald-500/10 rounded-full blur-xl group-hover:bg-emerald-500/20 transition-all" />
               </div>
               <div className="flex flex-col">
-                <span className="text-xl md:text-4xl font-black text-secondary font-serif tracking-tighter leading-none group-hover:scale-105 transition-transform duration-500 origin-left">
-                  ZPLore
+                <span className="text-xl md:text-4xl font-black text-primary font-serif tracking-tighter leading-none group-hover:scale-105 transition-transform duration-500 origin-left">
+                  Làng Nghề
                 </span>
                 <div className="flex items-center gap-2 md:gap-3 mt-1 md:mt-2">
-                  <span className="text-[8px] md:text-[12px] font-black text-secondary/80 tracking-[0.32em] md:tracking-[0.5em] uppercase leading-none">
-                    VIỆT NAM
+                  <span className="text-[8px] md:text-[12px] font-black text-emerald-700/80 tracking-[0.32em] md:tracking-[0.5em] uppercase leading-none">
+                    TRAVEL
                   </span>
-                  <div className="h-[1px] md:h-[1.5px] w-4 md:w-8 bg-secondary/30 group-hover:w-12 transition-all duration-700" />
-                  <Star size={8} className="md:w-3 md:h-3 text-secondary fill-secondary animate-pulse" />
+                  <div className="h-[1px] md:h-[1.5px] w-4 md:w-8 bg-emerald-500/30 group-hover:w-12 transition-all duration-700" />
+                  <Star size={8} className="md:w-3 md:h-3 text-emerald-600 fill-emerald-600 animate-pulse" />
                 </div>
               </div>
             </Link>
@@ -150,10 +160,10 @@ const Navbar = () => {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className="px-3 xl:px-5 py-3 text-white/90 hover:text-secondary transition-all font-black text-[11px] xl:text-[12px] uppercase tracking-[0.18em] relative group rounded-2xl hover:bg-white/5"
+                    className="px-3 xl:px-5 py-3 text-primary/80 hover:text-primary transition-all font-black text-[11px] xl:text-[12px] uppercase tracking-[0.18em] relative group rounded-2xl hover:bg-emerald-500/10"
                   >
                     {item.label}
-                    <span className="absolute bottom-0 left-3 xl:left-5 right-3 xl:right-5 h-0.5 bg-secondary scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
+                    <span className="absolute bottom-0 left-3 xl:left-5 right-3 xl:right-5 h-0.5 bg-emerald-600 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
                   </Link>
                 ))}
               </div>
@@ -162,15 +172,16 @@ const Navbar = () => {
             {/* Actions */}
             <div className="flex items-center space-x-2 xl:space-x-4">
               <button
+                suppressHydrationWarning
                 onClick={() => setShowSearch(true)}
-                className="flex items-center justify-center w-10 h-10 md:w-12 md:h-12 xl:w-auto xl:h-auto p-0 xl:p-3.5 text-white/80 hover:text-secondary hover:bg-white/10 rounded-xl xl:rounded-2xl transition-all border border-white/10 xl:border-transparent hover:border-white/20"
+                className="flex items-center justify-center w-10 h-10 md:w-12 md:h-12 xl:w-auto xl:h-auto p-0 xl:p-3.5 text-primary/70 hover:text-primary hover:bg-emerald-500/10 rounded-xl xl:rounded-2xl transition-all border border-primary/10 hover:border-emerald-500/20"
                 aria-label="Tìm kiếm"
               >
                 <Search className="w-5 h-5 xl:w-5 xl:h-5" />
               </button>
 
               <Link href="/dream-journey" className="hidden lg:inline-flex">
-                <Button className="h-10 xl:h-12 px-4 xl:px-6 rounded-2xl font-black uppercase tracking-[0.18em] text-[11px] xl:text-[12px] bg-secondary text-primary hover:bg-secondary/90 shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
+                <Button className="h-10 xl:h-12 px-4 xl:px-6 rounded-2xl font-black uppercase tracking-[0.18em] text-[11px] xl:text-[12px] eco-gradient text-white shadow-[0_10px_30px_rgba(2,44,34,0.2)] hover:opacity-95">
                   <span className="flex items-center gap-2">
                     Tạo hành trình
                     <ArrowUpRight className="w-4 h-4" />
@@ -179,11 +190,11 @@ const Navbar = () => {
               </Link>
               <Sheet open={isOpen} onOpenChange={setIsOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="lg:hidden text-white hover:bg-white/10 p-0 w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl border border-white/10">
+                  <Button variant="ghost" size="icon" className="lg:hidden text-primary hover:bg-emerald-500/10 p-0 w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl border border-primary/10">
                     <Menu className="h-6 w-6 md:h-7 md:w-7" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="right" className="p-0 border-l-white/10 w-full sm:w-[420px] bg-primary text-white [&>button]:hidden">
+                <SheetContent side="right" className="p-0 border-l border-slate-200 w-full sm:w-[420px] bg-white text-primary [&>button]:hidden">
                   <MobileNav
                     onClose={() => setIsOpen(false)}
                     onSearch={() => {
@@ -201,23 +212,24 @@ const Navbar = () => {
       {/* Search Overlay */}
       <AnimatePresence>
         {showSearch && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[10001] bg-primary/95 backdrop-blur-2xl px-4 py-[calc(env(safe-area-inset-top)+16px)] md:p-20">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[10001] bg-white/95 backdrop-blur-2xl px-4 py-[calc(env(safe-area-inset-top)+16px)] md:p-20">
             <button
+              suppressHydrationWarning
               onClick={() => setShowSearch(false)}
-              className="absolute right-4 top-[calc(env(safe-area-inset-top)+12px)] md:top-8 md:right-8 text-white/60 hover:text-white transition-colors w-11 h-11 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 flex items-center justify-center"
+              className="absolute right-4 top-[calc(env(safe-area-inset-top)+12px)] md:top-8 md:right-8 text-slate-600 hover:text-slate-900 transition-colors w-11 h-11 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 flex items-center justify-center"
               aria-label="Đóng tìm kiếm"
             >
               <X className="w-5 h-5 md:w-8 md:h-8" />
             </button>
             <div className="max-w-4xl mx-auto pt-14 md:pt-20">
               <div className="relative">
-                <Search className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 text-secondary h-5 w-5 md:h-8 md:w-8" />
+                <Search className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 text-emerald-600 h-5 w-5 md:h-8 md:w-8" />
                 <input
                   autoFocus
                   type="text"
                   inputMode="search"
                   placeholder="Bạn muốn đi đâu hôm nay?"
-                  className="w-full bg-white/5 border-b-2 border-secondary/30 focus:border-secondary py-4 md:py-8 pl-12 md:pl-20 pr-4 md:pr-8 text-xl sm:text-2xl md:text-5xl font-serif text-white placeholder:text-white/25 outline-none transition-all"
+                  className="w-full bg-transparent border-b-2 border-emerald-500/30 focus:border-emerald-600 py-4 md:py-8 pl-12 md:pl-20 pr-4 md:pr-8 text-xl sm:text-2xl md:text-5xl font-serif text-slate-900 placeholder:text-slate-400 outline-none transition-all"
                 />
               </div>
             </div>
@@ -241,22 +253,28 @@ const MobileNav = ({ onClose, onSearch }: { onClose: () => void; onSearch: () =>
   ]
 
   return (
-    <div className="h-full flex flex-col overflow-hidden">
-      <div className="px-5 pt-[calc(env(safe-area-inset-top)+16px)] pb-4 border-b border-white/10">
+    <div className="h-full flex flex-col overflow-hidden bg-white text-primary">
+      <div className="px-5 pt-[calc(env(safe-area-inset-top)+16px)] pb-4 border-b border-slate-200">
         <div className="flex items-center justify-between">
           <Link href="/" onClick={onClose} className="flex items-center gap-3">
-            <div className="p-2.5 bg-white/5 rounded-2xl border border-white/10">
-              <Bike className="h-6 w-6 text-secondary" />
+            <div className="relative h-11 w-11 bg-white rounded-2xl border border-slate-200 overflow-hidden">
+              <Image
+                src="/images/lang-nghe-travel-logo.svg"
+                alt="Làng Nghề Travel"
+                fill
+                sizes="44px"
+                className="object-contain p-2"
+              />
             </div>
             <div className="flex flex-col leading-tight">
-              <span className="text-lg font-black font-serif tracking-tight">Eco-Travel</span>
-              <span className="text-[10px] font-bold tracking-[0.35em] text-secondary uppercase">Việt Nam</span>
+              <span className="text-lg font-black font-serif tracking-tight text-slate-900">Làng Nghề Travel</span>
+              <span className="text-[10px] font-bold tracking-[0.35em] text-emerald-700 uppercase">Việt Nam</span>
             </div>
           </Link>
 
           <button
             onClick={onClose}
-            className="w-11 h-11 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-center"
+            className="w-11 h-11 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 transition-colors flex items-center justify-center text-slate-700"
             aria-label="Đóng menu"
           >
             <X size={20} />
@@ -267,39 +285,39 @@ const MobileNav = ({ onClose, onSearch }: { onClose: () => void; onSearch: () =>
       <div className="flex-1 overflow-y-auto px-5 py-5 space-y-2">
         <button
           onClick={onSearch}
-          className="w-full flex items-center justify-between rounded-2xl px-4 py-4 bg-white/5 hover:bg-white/10 transition-colors border border-white/10"
+          className="w-full flex items-center justify-between rounded-2xl px-4 py-4 bg-slate-50 hover:bg-emerald-50 transition-colors border border-slate-200"
           aria-label="Mở tìm kiếm"
         >
-          <span className="text-base font-black tracking-wide">Tìm kiếm</span>
-          <Search size={18} className="text-secondary" />
+          <span className="text-base font-black tracking-wide text-slate-900">Tìm kiếm</span>
+          <Search size={18} className="text-emerald-600" />
         </button>
         {navItems.map((item) => (
           <Link
             key={item.href}
             href={item.href}
             onClick={onClose}
-            className="flex items-center justify-between rounded-2xl px-4 py-4 bg-white/5 hover:bg-white/10 transition-colors border border-white/10"
+            className="flex items-center justify-between rounded-2xl px-4 py-4 bg-slate-50 hover:bg-emerald-50 transition-colors border border-slate-200"
           >
-            <span className="text-base font-black tracking-wide">{item.label}</span>
-            <ChevronRight size={18} className="text-secondary" />
+            <span className="text-base font-black tracking-wide text-slate-900">{item.label}</span>
+            <ChevronRight size={18} className="text-emerald-600" />
           </Link>
         ))}
 
-        <div className="pt-4 mt-4 border-t border-white/10">
-          <a href="tel:+84901234567" className="flex items-center justify-between rounded-2xl px-4 py-4 bg-white/5 hover:bg-white/10 transition-colors border border-white/10">
-            <span className="text-sm font-bold text-white/80">+84 901 234 567</span>
-            <Phone size={18} className="text-secondary" />
+        <div className="pt-4 mt-4 border-t border-slate-200">
+          <a href="tel:+84901234567" className="flex items-center justify-between rounded-2xl px-4 py-4 bg-slate-50 hover:bg-emerald-50 transition-colors border border-slate-200">
+            <span className="text-sm font-bold text-slate-700">+84 901 234 567</span>
+            <Phone size={18} className="text-emerald-600" />
           </a>
-          <a href="mailto:phamthanhtri@gmail.com" className="mt-2 flex items-center justify-between rounded-2xl px-4 py-4 bg-white/5 hover:bg-white/10 transition-colors border border-white/10">
-            <span className="text-sm font-bold text-white/80">phamthanhtri@gmail.com</span>
-            <Mail size={18} className="text-secondary" />
+          <a href="mailto:phamthanhtri@gmail.com" className="mt-2 flex items-center justify-between rounded-2xl px-4 py-4 bg-slate-50 hover:bg-emerald-50 transition-colors border border-slate-200">
+            <span className="text-sm font-bold text-slate-700">phamthanhtri@gmail.com</span>
+            <Mail size={18} className="text-emerald-600" />
           </a>
         </div>
       </div>
 
-      <div className="px-5 pt-4 pb-[calc(env(safe-area-inset-bottom)+18px)] border-t border-white/10 bg-primary/95 backdrop-blur-xl">
+      <div className="px-5 pt-4 pb-[calc(env(safe-area-inset-bottom)+18px)] border-t border-slate-200 bg-white/85 backdrop-blur-xl">
         <Link href="/dream-journey" onClick={onClose} className="block">
-          <Button className="w-full h-12 rounded-2xl font-black uppercase tracking-[0.18em] text-[12px] bg-secondary text-primary hover:bg-secondary/90">
+          <Button className="w-full h-12 rounded-2xl font-black uppercase tracking-[0.18em] text-[12px] eco-gradient text-white hover:opacity-95">
             <span className="flex items-center justify-center gap-2">
               Tạo hành trình
               <ArrowUpRight className="w-4 h-4" />

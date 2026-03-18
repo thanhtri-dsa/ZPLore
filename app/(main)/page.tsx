@@ -71,7 +71,7 @@ export default function HomePage() {
       name: "Minh Anh",
       location: "Hà Nội",
       rating: 5,
-      content: "Tour xanh đúng nghĩa: lịch trình nhẹ nhàng, ít rác thải, trải nghiệm địa phương rất thật.",
+      content: "Tour làng nghề rất hay: gặp nghệ nhân, được tự tay làm thử và mang sản phẩm về làm kỷ niệm.",
     },
     {
       id: "r2",
@@ -85,7 +85,7 @@ export default function HomePage() {
       name: "Thảo Vy",
       location: "TP.HCM",
       rating: 4,
-      content: "Rất thích phần cộng đồng và review — chọn tour tự tin hơn.",
+      content: "Rất thích phần cộng đồng và review — chọn tour làng nghề tự tin hơn.",
     },
   ]
 
@@ -118,22 +118,22 @@ export default function HomePage() {
             <div className="lg:col-span-7">
               <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-[10px] md:text-xs font-black text-primary uppercase tracking-[0.22em] border border-white/60 shadow-sm">
                 <Leaf className="w-4 h-4" />
-                Du lịch bền vững
+                Hành trình làng nghề
               </div>
 
               <h1 className="mt-5 text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif font-black tracking-tight text-primary leading-[1.02]">
-                Khám phá Việt Nam theo cách xanh <span className="text-secondary italic">🌱</span>
+                Khám phá Làng Nghề Việt Nam <span className="text-secondary italic"></span>
               </h1>
 
               <p className="mt-5 text-base md:text-lg text-muted-foreground leading-relaxed max-w-2xl">
-                Tìm điểm đến, chọn tour, xem review cộng đồng — và bắt đầu hành trình ít phát thải ngay hôm nay.
+                Tìm làng nghề, chọn tour trải nghiệm, xem review cộng đồng — và bắt đầu hành trình về nguồn cội ngay hôm nay.
               </p>
 
               <div className="mt-6 flex flex-wrap gap-2">
                 {[
-                  { label: "63 Tỉnh thành", value: "63" },
-                  { label: "Tour xanh", value: "Eco" },
-                  { label: "Cộng đồng review", value: "Trust" },
+                  { label: "Thành Phố Hồ Chí Minh ", value: "HCM" },
+                  { label: "Tour làng nghề", value: "Craft" },
+                  { label: "Workshop trải nghiệm", value: "Hands-on" },
                 ].map((s) => (
                   <div
                     key={s.label}
@@ -152,7 +152,7 @@ export default function HomePage() {
                     value={q}
                     onChange={(e) => setQ(e.target.value)}
                     inputMode="search"
-                    placeholder="Tìm điểm đến / gói tour (ví dụ: Hội An, Sapa...)"
+                    placeholder="Tìm làng nghề / tour trải nghiệm (ví dụ: Bát Tràng, Vạn Phúc...)"
                     className="w-full h-12 md:h-14 pl-12 pr-4 rounded-2xl border border-white/70 bg-white/70 backdrop-blur-xl shadow-sm outline-none focus:ring-2 focus:ring-secondary/40"
                   />
                 </div>
@@ -175,7 +175,7 @@ export default function HomePage() {
               </form>
 
               <div className="mt-6 flex flex-wrap items-center gap-3 text-xs">
-                {["Hạ Long", "Hội An", "Sapa", "Đà Lạt", "Phú Quốc"].map((tag) => (
+                {["Hương Lê Minh Xuân", "Bánh tráng Phú Hòa Đông", "Muối Lý Nhơn", "Mây tre Thái Mỹ", "Mành trúc Tân Thông Hội"].map((tag) => (
                   <button
                     key={tag}
                     onClick={() => {
@@ -204,7 +204,7 @@ export default function HomePage() {
               <div className="vn-card-vip overflow-hidden">
                 <div className="relative h-[280px] sm:h-[340px] lg:h-[420px]">
                   <Image
-                    src="/images/hoian.jpg"
+                    src="/images/manh-truc.jpg"
                     alt="Điểm đến nổi bật"
                     fill
                     priority
@@ -219,7 +219,7 @@ export default function HomePage() {
                     </div>
                     <div className="hidden sm:inline-flex items-center gap-2 rounded-full bg-white/70 backdrop-blur-xl border border-white/70 px-4 py-2 text-[10px] font-black uppercase tracking-[0.22em] text-primary">
                       <Star className="w-4 h-4 text-secondary fill-secondary" />
-                      4.9/5
+                      5.0/5.0
                     </div>
                   </div>
 
@@ -227,8 +227,8 @@ export default function HomePage() {
                     <div className="glass-morphism-dark rounded-3xl p-4 border border-white/10">
                       <div className="flex items-start justify-between gap-4">
                         <div className="min-w-0">
-                          <div className="text-white font-black text-lg">Phố cổ Hội An</div>
-                          <div className="text-white/70 text-xs mt-0.5">Di sản • Đi bộ • Ẩm thực địa phương</div>
+                          <div className="text-white font-black text-lg">Mành trúc Tân Thông Hội</div>
+                          <div className="text-white/70 text-xs mt-0.5">Làng nghề • Trải nghiệm • Di sản</div>
                         </div>
                         <Link href="/packages" className="shrink-0">
                           <Button className="h-10 rounded-2xl bg-secondary text-primary hover:bg-secondary/90 font-black uppercase tracking-[0.18em] text-[10px] px-4">
@@ -238,9 +238,9 @@ export default function HomePage() {
                       </div>
                       <div className="mt-3 grid grid-cols-3 gap-2">
                         {[
-                          { k: "Lịch trình", v: "3–5N" },
-                          { k: "Phong cách", v: "Xanh" },
-                          { k: "Phù hợp", v: "Nhóm nhỏ" },
+                          { k: "Lịch trình", v: "Trong Ngày " },
+                          { k: "Chủ đề", v: "Làng nghề" },
+                          { k: "Phù hợp", v: "Cá Nhân - Gia đình" },
                         ].map((m) => (
                           <div key={m.k} className="rounded-2xl bg-white/5 border border-white/10 p-3">
                             <div className="text-[10px] text-white/60 font-bold uppercase tracking-widest">{m.k}</div>
@@ -254,9 +254,9 @@ export default function HomePage() {
               </div>
               <div className="mt-5 grid grid-cols-3 gap-3">
                 {[
-                  { src: "/images/halong.jpg", alt: "Hạ Long" },
-                  { src: "/images/danang.jpg", alt: "Đà Nẵng" },
-                  { src: "/images/lamu.jpg", alt: "Phú Quốc" },
+                  { src: "/images/nhan-lmx.jpg", alt: "Làng nhang Lê Minh Xuân" },
+                  { src: "/images/lang-dan-lat.jpg", alt: "Làng đan lát Thái Mỹ" },
+                  { src: "/images/lo-banh-trang.jpg", alt: "Làng bánh tráng Phú Hòa Đông" },
                 ].map((img) => (
                   <div key={img.src} className="vn-card overflow-hidden">
                     <div className="relative h-20 sm:h-24">
@@ -276,36 +276,36 @@ export default function HomePage() {
         <HomeMapSection />
       </div>
 
-      {/* 🌱 Du lịch xanh nổi bật */}
+      {/* 🌾 Trải nghiệm làng nghề nổi bật */}
       <section className="py-14 md:py-20 bg-white/40 backdrop-blur-sm border-y border-white">
         <div className="container mx-auto px-4">
           <div className="flex items-end justify-between gap-6 mb-8">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full bg-secondary/20 px-4 py-2 text-[10px] md:text-xs font-black text-primary uppercase tracking-[0.22em]">
                 <Leaf className="w-4 h-4" />
-                Du lịch xanh nổi bật
+                Trải nghiệm làng nghề
               </div>
-              <h2 className="vn-title text-3xl md:text-4xl font-black mt-4">Chọn đúng “màu xanh” bạn yêu</h2>
+              <h2 className="vn-title text-3xl md:text-4xl font-black mt-4">Chọn đúng trải nghiệm bạn yêu</h2>
             </div>
           </div>
 
           <div className="grid gap-5 md:gap-8 grid-cols-1 md:grid-cols-3">
             {[
               {
-                title: "Tour đi bộ",
-                desc: "Nhẹ nhàng, chậm rãi, chạm vào văn hoá địa phương.",
+                title: "Tour làng nghề",
+                desc: "Gặp nghệ nhân, nghe chuyện nghề, tham quan xưởng thủ công.",
                 icon: Footprints,
                 href: "/packages?type=walking",
               },
               {
-                title: "Tour xe đạp",
-                desc: "Trải nghiệm xanh, vận động vui, ít phát thải.",
+                title: "Workshop trải nghiệm",
+                desc: "Tự tay làm gốm, dệt, mây tre đan… và mang sản phẩm về.",
                 icon: Bike,
                 href: "/packages?type=bike",
               },
               {
-                title: "Sinh thái",
-                desc: "Gần thiên nhiên, tôn trọng hệ sinh thái, bền vững.",
+                title: "Ẩm thực & văn hóa",
+                desc: "Thưởng thức món địa phương, khám phá văn hóa vùng miền.",
                 icon: Trees,
                 href: "/packages?type=eco",
               },
@@ -416,10 +416,10 @@ export default function HomePage() {
             <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8 relative z-10">
               <div className="max-w-2xl">
                 <h2 className="text-3xl md:text-5xl font-serif font-black text-primary leading-tight">
-                  Bắt đầu hành trình xanh ngay
+                  Bắt đầu hành trình về nguồn cội
                 </h2>
                 <p className="mt-4 text-muted-foreground text-base md:text-lg leading-relaxed">
-                  Tạo hành trình riêng của bạn, tối ưu tuyến đi, chọn trải nghiệm bền vững và lưu lại kỷ niệm đáng nhớ.
+                  Tạo hành trình riêng của bạn, tối ưu tuyến đi, chọn workshop trải nghiệm và lưu lại kỷ niệm đáng nhớ.
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">

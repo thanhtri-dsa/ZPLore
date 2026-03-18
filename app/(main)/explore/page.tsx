@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import type { Destination } from "@/types/destinations"
 
-type PlaceType = "all" | "eco" | "beach" | "mountain"
+type PlaceType = "all" | "pottery" | "silk" | "bamboo" | "food" | "wood"
 
 function normalizeText(v: string) {
   return v.toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "")
@@ -19,9 +19,11 @@ function guessTypeFromTags(tags: string[]): PlaceType {
   const t = tags.map((x) => normalizeText(x))
   const has = (needle: string) => t.some((x) => x.includes(needle))
 
-  if (has("eco") || has("sinh thai") || has("ben vung") || has("bao ton")) return "eco"
-  if (has("bien") || has("dao") || has("beach") || has("island")) return "beach"
-  if (has("nui") || has("mountain") || has("trek") || has("hiking")) return "mountain"
+  if (has("gom") || has("ceramic") || has("pottery") || has("bat trang")) return "pottery"
+  if (has("lua") || has("silk") || has("van phuc") || has("det")) return "silk"
+  if (has("may") || has("tre") || has("bamboo") || has("dan")) return "bamboo"
+  if (has("am thuc") || has("food") || has("banh") || has("mon")) return "food"
+  if (has("go") || has("moc") || has("wood") || has("carving")) return "wood"
   return "all"
 }
 
@@ -50,6 +52,7 @@ export default function ExplorePage() {
   const [destinations, setDestinations] = React.useState<Destination[]>([])
   const [loading, setLoading] = React.useState(true)
   const [error, setError] = React.useState<string | null>(null)
+  const [regionLabel, setRegionLabel] = React.useState("Việt Nam")
 
   const [q, setQ] = React.useState("")
   const [type, setType] = React.useState<PlaceType>("all")
@@ -61,15 +64,17 @@ export default function ExplorePage() {
       try {
         setLoading(true)
         setError(null)
-        // Lock Explore to Vietnam by default (vibe like "Google Maps - Vietnam only")
-        const res = await fetch("/api/destinations?country=Vietnam")
+        const res = await fetch("/api/destinations")
         if (!res.ok) throw new Error("Failed to load destinations")
         const data = (await res.json()) as unknown
         const list = Array.isArray(data) ? (data as Destination[]) : []
         if (cancelled) return
-        setDestinations(list)
+        const vn = list.filter((d) => normalizeText(d.country || "").includes("viet"))
+        const scoped = vn.length > 0 ? vn : list
+        setDestinations(scoped)
+        setRegionLabel(vn.length > 0 ? "Việt Nam" : "Tất cả")
 
-        const max = list.reduce((m, d) => Math.max(m, Number(d.amount) || 0), 0)
+        const max = scoped.reduce((m, d) => Math.max(m, Number(d.amount) || 0), 0)
         setMaxPrice(max || 0)
       } catch (e) {
         if (cancelled) return
@@ -106,9 +111,12 @@ export default function ExplorePage() {
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <div className="text-[10px] font-black uppercase tracking-[0.22em] text-primary/70">
-              Khám phá
+              Làng Nghề Travel
             </div>
-            <div className="text-xl font-black text-primary truncate">Bản đồ địa điểm</div>
+            <div className="text-xl font-black text-primary truncate">Bản đồ làng nghề</div>
+            <div className="mt-1 text-xs text-muted-foreground font-medium truncate">
+              Tìm làng nghề, workshop và trải nghiệm văn hóa ({regionLabel})
+            </div>
           </div>
           <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.22em] text-primary">
             <MapPin className="w-4 h-4 text-secondary" />
@@ -123,27 +131,59 @@ export default function ExplorePage() {
               value={q}
               onChange={(e) => setQ(e.target.value)}
               inputMode="search"
-              placeholder="Tìm địa điểm..."
+              placeholder="Tìm làng nghề (Bát Tràng, Vạn Phúc...)"
               className="w-full h-12 rounded-2xl border border-white/70 bg-white/70 backdrop-blur-xl pl-12 pr-4 outline-none focus:ring-2 focus:ring-secondary/40"
             />
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {[
+              "Bát Tràng",
+              "Vạn Phúc",
+              "Kim Bồng",
+              "Thanh Hà",
+              "Phú Vinh",
+            ].map((tag) => (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => setQ(tag)}
+                className="inline-flex items-center rounded-full border border-white/70 bg-white/60 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-primary hover:bg-white transition-colors"
+              >
+                {tag}
+              </button>
+            ))}
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-2xl border border-white/70 bg-white/60 backdrop-blur-xl px-4 py-3">
               <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.22em] text-primary/70">
                 <SlidersHorizontal className="w-4 h-4 text-secondary" />
-                Loại
+                Chủ đề
               </div>
-              <select
-                value={type}
-                onChange={(e) => setType(e.target.value as PlaceType)}
-                className="mt-2 w-full bg-transparent text-sm font-black text-primary outline-none"
-              >
-                <option value="all">Tất cả</option>
-                <option value="eco">Eco</option>
-                <option value="beach">Biển</option>
-                <option value="mountain">Núi</option>
-              </select>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {[
+                  { v: "all" as const, label: "Tất cả" },
+                  { v: "pottery" as const, label: "Gốm" },
+                  { v: "silk" as const, label: "Lụa" },
+                  { v: "bamboo" as const, label: "Mây tre" },
+                  { v: "wood" as const, label: "Mộc" },
+                ].map((opt) => (
+                  <button
+                    key={opt.v}
+                    type="button"
+                    onClick={() => setType(opt.v)}
+                    className={[
+                      "h-8 px-3 rounded-full border text-[10px] font-black uppercase tracking-[0.18em] transition-colors",
+                      type === opt.v
+                        ? "bg-primary text-white border-primary"
+                        : "bg-white/70 text-primary border-white/70 hover:bg-white",
+                    ].join(" ")}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div className="rounded-2xl border border-white/70 bg-white/60 backdrop-blur-xl px-4 py-3">
@@ -183,8 +223,28 @@ export default function ExplorePage() {
             {error}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="rounded-2xl border border-white/10 bg-white/40 p-4 text-sm text-muted-foreground">
-            Không tìm thấy địa điểm phù hợp.
+          <div className="rounded-2xl border border-white/10 bg-white/60 p-5 text-sm text-muted-foreground backdrop-blur-xl">
+            <div className="font-black text-primary mb-1">Không có kết quả phù hợp</div>
+            <div className="text-xs leading-relaxed">
+              Thử đổi từ khóa, chọn lại chủ đề, hoặc tăng mức giá tối đa để thấy nhiều điểm hơn.
+            </div>
+            <div className="mt-4 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setQ("")
+                  setType("all")
+                }}
+                className="h-10 px-4 rounded-2xl border border-white/70 bg-white text-primary text-[11px] font-black uppercase tracking-[0.18em] hover:bg-white/90"
+              >
+                Xóa lọc
+              </button>
+              <Link href="/packages" className="flex-1">
+                <Button className="w-full h-10 rounded-2xl font-black uppercase tracking-[0.18em] text-[11px] bg-secondary text-primary hover:bg-secondary/90">
+                  Xem gói tour
+                </Button>
+              </Link>
+            </div>
           </div>
         ) : (
           filtered.map((d) => {
@@ -245,6 +305,17 @@ export default function ExplorePage() {
           fixedBounds={{ south: 7.2, west: 101.6, north: 23.8, east: 110.8 }}
           lockToBounds
         />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-white/70 to-transparent" />
+      </div>
+
+      <div className="hidden lg:flex absolute top-6 right-6 z-[60] pointer-events-none">
+        <div className="pointer-events-none rounded-[2rem] border border-white/40 bg-white/60 backdrop-blur-2xl shadow-[0_30px_100px_rgba(0,0,0,0.12)] px-6 py-5 max-w-[420px]">
+          <div className="text-[10px] font-black uppercase tracking-[0.22em] text-primary/70">Trang khám phá</div>
+          <div className="mt-1 text-xl font-black text-primary">Khám phá làng nghề trên bản đồ</div>
+          <div className="mt-2 text-sm text-muted-foreground font-medium leading-relaxed">
+            Click vào marker để xem chi tiết điểm đến, hình ảnh và giá tham khảo.
+          </div>
+        </div>
       </div>
 
       {/* Desktop Sidebar */}

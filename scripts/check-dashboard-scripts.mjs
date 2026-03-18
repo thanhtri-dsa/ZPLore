@@ -1,5 +1,5 @@
 const base = process.env.BASE_URL || 'http://localhost:3001'
-const page = `${base}/management-portal/dashboard`
+const page = `${base}/admin`
 
 const html = await (await fetch(page)).text()
 const srcs = [...html.matchAll(/<script[^>]+src="([^"]+)"/g)].map((m) => m[1])

@@ -56,7 +56,7 @@ export function CreateDestinationForm() {
       }
 
       toast.success('Destination created successfully')
-      router.push(`/management-portal/create-destinations`)
+      router.push(`/admin/create-destinations`)
     } catch (error) {
       console.error('Error creating destination:', error)
       toast.error('Failed to create destination')

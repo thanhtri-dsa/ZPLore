@@ -21,14 +21,24 @@ const playfairDisplay = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://www.forestlinetours.com"),
+  metadataBase: new URL("https://langnghetravel.vn"),
   title: {
-    default: 'Forestline Tours',
-    template: "%s | Forestline Tours",
+    default: 'Làng Nghề Travel',
+    template: "%s | Làng Nghề Travel",
   },
-  description: 'The best tour agency  that connects tourist with magical destinations',
-  keywords: ['African Safaris', 'Tours in Nairobi', 'Kenya Safaris', 'Best African Tour Company', 'Big Five Safaris', 'Nairobi Tours and Safaris', 'Top Safari Company in Africa', 'Wildlife Tours in Kenya', 'Luxury Safaris', 
-    'Adventure Tours Africa', 'Forestline Tours, Kenya', 'Forestline Tours, Nairobi', 'Forestline Tours, Africa', 'Forestline Tours, Best Tour Company in Africa', 'Forestline Tours, Best Tour Company in Kenya', 'Forestline Tours, Best Tour Company in Nairobi,Forestline Packages, Diani Travel Packages, Mombasa Travel Packages, Nairobi Travel Packages, Kenya Travel Packages, Africa Travel Packages, Best Travel Packages in Africa, Best Travel Packages in Kenya, Best Travel Packages in Nairobi, Best Travel Packages in Diani, Best Travel Packages in Mombasa ,Japan Tour Travel',],
+  description: 'Làng Nghề Travel – hành trình về nguồn cội: khám phá làng nghề, gặp gỡ nghệ nhân, trải nghiệm thủ công và văn hóa địa phương.',
+  keywords: [
+    'Làng Nghề Travel',
+    'tour làng nghề',
+    'du lịch làng nghề',
+    'tour văn hóa Việt Nam',
+    'trải nghiệm thủ công',
+    'workshop làng nghề',
+    'du lịch cộng đồng',
+    'làng nghề Việt Nam',
+    'tour truyền thống',
+    'hành trình về nguồn cội',
+  ],
     verification: {
       google: 'google-site-verification: googlec1b1726e9f555276.html',
     },
@@ -41,27 +51,27 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    site: '@forestlinetours', // Your Twitter handle
-    creator: '@forestlinetours', // Your Twitter handle
+    site: '@langnghetravel',
+    creator: '@langnghetravel',
     images: {
-      url: 'https://www.forestlinetours.com/opengraph-image',
-      alt: 'Forestline Tours',
+      url: 'https://langnghetravel.vn/opengraph-image',
+      alt: 'Làng Nghề Travel',
     },
     
   },
   //opengraph for sharing on social media
   openGraph: {
     type: 'website',
-    locale: 'en_US',
-    url: 'https://www.forestlinetours.com',
-    siteName: 'Forestline Tours',
-    title: 'Forestline Tours',
-    description: 'Tour agency that connects tourist with magical destinations',
+    locale: 'vi_VN',
+    url: 'https://langnghetravel.vn',
+    siteName: 'Làng Nghề Travel',
+    title: 'Làng Nghề Travel',
+    description: 'Hành trình về nguồn cội: tour làng nghề, workshop trải nghiệm, văn hóa địa phương.',
     images: [{
-      url: 'https://www.forestlinetours.com/opengraph-image',
+      url: 'https://langnghetravel.vn/opengraph-image',
       width: 1200,
       height: 630,
-      alt: 'Forestline Tours',
+      alt: 'Làng Nghề Travel',
     }],
   },
 }
@@ -74,15 +84,15 @@ export default function RootLayout({
 }>) {
   return (
     <AuthWrapper>
-      <html lang="en" suppressHydrationWarning>
+      <html lang="vi" suppressHydrationWarning>
         <head>
          <Script id="schema-org-markup-website" type="application/ld+json">
           {`
             {
               "@context" : "https://schema.org",
               "@type" : "WebSite",
-              "name" : "Forestline Tours",
-              "url" : "https://www.forestlinetours.com"
+              "name" : "Làng Nghề Travel",
+              "url" : "https://langnghetravel.vn"
             }`}
         </Script>
         </head>

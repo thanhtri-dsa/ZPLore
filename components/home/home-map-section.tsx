@@ -17,11 +17,76 @@ export function HomeMapSection() {
 
   // Mock destinations for the map
   const mockDestinations: Destination[] = [
-    { id: '1', name: 'Vịnh Hạ Long', city: 'Quảng Ninh', country: 'Vietnam', amount: 0, tags: [], imageData: '', description: '', daysNights: 1, tourType: 'DAYS', latitude: 20.9101, longitude: 107.1839 },
-    { id: '2', name: 'Phố Cổ Hội An', city: 'Quảng Nam', country: 'Vietnam', amount: 0, tags: [], imageData: '', description: '', daysNights: 1, tourType: 'DAYS', latitude: 15.8801, longitude: 108.3380 },
-    { id: '3', name: 'Đà Lạt', city: 'Lâm Đồng', country: 'Vietnam', amount: 0, tags: [], imageData: '', description: '', daysNights: 1, tourType: 'DAYS', latitude: 11.9404, longitude: 108.4583 },
-    { id: '4', name: 'Phú Quốc', city: 'Kiên Giang', country: 'Vietnam', amount: 0, tags: [], imageData: '', description: '', daysNights: 1, tourType: 'DAYS', latitude: 10.2899, longitude: 103.9840 },
-    { id: '5', name: 'Sapa', city: 'Lào Cai', country: 'Vietnam', amount: 0, tags: [], imageData: '', description: '', daysNights: 1, tourType: 'DAYS', latitude: 22.3364, longitude: 103.8438 }
+  {
+    id: '201',
+    name: 'Làng mành trúc Tân Thông Hội',
+    city: 'TP.HCM',
+    country: 'Vietnam',
+    amount: 0,
+    tags: ['mành trúc', 'thủ công'],
+    imageData: '',
+    description: 'Làng nghề truyền thống nổi tiếng ở Củ Chi với sản phẩm từ tre',
+    daysNights: 1,
+    tourType: 'DAYS',
+    latitude: 10.9730,
+    longitude: 106.5080
+  },
+  {
+    id: '202',
+    name: 'Làng đan lát Thái Mỹ',
+    city: 'TP.HCM',
+    country: 'Vietnam',
+    amount: 0,
+    tags: ['đan lát', 'tre'],
+    imageData: '',
+    description: 'Chuyên đan giỏ, vật dụng từ tre nứa',
+    daysNights: 1,
+    tourType: 'DAYS',
+    latitude: 11.0700,
+    longitude: 106.5000
+  },
+  {
+    id: '203',
+    name: 'Làng làm nhang Lê Minh Xuân',
+    city: 'TP.HCM',
+    country: 'Vietnam',
+    amount: 0,
+    tags: ['nhang', 'truyền thống'],
+    imageData: '',
+    description: 'Làng làm nhang phục vụ tín ngưỡng và xuất khẩu',
+    daysNights: 1,
+    tourType: 'DAYS',
+    latitude: 10.7285,
+    longitude: 106.5670
+  },
+  {
+    id: '204',
+    name: 'Làng bánh tráng Phú Hòa Đông',
+    city: 'TP.HCM',
+    country: 'Vietnam',
+    amount: 0,
+    tags: ['ẩm thực', 'bánh tráng'],
+    imageData: '',
+    description: 'Làng nghề làm bánh tráng nổi tiếng ở Củ Chi',
+    daysNights: 1,
+    tourType: 'DAYS',
+    latitude: 10.9230,
+    longitude: 106.4700
+  },
+  {
+    id: '205',
+    name: 'Làng hoa kiểng Gò Vấp',
+    city: 'TP.HCM',
+    country: 'Vietnam',
+    amount: 0,
+    tags: ['hoa', 'nông nghiệp'],
+    imageData: '',
+    description: 'Làng trồng hoa truyền thống cung cấp cho TP.HCM',
+    daysNights: 1,
+    tourType: 'DAYS',
+    latitude: 10.8380,
+    longitude: 106.6680
+  }
   ]
 
   return (
@@ -56,9 +121,9 @@ export function HomeMapSection() {
               
               <div className="space-y-6 pt-8 border-t border-primary/10">
                 {[
-                  { label: "Bắc Bộ: Kỳ quan & Hùng vĩ", color: "bg-blue-500", desc: "Sapa, Hạ Long, Ninh Bình" },
-                  { label: "Trung Bộ: Di sản & Biển xanh", color: "bg-red-500", desc: "Hội An, Đà Nẵng, Huế" },
-                  { label: "Nam Bộ: Trù phú & Bình yên", color: "bg-green-500", desc: "Phú Quốc, Miền Tây" }
+                  { label: "Bắc Bộ", color: "bg-blue-500", desc: "Bát Tràng , Vạn Phúc, Đông Hồ, Đại Bái, Đồng Xâm, Đồng Kỵ, Hạ Thái " },
+                  { label: "Trung Bộ", color: "bg-red-500", desc: "Nón lá Huế , Làng hương Thủy Xuân , Mộc Kim Bồng" },
+                  { label: "Nam Bộ", color: "bg-green-500", desc: "Mành trúc Tân Thông Hội, Gốm Lái Thiêu, Sơn mài Tương Bình Hiệp" }
                 ].map((item, i) => (
                   <div key={i} className="flex items-start gap-4 group">
                     <div className={`w-3 h-3 rounded-full ${item.color} mt-1.5 shadow-lg group-hover:scale-150 transition-transform`} />

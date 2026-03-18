@@ -6,75 +6,48 @@
 /* Define custom color variables for the light and dark modes */
 @layer base {
   :root {
-    --background: 140 40% 96%; /* Very light eco green background */
-    --foreground: 0 0% 10%; 
-    --card: 140 40% 96%; 
-    --card-foreground: 0 0% 10%; 
-    --popover: 140 40% 96%; 
-    --popover-foreground: 0 0% 10%; 
-    --primary: 159 100% 19%; /* Traditional Deep Green (#006241) */
-    --primary-foreground: 140 40% 96%; /* Light green text on green */
-    --secondary: 45 100% 50%; /* Vibrant Golden Yellow (#FFB800) */
-    --secondary-foreground: 175 77% 15%; 
-    --muted: 140 20% 90%; 
-    --muted-foreground: 0 0% 40%; 
-    --accent: 45 100% 50%; /* Golden Accent */
-    --accent-foreground: 140 40% 96%; 
-    --destructive: 0 84.2% 60.2%; 
-    --destructive-foreground: 0 0% 98%; 
-    --border: 140 20% 85%; 
-    --input: 140 20% 85%; 
-    --ring: 159 100% 19%; 
-    --radius: 0.5rem; 
-    --chart-1: 159 100% 19%; 
-    --chart-2: 60 100% 50%; 
-    --chart-3: 2 83% 49%; 
-    --chart-4: 43 74% 66%; 
-    --chart-5: 27 87% 67%; 
-    --sidebar-background: 140 40% 96%; 
-    --sidebar-foreground: 0 0% 10%; 
-    --sidebar-primary: 159 100% 19%; 
-    --sidebar-primary-foreground: 140 40% 96%; 
-    --sidebar-accent: 140 20% 90%; 
-    --sidebar-accent-foreground: 0 0% 10%; 
-    --sidebar-border: 140 20% 85%; 
-    --sidebar-ring: 159 100% 19%;
+    --background: 0 0% 100%;
+    --foreground: 224 71.4% 4.1%;
+    --card: 0 0% 100%;
+    --card-foreground: 224 71.4% 4.1%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 71.4% 4.1%;
+    --primary: 162 82% 12%; /* Deep Obsidian Green */
+    --primary-foreground: 210 20% 98%;
+    --secondary: 162 40% 96%; /* Ultra Soft Sage */
+    --secondary-foreground: 162 82% 12%;
+    --muted: 220 14.3% 95.9%;
+    --muted-foreground: 220 8.9% 46.1%;
+    --accent: 162 82% 12%;
+    --accent-foreground: 224 71.4% 4.1%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 162 82% 12%;
+    --radius: 0.75rem;
   }
 
-  /* Dark theme variables */
   .dark {
-    --background: 159 100% 5%; /* Very dark green background */
-    --foreground: 45 100% 98%; /* Cream text */
-    --card: 159 100% 5%; 
-    --card-foreground: 45 100% 98%; 
-    --popover: 159 100% 5%; 
-    --popover-foreground: 45 100% 98%; 
-    --primary: 159 100% 19%; 
-    --primary-foreground: 45 100% 98%; 
-    --secondary: 45 100% 50%; /* Golden Yellow in dark mode too */
-    --secondary-foreground: 159 100% 5%; 
-    --muted: 159 50% 15%; 
-    --muted-foreground: 45 20% 70%; 
-    --accent: 45 100% 40%; /* Darker gold accent */
-    --accent-foreground: 45 100% 98%; 
-    --destructive: 0 62.8% 30.6%; 
-    --destructive-foreground: 0 0% 98%; 
-    --border: 159 50% 20%; 
-    --input: 159 50% 20%; 
-    --ring: 2 83% 49%; 
-    --chart-1: 2 83% 49%; 
-    --chart-2: 60 100% 50%; 
-    --chart-3: 159 100% 19%; 
-    --chart-4: 280 65% 60%; 
-    --chart-5: 340 75% 55%; 
-    --sidebar-background: 159 100% 5%; 
-    --sidebar-foreground: 45 100% 98%; 
-    --sidebar-primary: 2 83% 49%; 
-    --sidebar-primary-foreground: 45 100% 98%; 
-    --sidebar-accent: 159 50% 15%; 
-    --sidebar-accent-foreground: 45 100% 98%; 
-    --sidebar-border: 159 50% 20%; 
-    --sidebar-ring: 2 83% 49%;
+    --background: 224 71.4% 4.1%;
+    --foreground: 210 20% 98%;
+    --card: 224 71.4% 4.1%;
+    --card-foreground: 210 20% 98%;
+    --popover: 224 71.4% 4.1%;
+    --popover-foreground: 210 20% 98%;
+    --primary: 162 70% 30%;
+    --primary-foreground: 224 71.4% 4.1%;
+    --secondary: 215 27.9% 16.9%;
+    --secondary-foreground: 210 20% 98%;
+    --muted: 215 27.9% 16.9%;
+    --muted-foreground: 217.9 10.6% 64.9%;
+    --accent: 215 27.9% 16.9%;
+    --accent-foreground: 210 20% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 215 27.9% 16.9%;
+    --input: 215 27.9% 16.9%;
+    --ring: 162 70% 30%;
   }
 }
 
@@ -326,6 +299,25 @@
   margin-bottom: 12px !important;
 }
 
+/* Premium SaaS UI Utilities */
+@layer utilities {
+  .saas-glass {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl shadow-black/50;
+  }
+  .saas-card {
+    @apply bg-white/5 border border-white/5 rounded-[2rem] shadow-2xl shadow-black/50 backdrop-blur-sm;
+  }
+  .saas-shadow {
+    @apply shadow-2xl shadow-black/50;
+  }
+  .eco-gradient {
+    background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);
+  }
+  .eco-gradient-soft {
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  }
+}
+
 .leaflet-routing-geocoder:first-child::before {
   content: 'FROM';
   position: absolute;
@@ -445,18 +437,19 @@ button.gm-control-active,
 }
 }
 
-/* Apply theme variables */
-body {
-  color: hsl(var(--foreground));
-  background-color: hsl(var(--background));
-  font-family: Georgia, 'Times New Roman', serif, Helvetica, sans-serif;
-}
 @layer base {
   * {
     @apply border-border;
   }
   body {
-    @apply text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer utilities {
+  .saas-shadow-sm {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
   }
 }
 

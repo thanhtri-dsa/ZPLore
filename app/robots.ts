@@ -16,7 +16,7 @@ export default function robots(): MetadataRoute.Robots {
           '/services'
         ],
         disallow: [
-          '/management-portal/*',
+          '/admin/*',
           '/sign-in',
           '/sign-up',
           '/api/*',

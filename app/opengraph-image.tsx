@@ -7,7 +7,7 @@ const roboto = Roboto({
 })
 
 export const runtime = 'edge'
-export const alt = 'Forestline Tours & Travel'
+export const alt = 'Làng Nghề Travel'
 export const size = {
   width: 1200,
   height: 630,
@@ -46,7 +46,7 @@ export default async function Image() {
               color: '#000',
             }}
           >
-            Forestline Tours & Travel
+            Làng Nghề Travel
           </h1>
           <p
             style={{
@@ -56,7 +56,7 @@ export default async function Image() {
               lineHeight: 1.4,
             }}
           >
-            Tour agency that connects tourist with magical destinations
+            Hành trình về nguồn cội: làng nghề, nghệ nhân, workshop trải nghiệm
           </p>
           <div
             style={{
@@ -72,8 +72,7 @@ export default async function Image() {
                 width: '30px',
                 height: '30px',
                 borderRadius: '50%',
-                backgroundImage: 'url(https://utfs.io/f/ArG5MLmlQNB83hRMPaRt9fXeGmPCIWkEMYszTNgnKv4J01Ud)',
-                backgroundSize: 'cover',
+                background: 'linear-gradient(135deg, #064e3b 0%, #16a34a 100%)',
               }}
             />
             <span
@@ -82,7 +81,7 @@ export default async function Image() {
                 color: '#666',
               }}
             >
-              www.forestlinetours.com
+              langnghetravel.vn
             </span>
           </div>
         </div>
@@ -92,9 +91,7 @@ export default async function Image() {
           style={{
             width: '50%',
             height: '100%',
-            backgroundImage: 'url(https://utfs.io/f/ArG5MLmlQNB83hRMPaRt9fXeGmPCIWkEMYszTNgnKv4J01Ud)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
+            background: 'radial-gradient(circle at top left, rgba(16,185,129,0.28), transparent 55%), radial-gradient(circle at bottom right, rgba(6,95,70,0.30), transparent 55%), linear-gradient(135deg, #0b1220 0%, #0f172a 100%)',
           }}
         />
       </div>

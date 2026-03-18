@@ -51,52 +51,52 @@ function SidebarWithClerk({ isOpen, setIsOpen }: SidebarProps) {
   const [openCollapsibles, setOpenCollapsibles] = React.useState<Record<string, boolean>>({})
 
   const navItems = [
-    { href: "/management-portal/dashboard", icon: Home, label: "Dashboard" },
+    { href: "/admin/dashboard", icon: Home, label: "Dashboard" },
     { 
       icon: BookOpen, 
       label: "Bookings",
       children: [
-        { href: "/management-portal/view-bookings", label: "View Destination", icon: Package },
-        { href: "/management-portal/view-packages", label: "View Packages", icon: Package },
+        { href: "/admin/view-bookings", label: "View Destination", icon: Package },
+        { href: "/admin/view-packages", label: "View Packages", icon: Package },
       ]
     },
     { 
       icon: Plane , 
       label: "Destinations",
       children: [
-        { href: "/management-portal/create-destinations", label: "Create Destinations", icon: FileText },
-        { href: "/management-portal/manage-destinations", label: "Manage Destinations", icon: Settings },
+        { href: "/admin/create-destinations", label: "Create Destinations", icon: FileText },
+        { href: "/admin/manage-destinations", label: "Manage Destinations", icon: Settings },
       ]
     },
     { 
       icon: Package, 
       label: "Packages",
       children: [
-        { href: "/management-portal/create-packages", label: "Create Packages", icon: FileText },
-        { href: "/management-portal/manage-packages", label: "Manage Packages", icon: Settings },
+        { href: "/admin/create-packages", label: "Create Packages", icon: FileText },
+        { href: "/admin/manage-packages", label: "Manage Packages", icon: Settings },
       ]
     },
     { 
       icon: PenTool, 
       label: "Blogs",
       children: [
-        { href: "/management-portal/create-blogs", label: "Create Blogs", icon: FileText },
-        { href: "/management-portal/manage-blogs", label: "Manage Blogs", icon: Settings },
+        { href: "/admin/create-blogs", label: "Create Blogs", icon: FileText },
+        { href: "/admin/manage-blogs", label: "Manage Blogs", icon: Settings },
       ]
     },
     {
       icon: Users,
       label: "Customers",
       children: [
-        { href: "/management-portal/customers", label: "Customer List", icon: Users },
+        { href: "/admin/customers", label: "Customer List", icon: Users },
       ],
     },
     {
       icon: Image,
       label: "Images",
       children: [
-        { href: "/management-portal/images", label: "Propose Changes", icon: Image },
-        { href: "/management-portal/image-suggestions", label: "Review Suggestions", icon: Settings },
+        { href: "/admin/images", label: "Propose Changes", icon: Image },
+        { href: "/admin/image-suggestions", label: "Review Suggestions", icon: Settings },
       ],
     },
   ]
@@ -163,7 +163,7 @@ function SidebarWithClerk({ isOpen, setIsOpen }: SidebarProps) {
           <div className="flex items-center justify-between p-6 text-primary">
             <div className="flex items-center space-x-2">
               <Leaf className="h-6 w-6" />
-              <h2 className="text-lg font-bold"> Forestline Tours</h2>
+              <h2 className="text-lg font-bold">Làng Nghề Travel</h2>
             </div>
             <Button
               variant="ghost"
@@ -248,13 +248,13 @@ function SidebarWithClerk({ isOpen, setIsOpen }: SidebarProps) {
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <Link href="/management-portal/user-profile">
+                <Link href="/admin/user-profile">
                   <DropdownMenuItem>
                     <UserCircle className="mr-2 h-4 w-4" />
                     <span>Profile</span>
                   </DropdownMenuItem>
                 </Link>
-                <Link href="/management-portal/settings">
+                <Link href="/admin/settings">
                   <DropdownMenuItem>
                     <Settings className="mr-2 h-4 w-4" />
                     <span>Settings</span>
@@ -279,52 +279,52 @@ function SidebarNoAuth({ isOpen, setIsOpen }: SidebarProps) {
   const [openCollapsibles, setOpenCollapsibles] = React.useState<Record<string, boolean>>({})
 
   const navItems = [
-    { href: "/management-portal/dashboard", icon: Home, label: "Dashboard" },
+    { href: "/admin/dashboard", icon: Home, label: "Dashboard" },
     {
       icon: BookOpen,
       label: "Bookings",
       children: [
-        { href: "/management-portal/view-bookings", label: "View Destination", icon: Package },
-        { href: "/management-portal/view-packages", label: "View Packages", icon: Package },
+        { href: "/admin/view-bookings", label: "View Destination", icon: Package },
+        { href: "/admin/view-packages", label: "View Packages", icon: Package },
       ],
     },
     {
       icon: Plane,
       label: "Destinations",
       children: [
-        { href: "/management-portal/create-destinations", label: "Create Destinations", icon: FileText },
-        { href: "/management-portal/manage-destinations", label: "Manage Destinations", icon: Settings },
+        { href: "/admin/create-destinations", label: "Create Destinations", icon: FileText },
+        { href: "/admin/manage-destinations", label: "Manage Destinations", icon: Settings },
       ],
     },
     {
       icon: Package,
       label: "Packages",
       children: [
-        { href: "/management-portal/create-packages", label: "Create Packages", icon: FileText },
-        { href: "/management-portal/manage-packages", label: "Manage Packages", icon: Settings },
+        { href: "/admin/create-packages", label: "Create Packages", icon: FileText },
+        { href: "/admin/manage-packages", label: "Manage Packages", icon: Settings },
       ],
     },
     {
       icon: PenTool,
       label: "Blogs",
       children: [
-        { href: "/management-portal/create-blogs", label: "Create Blogs", icon: FileText },
-        { href: "/management-portal/manage-blogs", label: "Manage Blogs", icon: Settings },
+        { href: "/admin/create-blogs", label: "Create Blogs", icon: FileText },
+        { href: "/admin/manage-blogs", label: "Manage Blogs", icon: Settings },
       ],
     },
     {
       icon: Users,
       label: "Customers",
       children: [
-        { href: "/management-portal/customers", label: "Customer List", icon: Users },
+        { href: "/admin/customers", label: "Customer List", icon: Users },
       ],
     },
     {
       icon: Image,
       label: "Images",
       children: [
-        { href: "/management-portal/images", label: "Propose Changes", icon: Image },
-        { href: "/management-portal/image-suggestions", label: "Review Suggestions", icon: Settings },
+        { href: "/admin/images", label: "Propose Changes", icon: Image },
+        { href: "/admin/image-suggestions", label: "Review Suggestions", icon: Settings },
       ],
     },
   ]

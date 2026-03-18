@@ -18,7 +18,7 @@ const publicRoutes = [
   "/sign-up",
 ];
 
-const isProtectedRoute = createRouteMatcher(["/management-portal(.*)"]);
+const isProtectedRoute = createRouteMatcher(["/admin/dashboard(.*)"]); // or just remove if not needed
 const isPublicRoute = createRouteMatcher(publicRoutes);
 
 const clerkHandler = clerkMiddleware((auth, req) => {

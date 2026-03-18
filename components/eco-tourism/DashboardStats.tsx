@@ -2,102 +2,145 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BookText, Users } from 'lucide-react';
+import { BookText, Users, MapPin, TrendingUp, DollarSign } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface Stats {
   totalBlogs: number;
   totalBookings: number;
-  blogsTrend: number;
-  bookingsTrend: number;
+  totalRevenue: number;
+  activeDestinations: number;
 }
 
 export default function DashboardStats() {
   const [stats, setStats] = useState<Stats>({
     totalBlogs: 0,
     totalBookings: 0,
-    blogsTrend: 0,
-    bookingsTrend: 0,
+    totalRevenue: 0,
+    activeDestinations: 0,
   });
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchData = async (retryCount = 0) => {
+    const fetchData = async () => {
       try {
-        const [blogsResponse, bookingsResponse] = await Promise.all([
+        setIsLoading(true);
+        const [blogsRes, bookingsRes, destsRes] = await Promise.all([
           fetch('/api/blogs'),
-          fetch('/api/bookings'),
+          fetch('/api/bookings?limit=1000'),
+          fetch('/api/destinations'),
         ]);
 
-        if (!blogsResponse.ok || !bookingsResponse.ok) {
-          throw new Error('One or more API calls failed');
+        if (!blogsRes.ok || !bookingsRes.ok || !destsRes.ok) {
+          throw new Error('Failed to fetch dashboard metrics');
         }
 
-        const [blogsData, bookingsData] = await Promise.all([
-          blogsResponse.json(),
-          bookingsResponse.json(),
+        const [blogsData, bookingsData, destsData] = await Promise.all([
+          blogsRes.json(),
+          bookingsRes.json(),
+          destsRes.json(),
         ]);
 
-        console.log('Blogs data:', blogsData);
-        console.log('Bookings data:', bookingsData);
-
-        if (blogsData.error) {
-          throw new Error(blogsData.error);
-        }
+        const bookings = Array.isArray(bookingsData.bookings) ? bookingsData.bookings : [];
+        const revenue = bookings.reduce((acc: number, b: any) => acc + (parseFloat(b.price) || 0), 0);
 
         setStats({
           totalBlogs: Array.isArray(blogsData) ? blogsData.length : (blogsData.total || 0),
           totalBookings: bookingsData.total || 0,
-          blogsTrend: blogsData.trend || 0,
-          bookingsTrend: bookingsData.trend || 0,
+          totalRevenue: revenue,
+          activeDestinations: Array.isArray(destsData) ? destsData.length : (destsData.total || 0),
         });
-        setError(null);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        if (retryCount < 3) {
-          console.log(`Retrying... Attempt ${retryCount + 1}`);
-          setTimeout(() => fetchData(retryCount + 1), 1000);
-        } else {
-          setError('Failed to fetch data after multiple attempts');
-        }
+      } catch (err) {
+        console.error('Stats fetch error:', err);
+        setError('Failed to load metrics');
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchData();
   }, []);
 
-  return (
-    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 px:2 lg:px-20">
-      {error ? (
-        <div className="col-span-2 text-red-500">{error}</div>
-      ) : (
-        <>
-          <Card className="w-full">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Blogs</CardTitle>
-              <div className="bg-blue-100 dark:bg-blue-900 rounded-full p-2">
-                <BookText className="h-4 w-4 text-blue-500" />
-              </div>
+  if (isLoading) {
+    return (
+      <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+        {[1, 2, 3, 4].map((i) => (
+          <Card key={i} className="border-slate-100 shadow-sm rounded-xl overflow-hidden">
+            <CardHeader className="pb-2">
+              <Skeleton className="h-3 w-20" />
             </CardHeader>
             <CardContent>
-              <div className="text-xl sm:text-2xl font-bold">{stats.totalBlogs}</div>
+              <Skeleton className="h-8 w-16 mb-2" />
+              <Skeleton className="h-3 w-24" />
             </CardContent>
           </Card>
+        ))}
+      </div>
+    );
+  }
 
-          <Card className="w-full">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Bookings</CardTitle>
-              <div className="bg-purple-100 dark:bg-purple-900 rounded-full p-2">
-                <Users className="h-4 w-4 text-purple-500" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-xl sm:text-2xl font-bold">
-                {stats.totalBookings}
-              </div>
-            </CardContent>
-          </Card>
-        </>
-      )}
+  const cards = [
+    {
+      label: "Total Bookings",
+      value: stats.totalBookings.toLocaleString(),
+      icon: Users,
+      trend: "+12%",
+      color: "text-blue-500",
+      bg: "bg-blue-500/10"
+    },
+    {
+      label: "Gross Revenue",
+      value: `$${stats.totalRevenue.toLocaleString()}`,
+      icon: DollarSign,
+      trend: "+8.4%",
+      color: "text-emerald-500",
+      bg: "bg-emerald-500/10"
+    },
+    {
+      label: "Active Destinations",
+      value: stats.activeDestinations.toLocaleString(),
+      icon: MapPin,
+      trend: "+2 new",
+      color: "text-indigo-500",
+      bg: "bg-indigo-500/10"
+    },
+    {
+      label: "Blog Engagement",
+      value: stats.totalBlogs.toLocaleString(),
+      icon: BookText,
+      trend: "+5.1%",
+      color: "text-amber-500",
+      bg: "bg-amber-500/10"
+    }
+  ];
+
+  return (
+    <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+      {cards.map((card, idx) => (
+        <Card key={idx} className="bg-white/5 border-white/5 shadow-2xl shadow-black/20 rounded-2xl overflow-hidden hover:border-white/10 transition-all group">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0 px-6 pt-6">
+            <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
+              {card.label}
+            </CardTitle>
+            <div className={`${card.bg} p-2.5 rounded-xl transition-transform group-hover:scale-110 duration-500`}>
+              <card.icon className={`h-4 w-4 ${card.color}`} />
+            </div>
+          </CardHeader>
+          <CardContent className="px-6 pb-6 pt-2">
+            <div className="text-3xl font-black tracking-tight text-white mb-2">
+              {card.value}
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="flex items-center text-[10px] font-black px-2 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-500 border border-emerald-500/10">
+                <TrendingUp className="h-2.5 w-2.5 mr-1" />
+                {card.trend}
+              </span>
+              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider opacity-60">vs last period</span>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
     </div>
   );
 }

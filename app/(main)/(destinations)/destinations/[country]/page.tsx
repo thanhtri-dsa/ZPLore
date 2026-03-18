@@ -6,8 +6,8 @@ import { DestinationCardSkeleton } from '@/components/destinations/destinations-
 
 export async function generateMetadata({ params }: { params: { country: string } }) {
   return {
-    title: `${params.country} Destinations | Forestline Tours`,
-    description: `Explore amazing travel destinations in ${params.country} with Forestline Tours.`,
+    title: `${params.country} | Làng Nghề Travel`,
+    description: `Khám phá điểm đến và trải nghiệm văn hóa tại ${params.country} cùng Làng Nghề Travel.`,
   }
 }
 

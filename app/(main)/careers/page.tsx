@@ -8,7 +8,7 @@ import Image from "next/image";
 
 export default function CareersPage() {
   const handleLinkedIn = () => {
-    window.open("https://www.linkedin.com/company/forestlinetours", "_blank");
+    window.open("https://www.linkedin.com/company/langnghetravel", "_blank");
   };
 
   return (
@@ -26,7 +26,7 @@ export default function CareersPage() {
           />
           <div className="absolute inset-0 flex items-center justify-center">
             <h1 className="text-4xl md:text-5xl font-bold text-white drop-shadow-lg text-center px-4">
-              Explore Careers
+              Tuyển dụng
             </h1>
           </div>
         </div>
@@ -44,17 +44,17 @@ export default function CareersPage() {
         <div className="text-center mb-8 md:mb-12 lg:mb-16">
           <div className="inline-flex items-center justify-center mb-4 md:mb-6">
             <span className="text-xs sm:text-sm md:text-base font-semibold uppercase tracking-wide text-green-800 bg-green-100 px-2 sm:px-3 py-1 rounded-full">
-              Get to work with us
+              Cùng làm việc với chúng tôi
             </span>
           </div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 md:mb-6 leading-tight">
-            Discover <span className="text-green-600">Forestline</span> Careers
+            Khám phá cơ hội tại <span className="text-green-600">Làng Nghề Travel</span>
           </h2>
         </div>
 
         {/* Values Section */}
         <div className="mb-16">
-          <h2 className="text-3xl font-bold mb-8">Our Values</h2>
+          <h2 className="text-3xl font-bold mb-8">Giá trị của chúng tôi</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Card className="bg-white">
               <CardContent className="p-6">
@@ -73,10 +73,9 @@ export default function CareersPage() {
                     />
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold mb-2">Collaboration</h3>
+                <h3 className="text-xl font-semibold mb-2">Hợp tác</h3>
                 <p className="text-gray-600">
-                  We believe in the power of working together to create
-                  exceptional experiences.
+                  Chúng tôi tin vào sức mạnh đồng hành cùng nghệ nhân và cộng đồng để tạo ra trải nghiệm chân thật.
                 </p>
               </CardContent>
             </Card>
@@ -98,10 +97,9 @@ export default function CareersPage() {
                     />
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold mb-2">Innovation</h3>
+                <h3 className="text-xl font-semibold mb-2">Sáng tạo</h3>
                 <p className="text-gray-600">
-                  We constantly push boundaries to deliver unique travel
-                  solutions.
+                  Liên tục cải tiến tour và workshop để mỗi hành trình đều mới mẻ, giàu bản sắc.
                 </p>
               </CardContent>
             </Card>

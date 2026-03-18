@@ -4,6 +4,9 @@ import React, { useEffect, useRef, useState } from 'react'
 import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
+import leafletMarkerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
+import leafletMarkerIcon from 'leaflet/dist/images/marker-icon.png'
+import leafletMarkerShadow from 'leaflet/dist/images/marker-shadow.png'
 
 type GoogleMaps = {
   maps: {
@@ -149,15 +152,25 @@ const ContactMap: React.FC<MapProps> = ({ lat, lng, popupText }) => {
   const leafletIcon = React.useMemo(
     () =>
       L.icon({
-        iconUrl: '/images/marker-icon.png',
+        iconUrl: leafletMarkerIcon.src ?? (leafletMarkerIcon as unknown as string),
         iconSize: [25, 41],
         iconAnchor: [12, 41],
         popupAnchor: [1, -34],
-        shadowUrl: '/images/marker-shadow.png',
+        shadowUrl: leafletMarkerShadow.src ?? (leafletMarkerShadow as unknown as string),
         shadowSize: [41, 41],
       }),
     []
   )
+
+  useEffect(() => {
+    // @ts-expect-error Leaflet's icon default typing is loose; this is a standard override.
+    delete L.Icon.Default.prototype._getIconUrl
+    L.Icon.Default.mergeOptions({
+      iconRetinaUrl: leafletMarkerIcon2x.src ?? (leafletMarkerIcon2x as unknown as string),
+      iconUrl: leafletMarkerIcon.src ?? (leafletMarkerIcon as unknown as string),
+      shadowUrl: leafletMarkerShadow.src ?? (leafletMarkerShadow as unknown as string),
+    })
+  }, [])
 
   useEffect(() => {
     setIsClient(true)
