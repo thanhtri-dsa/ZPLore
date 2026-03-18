@@ -175,7 +175,7 @@ export default function HomePage() {
               </form>
 
               <div className="mt-6 flex flex-wrap items-center gap-3 text-xs">
-                {["Hương Lê Minh Xuân", "Bánh tráng Phú Hòa Đông", "Muối Lý Nhơn", "Mây tre Thái Mỹ", "Mành trúc Tân Thông Hội"].map((tag) => (
+                {["Hương Lê Minh Xuân","Mây tre Thái Mỹ", "Mành trúc Tân Thông Hội"].map((tag) => (
                   <button
                     key={tag}
                     onClick={() => {

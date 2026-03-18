@@ -279,6 +279,7 @@ const ItineraryTabContent = ({
 
       {(() => {
         const legs = (travelPackage.itinerary ?? []).slice().sort((a, b) => (a.day ?? 1) - (b.day ?? 1) || a.order - b.order)
+        const firstLegId = legs[0]?.id
         const groups = new Map<number, typeof legs>()
         for (const l of legs) {
           const d = l.day ?? 1
@@ -307,10 +308,16 @@ const ItineraryTabContent = ({
 
                 <div className="space-y-4">
                   {items.map((leg) => {
-                    const title = leg.stopTitle?.trim() || leg.toName
+                    const stopTitle = leg.stopTitle?.trim()
+                    const title = stopTitle || leg.toName
+                    const isFirstLeg = leg.id === firstLegId
+                    const displayTitle =
+                      !stopTitle && isFirstLeg && leg.fromName && leg.toName
+                        ? `${leg.fromName} → ${leg.toName}`
+                        : title
                     const desc = leg.stopDesc?.trim() || leg.note || ""
                     const img = leg.stopImage?.trim() || ""
-                    const query = (leg.mapsQuery?.trim() || `${title} ${travelPackage.location}`).trim()
+                    const query = (leg.mapsQuery?.trim() || `${displayTitle} ${travelPackage.location}`).trim()
                     const distance = leg.distanceKm ?? null
 
                     const mode = normalizeMode(leg.mode)
@@ -333,7 +340,7 @@ const ItineraryTabContent = ({
                         <div className="w-20 h-20 rounded-2xl overflow-hidden border border-gray-100 bg-gray-50 shrink-0">
                           {img ? (
                             // eslint-disable-next-line @next/next/no-img-element
-                            <img src={img} alt={title} className="w-full h-full object-cover" />
+                            <img src={img} alt={displayTitle} className="w-full h-full object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-xs font-black text-primary/40">
                               Làng Nghề
@@ -344,7 +351,7 @@ const ItineraryTabContent = ({
                         <div className="min-w-0 flex-1">
                           <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0">
-                              <div className="font-black text-primary truncate">{title}</div>
+                              <div className="font-black text-primary truncate">{displayTitle}</div>
                               {desc ? <div className="mt-1 text-sm text-muted-foreground line-clamp-2">{desc}</div> : null}
                             </div>
                             <a
@@ -380,7 +387,7 @@ const ItineraryTabContent = ({
                               className="h-10 rounded-2xl text-[10px] font-black uppercase tracking-widest"
                               onClick={() => {
                                 // Minimal: open planner with context (can be improved to deep-link adding a stop)
-                                window.location.href = `/dream-journey?add=${encodeURIComponent(title)}`
+                                window.location.href = `/dream-journey?add=${encodeURIComponent(displayTitle)}`
                               }}
                             >
                               <Plus className="w-4 h-4 mr-2" />
@@ -428,7 +435,13 @@ const ItineraryTabContent = ({
         </div>
       </div>
       <div className="h-[300px] md:h-[500px] w-full rounded-2xl md:rounded-[2.5rem] overflow-hidden border-2 border-white shadow-xl relative bg-gray-50">
-        <RouteMapLoader location={travelPackage.location} name={travelPackage.name} showPanel={showMapPanel} points={mapPoints} />
+        <RouteMapLoader
+          location={travelPackage.location}
+          name={travelPackage.name}
+          showPanel={showMapPanel}
+          points={mapPoints}
+          forceProvider="google"
+        />
       </div>
 
       <div className="mt-8 rounded-2xl md:rounded-[2.5rem] border border-primary/10 bg-primary/5 p-5 md:p-8">
@@ -622,7 +635,8 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
   const formRef = useRef<HTMLFormElement>(null)
 
   // Mobile Tab State
-  const [activeTab, setActiveTab] = useState<'info' | 'itinerary' | 'booking'>('info')
+  // This page currently disables customer booking. We only keep view tabs (info + itinerary).
+  const [activeTab, setActiveTab] = useState<'info' | 'itinerary'>('info')
 
   // Local state for itinerary leg modes
   const [itineraryModes, setItineraryModes] = useState<Record<string, TransportMode>>({})
@@ -661,16 +675,37 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
   }, [travelPackage.itinerary, travelerCount, itineraryModes])
 
   const mapPoints = useMemo(() => {
+    // Build an ordered route for map directions: start -> to1 -> to2 -> ... (dedup consecutive points)
+    const legs = itinerarySummary.legs
+      .slice()
+      .sort((a, b) => (a.day ?? 1) - (b.day ?? 1) || a.order - b.order)
+
     const pts: Array<{ lat: number; lng: number; label?: string }> = []
-    const pushIfValid = (lat: number | null, lng: number | null, label?: string) => {
-      if (typeof lat !== 'number' || typeof lng !== 'number') return
-      if (!Number.isFinite(lat) || !Number.isFinite(lng)) return
-      pts.push({ lat, lng, label })
+    const pushUnique = (p: { lat: number; lng: number; label?: string }) => {
+      const last = pts[pts.length - 1]
+      const tol = 1e-6
+      if (last && Math.abs(last.lat - p.lat) < tol && Math.abs(last.lng - p.lng) < tol) return
+      pts.push(p)
     }
-    for (const leg of itinerarySummary.legs) {
-      pushIfValid(leg.fromLat ?? null, leg.fromLng ?? null, leg.fromName)
-      pushIfValid(leg.toLat ?? null, leg.toLng ?? null, leg.toName)
+
+    const isValidCoord = (v: unknown) => typeof v === 'number' && Number.isFinite(v)
+
+    for (const leg of legs) {
+      const fromOk = isValidCoord(leg.fromLat) && isValidCoord(leg.fromLng)
+      const toOk = isValidCoord(leg.toLat) && isValidCoord(leg.toLng)
+
+      // Ensure we have a start point.
+      if (pts.length === 0) {
+        if (fromOk) pushUnique({ lat: leg.fromLat as number, lng: leg.fromLng as number, label: leg.fromName })
+        else if (toOk) pushUnique({ lat: leg.toLat as number, lng: leg.toLng as number, label: leg.toName })
+      }
+
+      // Always advance with the "to" point for correct route ordering.
+      if (toOk) {
+        pushUnique({ lat: leg.toLat as number, lng: leg.toLng as number, label: leg.toName })
+      }
     }
+
     return pts.length >= 2 ? pts : undefined
   }, [itinerarySummary.legs])
 
@@ -1030,11 +1065,10 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
           {[
             { id: 'info', label: 'Thông tin', icon: Info },
             { id: 'itinerary', label: 'Lộ trình', icon: Navigation },
-            { id: 'booking', label: 'Đặt Tour', icon: Calendar },
           ].map((tab: { id: string; label: string; icon: React.ElementType }) => (
             <button
                             key={tab.id}
-              onClick={() => setActiveTab(tab.id as 'info' | 'itinerary' | 'booking')}
+              onClick={() => setActiveTab(tab.id as 'info' | 'itinerary')}
               className={`flex-1 flex flex-col items-center py-4 transition-all relative ${activeTab === tab.id ? 'text-primary' : 'text-gray-400'}`}
             >
               <tab.icon size={20} className="mb-1" />
@@ -1102,20 +1136,6 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
                         />
                       </motion.div>
                     )}
-                    {activeTab === 'booking' && (
-                      <motion.div key="booking" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}>
-                        <BookingForm 
-                          isMobile 
-                          formRef={formRef}
-                          handleSubmit={handleSubmit}
-                          bookingDate={bookingDate}
-                          setBookingDate={setBookingDate}
-                          travelerCount={travelerCount}
-                          setTravelerCount={setTravelerCount}
-                          isLoading={isLoading}
-                        />
-                      </motion.div>
-                    )}
                   </AnimatePresence>
                 </div>
               </div>
@@ -1124,31 +1144,11 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
 
           {/* Desktop Sidebar */}
           <div className="hidden lg:block lg:col-span-4">
-            <BookingForm 
-              formRef={formRef}
-              handleSubmit={handleSubmit}
-              bookingDate={bookingDate}
-              setBookingDate={setBookingDate}
-              travelerCount={travelerCount}
-              setTravelerCount={setTravelerCount}
-              isLoading={isLoading}
-            />
+            {/* Customer booking is disabled on this page for now. */}
           </div>
         </div>
       </div>
 
-      {/* Mobile Sticky Booking Bar */}
-      <motion.div initial={{ y: 100 }} animate={{ y: 0 }} className="fixed left-0 right-0 z-[100] lg:hidden bg-white/90 backdrop-blur-xl border-t border-gray-100 p-4 bottom-[calc(env(safe-area-inset-bottom)+74px)]">
-        <div className="flex items-center justify-between gap-4 max-w-md mx-auto">
-          <div className="flex flex-col">
-            <span className="text-[10px] font-black uppercase text-gray-400">Giá chỉ từ</span>
-            <span className="text-lg font-black text-primary">{travelPackage.price.toLocaleString()} VNĐ</span>
-          </div>
-          <Button onClick={() => setActiveTab('booking')} className="flex-1 bg-primary text-white h-12 rounded-xl font-black text-xs uppercase tracking-widest shadow-xl">
-            Đặt Ngay <ChevronRight size={16} className="ml-2" />
-          </Button>
-        </div>
-      </motion.div>
     </div>
   )
 }

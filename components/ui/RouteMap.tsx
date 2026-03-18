@@ -157,9 +157,11 @@ interface RouteMapProps {
   zoom?: number;
   showPanel?: boolean;
   ecoPoints?: Array<{ lat: number, lng: number, label: string, type: string }>;
+  // Force which map engine to use (useful for pages that always want Google directions).
+  forceProvider?: 'google' | 'osm' | 'mapbox';
 }
 
-const RouteMap: React.FC<RouteMapProps> = ({ points: initialPoints, center, zoom = 10, showPanel = false, ecoPoints: initialEcoPoints }) => {
+const RouteMap: React.FC<RouteMapProps> = ({ points: initialPoints, center, zoom = 10, showPanel = false, ecoPoints: initialEcoPoints, forceProvider }) => {
   const [points, setPoints] = useState<RoutePoint[]>(initialPoints)
   const [ecoPoints, setEcoPoints] = useState<Array<{ lat: number, lng: number, label: string, type: string }>>(initialEcoPoints || [])
 
@@ -203,12 +205,17 @@ const RouteMap: React.FC<RouteMapProps> = ({ points: initialPoints, center, zoom
           : googleKey
             ? 'google' // Default to google if key exists
             : 'osm'
-  const provider =
+  let provider =
     providerWanted === 'mapbox' && !mapboxToken
       ? 'osm'
       : providerWanted === 'google' && !googleKey
         ? 'osm'
         : providerWanted
+
+  // Force provider for specific pages (fallback to osm if the key/token is missing).
+  if (forceProvider === 'google') provider = googleKey ? 'google' : 'osm'
+  if (forceProvider === 'mapbox') provider = mapboxToken ? 'mapbox' : 'osm'
+  if (forceProvider === 'osm') provider = 'osm'
   const routeProvider = routeProviderRaw === 'ors' ? 'ors' : 'native'
 
   const [isClient, setIsClient] = useState(false)

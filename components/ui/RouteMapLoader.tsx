@@ -11,6 +11,7 @@ const RouteMapLoader = ({
   points,
   ecoPoints,
   disableGeolocation = false,
+  forceProvider,
 }: {
   location: string
   name: string
@@ -18,6 +19,7 @@ const RouteMapLoader = ({
   points?: RoutePoint[]
   ecoPoints?: Array<{ lat: number, lng: number, label: string, type: string }>
   disableGeolocation?: boolean
+  forceProvider?: 'google' | 'osm' | 'mapbox'
 }) => {
   const [userLocation, setUserLocation] = useState<{ lat: number, lng: number } | null>(null);
 
@@ -116,6 +118,7 @@ const RouteMapLoader = ({
         zoom={hasPoints ? 12 : userLocation ? 12 : 7} 
         showPanel={showPanel} 
         ecoPoints={ecoPoints}
+        forceProvider={forceProvider}
       />
     </div>
   )

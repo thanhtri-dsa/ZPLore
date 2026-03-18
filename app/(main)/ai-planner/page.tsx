@@ -91,6 +91,10 @@ export default function AIPlannerPage() {
   const end = searchParams.get('end') || ''
   const transport = searchParams.get('transport') || 'Xe điện'
 
+  // Disable customer booking/reservations on the itinerary detail page.
+  // (Admin flow can be re-enabled later if needed.)
+  const CUSTOMER_BOOKING_DISABLED = true
+
   const [bookingDate, setBookingDate] = useState<Date>()
   const [travelerCount, setTravelerCount] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
@@ -215,6 +219,10 @@ export default function AIPlannerPage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (CUSTOMER_BOOKING_DISABLED) {
+      toast.warning('Tạm ngừng đặt lịch trình. Vui lòng liên hệ để được tư vấn.');
+      return
+    }
     if (!bookingDate) {
       toast.error("Vui lòng chọn ngày khởi hành");
       return;
@@ -454,20 +462,44 @@ export default function AIPlannerPage() {
                   </div>
 
                   <form ref={formRef} onSubmit={handleSubmit} className="space-y-5">
+                    {CUSTOMER_BOOKING_DISABLED && (
+                      <div className="rounded-2xl border border-secondary/30 bg-secondary/10 px-4 py-3 text-sm font-bold text-primary">
+                        Tính năng đặt lịch trình hiện tạm ngừng cho khách. Bạn có thể xem itinerary, eco-points và gợi ý.
+                      </div>
+                    )}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label className="text-[10px] font-black uppercase ml-1 text-primary/60 tracking-wider">Tên</Label>
-                        <Input name="firstname" placeholder="Tên" className="rounded-2xl h-12 bg-gray-50/50 border-gray-100 focus:bg-white transition-all" required />
+                        <Input
+                          name="firstname"
+                          placeholder="Tên"
+                          disabled={CUSTOMER_BOOKING_DISABLED}
+                          className="rounded-2xl h-12 bg-gray-50/50 border-gray-100 focus:bg-white transition-all"
+                          required
+                        />
                       </div>
                       <div className="space-y-2">
                         <Label className="text-[10px] font-black uppercase ml-1 text-primary/60 tracking-wider">Họ</Label>
-                        <Input name="lastname" placeholder="Họ" className="rounded-2xl h-12 bg-gray-50/50 border-gray-100 focus:bg-white transition-all" required />
+                        <Input
+                          name="lastname"
+                          placeholder="Họ"
+                          disabled={CUSTOMER_BOOKING_DISABLED}
+                          className="rounded-2xl h-12 bg-gray-50/50 border-gray-100 focus:bg-white transition-all"
+                          required
+                        />
                       </div>
                     </div>
                     
                     <div className="space-y-2">
                       <Label className="text-[10px] font-black uppercase ml-1 text-primary/60 tracking-wider">Email liên hệ</Label>
-                      <Input name="email" type="email" placeholder="email@vi-du.com" className="rounded-2xl h-12 bg-gray-50/50 border-gray-100 focus:bg-white transition-all" required />
+                      <Input
+                        name="email"
+                        type="email"
+                        placeholder="email@vi-du.com"
+                        disabled={CUSTOMER_BOOKING_DISABLED}
+                        className="rounded-2xl h-12 bg-gray-50/50 border-gray-100 focus:bg-white transition-all"
+                        required
+                      />
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -475,7 +507,11 @@ export default function AIPlannerPage() {
                         <Label className="text-[10px] font-black uppercase ml-1 text-primary/60 tracking-wider">Ngày khởi hành</Label>
                         <Popover>
                           <PopoverTrigger asChild>
-                            <Button variant="outline" className="w-full h-12 rounded-2xl bg-gray-50/50 border-gray-100 justify-start text-xs font-bold hover:bg-white transition-all">
+                            <Button
+                              variant="outline"
+                              disabled={CUSTOMER_BOOKING_DISABLED}
+                              className="w-full h-12 rounded-2xl bg-gray-50/50 border-gray-100 justify-start text-xs font-bold hover:bg-white transition-all"
+                            >
                               <Calendar className="mr-2 h-4 w-4 text-secondary" />
                               {bookingDate ? format(bookingDate, 'dd/MM/yyyy') : 'Chọn ngày'}
                             </Button>
@@ -485,7 +521,7 @@ export default function AIPlannerPage() {
                               mode="single" 
                               selected={bookingDate} 
                               onSelect={setBookingDate} 
-                              disabled={(date) => date < new Date()}
+                              disabled={(date) => CUSTOMER_BOOKING_DISABLED || date < new Date()}
                               className="p-4"
                             />
                           </PopoverContent>
@@ -500,6 +536,7 @@ export default function AIPlannerPage() {
                             type="number" 
                             min="1" 
                             defaultValue={travelerCount} 
+                            disabled={CUSTOMER_BOOKING_DISABLED}
                             className="rounded-2xl h-12 bg-gray-50/50 border-gray-100 pl-12 focus:bg-white transition-all font-bold" 
                             required 
                             onChange={(e) => setTravelerCount(Number(e.target.value) || 1)} 
@@ -512,7 +549,7 @@ export default function AIPlannerPage() {
                       <Button 
                         type="submit" 
                         className="w-full bg-primary hover:bg-gray-900 text-white h-14 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-primary/20 transition-all flex items-center justify-center gap-3" 
-                        disabled={isLoading}
+                        disabled={isLoading || CUSTOMER_BOOKING_DISABLED}
                       >
                         {isLoading ? "Đang xử lý..." : <>Xác nhận hành trình <ChevronRight size={16} /></>}
                       </Button>
