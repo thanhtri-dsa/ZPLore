@@ -142,7 +142,7 @@ const Navbar = () => {
                 {[
                   { label: "Trang chủ", href: "/" },
                   { label: "Khám phá", href: "/explore" },
-                  { label: "Du lịch xanh 🌱", href: "/green-travel" },
+                  { label: "Du lịch xanh ", href: "/green-travel" },
                   { label: "Gói tour", href: "/packages" },
                   { label: "Cộng đồng", href: "/community" },
                   { label: "Liên hệ", href: "/contact" },
@@ -232,9 +232,11 @@ const MobileNav = ({ onClose, onSearch }: { onClose: () => void; onSearch: () =>
   const navItems = [
     { label: 'Trang chủ', href: '/' },
     { label: 'Khám phá', href: '/explore' },
-    { label: 'Du lịch xanh 🌱', href: '/green-travel' },
+    { label: 'Du lịch xanh', href: '/green-travel' },
     { label: 'Gói tour', href: '/packages' },
     { label: 'Cộng đồng', href: '/community' },
+    { label: 'Hành trình', href: '/destinations'},
+    { label: 'Cá nhân', href: '/me' },
     { label: 'Liên hệ', href: '/contact' },
   ]
 

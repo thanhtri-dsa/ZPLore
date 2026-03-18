@@ -472,3 +472,5 @@ body {
   border: 1px solid hsl(var(--border));
   box-shadow: var(--shadow);
 }
+
+/* Có thể thêm custom style cho chat widget nếu cần sau này */

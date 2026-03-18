@@ -157,8 +157,9 @@ const EcoTourismFooter: React.FC = () => {
 
   return (
     <>
+      {/* TawkTo live chat widget */}
       <TawkToWidget />
-      
+
       <div className="relative z-10 overflow-hidden text-white">
         <div
           className="relative z-20 h-16 sm:h-24 md:h-32 w-full -scale-y-[1] bg-contain bg-repeat-x"
