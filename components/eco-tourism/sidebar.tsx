@@ -4,7 +4,7 @@ import * as React from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useUser, useClerk } from "@clerk/nextjs"
-import { ChevronDown, ChevronRight, Home, LogOut, Menu, Settings, X, PenTool, Leaf, UserCircle, Package, BookOpen, FileText,Plane  } from 'lucide-react'
+import { ChevronDown, ChevronRight, Home, LogOut, Menu, Settings, X, PenTool, Leaf, UserCircle, Package, BookOpen, FileText, Plane, Image, Users } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { useClerkEnabled } from '@/components/clerk-enabled'
@@ -83,6 +83,21 @@ function SidebarWithClerk({ isOpen, setIsOpen }: SidebarProps) {
         { href: "/management-portal/create-blogs", label: "Create Blogs", icon: FileText },
         { href: "/management-portal/manage-blogs", label: "Manage Blogs", icon: Settings },
       ]
+    },
+    {
+      icon: Users,
+      label: "Customers",
+      children: [
+        { href: "/management-portal/customers", label: "Customer List", icon: Users },
+      ],
+    },
+    {
+      icon: Image,
+      label: "Images",
+      children: [
+        { href: "/management-portal/images", label: "Propose Changes", icon: Image },
+        { href: "/management-portal/image-suggestions", label: "Review Suggestions", icon: Settings },
+      ],
     },
   ]
 
@@ -295,6 +310,21 @@ function SidebarNoAuth({ isOpen, setIsOpen }: SidebarProps) {
       children: [
         { href: "/management-portal/create-blogs", label: "Create Blogs", icon: FileText },
         { href: "/management-portal/manage-blogs", label: "Manage Blogs", icon: Settings },
+      ],
+    },
+    {
+      icon: Users,
+      label: "Customers",
+      children: [
+        { href: "/management-portal/customers", label: "Customer List", icon: Users },
+      ],
+    },
+    {
+      icon: Image,
+      label: "Images",
+      children: [
+        { href: "/management-portal/images", label: "Propose Changes", icon: Image },
+        { href: "/management-portal/image-suggestions", label: "Review Suggestions", icon: Settings },
       ],
     },
   ]

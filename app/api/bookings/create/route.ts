@@ -3,6 +3,15 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+function normalizeEmail(email: string) {
+  return email.trim().toLowerCase()
+}
+
+function normalizePhone(phone: string) {
+  const digits = phone.replace(/\D/g, '')
+  return digits.length ? digits : null
+}
+
 export async function POST(req: NextRequest) {
   try {
     const bookingData = await req.json();
@@ -45,8 +54,39 @@ export async function POST(req: NextRequest) {
     }
 
     // Create the booking without requiring user authentication
+    const emailNormalized = normalizeEmail(bookingData.email)
+    const phoneNormalized = normalizePhone(bookingData.phone)
+    const fullName = `${bookingData.firstname} ${bookingData.lastname}`.trim()
+
+    const customer = await prisma.customer.upsert({
+      where: { emailNormalized },
+      create: {
+        email: bookingData.email,
+        emailNormalized,
+        phone: bookingData.phone,
+        phoneNormalized,
+        country: bookingData.country || null,
+        firstName: bookingData.firstname,
+        lastName: bookingData.lastname,
+        fullName,
+        lastSeenAt: new Date(),
+      },
+      update: {
+        email: bookingData.email,
+        phone: bookingData.phone,
+        phoneNormalized,
+        country: bookingData.country || null,
+        firstName: bookingData.firstname,
+        lastName: bookingData.lastname,
+        fullName,
+        lastSeenAt: new Date(),
+      },
+      select: { id: true },
+    })
+
     const booking = await prisma.booking.create({
       data: {
+        customerId: customer.id,
         firstname: bookingData.firstname,
         lastname: bookingData.lastname,
         email: bookingData.email,

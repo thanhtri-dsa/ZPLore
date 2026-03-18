@@ -13,6 +13,11 @@ import { toast } from "sonner"
 
 type ItineraryLegForm = {
   mode: TransportMode
+  day: string
+  stopTitle: string
+  stopDesc: string
+  stopImage: string
+  mapsQuery: string
   fromName: string
   toName: string
   distanceKm: string
@@ -52,7 +57,22 @@ export function CreatePackageForm() {
   const addLeg = () => {
     setItinerary((prev) => [
       ...prev,
-      { mode: 'CAR', fromName: '', toName: '', distanceKm: '', fromLat: '', fromLng: '', toLat: '', toLng: '', note: '' },
+      {
+        mode: 'CAR',
+        day: '1',
+        stopTitle: '',
+        stopDesc: '',
+        stopImage: '',
+        mapsQuery: '',
+        fromName: '',
+        toName: '',
+        distanceKm: '',
+        fromLat: '',
+        fromLng: '',
+        toLat: '',
+        toLng: '',
+        note: '',
+      },
     ])
   }
 
@@ -74,6 +94,7 @@ export function CreatePackageForm() {
         const fromName = l.fromName.trim()
         const toName = l.toName.trim()
         if (!fromName || !toName) return null
+        const day = l.day.trim() ? Number(l.day) : 1
         const n = l.distanceKm.trim() ? Number(l.distanceKm) : null
         const fromLat = l.fromLat.trim() ? Number(l.fromLat) : null
         const fromLng = l.fromLng.trim() ? Number(l.fromLng) : null
@@ -82,6 +103,11 @@ export function CreatePackageForm() {
         return {
           order: idx,
           mode: l.mode,
+          day: Number.isFinite(day) && day > 0 ? Math.floor(day) : 1,
+          stopTitle: l.stopTitle.trim() || null,
+          stopDesc: l.stopDesc.trim() || null,
+          stopImage: l.stopImage.trim() || null,
+          mapsQuery: l.mapsQuery.trim() || null,
           fromName,
           toName,
           distanceKm: typeof n === 'number' && Number.isFinite(n) && n > 0 ? n : null,
@@ -188,6 +214,15 @@ export function CreatePackageForm() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="space-y-2">
+                    <Label>Day</Label>
+                    <Input
+                      value={leg.day}
+                      onChange={(e) => updateLeg(idx, { day: e.target.value })}
+                      placeholder="1"
+                      inputMode="numeric"
+                    />
+                  </div>
+                  <div className="space-y-2">
                     <Label>Mode</Label>
                     <Select
                       value={leg.mode}
@@ -221,6 +256,44 @@ export function CreatePackageForm() {
                       value={leg.toName}
                       onChange={(e) => updateLeg(idx, { toName: e.target.value })}
                       placeholder="Điểm đến"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label>Stop title (hiển thị)</Label>
+                    <Input
+                      value={leg.stopTitle}
+                      onChange={(e) => updateLeg(idx, { stopTitle: e.target.value })}
+                      placeholder="Ví dụ: Hồ Xuân Hương"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Google Maps query</Label>
+                    <Input
+                      value={leg.mapsQuery}
+                      onChange={(e) => updateLeg(idx, { mapsQuery: e.target.value })}
+                      placeholder="Hồ Xuân Hương Đà Lạt"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label>Stop image (URL hoặc data:)</Label>
+                    <Input
+                      value={leg.stopImage}
+                      onChange={(e) => updateLeg(idx, { stopImage: e.target.value })}
+                      placeholder="https://... hoặc data:image/.."
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Stop description</Label>
+                    <Input
+                      value={leg.stopDesc}
+                      onChange={(e) => updateLeg(idx, { stopDesc: e.target.value })}
+                      placeholder="Mô tả ngắn..."
                     />
                   </div>
                 </div>

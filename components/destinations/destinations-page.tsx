@@ -1,8 +1,9 @@
 'use client'
 
-import { useState,} from 'react'
-import { ChevronLeft, ChevronRight, MapPin } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { ChevronLeft, ChevronRight, MapPin, Search, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { DestinationCard } from '@/components/destinations/destination-card'
 import { DestinationCardSkeleton } from '@/components/destinations/destinations-card-skeleton'
 import { CountrySidebar } from '@/components/destinations/location-sidebar'
@@ -16,19 +17,107 @@ interface DestinationsPageProps {
   country?: string
 }
 
+type StoredDestination = {
+  id: string
+  updatedAt: number
+}
+
+const RECENT_DESTINATIONS_KEY = 'ecoTour.recent.destinations.v1'
+const FAVORITE_DESTINATIONS_KEY = 'ecoTour.favorites.destinations.v1'
+
+function normalizeText(v: string) {
+  try {
+    return v.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '')
+  } catch {
+    return v.toLowerCase()
+  }
+}
+
+function readStoredList<T>(key: string): T[] {
+  try {
+    const raw = localStorage.getItem(key)
+    if (!raw) return []
+    const parsed = JSON.parse(raw) as unknown
+    return Array.isArray(parsed) ? (parsed as T[]) : []
+  } catch {
+    return []
+  }
+}
+
 export default function DestinationsPage({ initialDestinations, country }: DestinationsPageProps) {
   const [destinations] = useState<Destination[]>(initialDestinations)
   const [loading] = useState(false)
   const [error] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
+  const [query, setQuery] = useState('')
+  const [view, setView] = useState<'all' | 'favorites' | 'recent'>('all')
+  const [sort, setSort] = useState<'featured' | 'price_asc' | 'price_desc' | 'name_asc'>('featured')
+  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(() => new Set())
+  const [recentMap, setRecentMap] = useState<Map<string, number>>(() => new Map())
 
   const itemsPerPage = 6
 
-  const filteredDestinations = country
-    ? destinations.filter((dest) =>
-        dest.country.toLowerCase() === country.toLowerCase()
-      )
-    : destinations
+  useEffect(() => {
+    try {
+      const favorites = readStoredList<{ id: string }>(FAVORITE_DESTINATIONS_KEY)
+      setFavoriteIds(new Set(favorites.map((d) => d.id)))
+    } catch {
+      setFavoriteIds(new Set())
+    }
+
+    try {
+      const recent = readStoredList<StoredDestination>(RECENT_DESTINATIONS_KEY)
+      const m = new Map<string, number>()
+      for (const r of recent) {
+        if (r && typeof r.id === 'string') m.set(r.id, typeof r.updatedAt === 'number' ? r.updatedAt : 0)
+      }
+      setRecentMap(m)
+    } catch {
+      setRecentMap(new Map())
+    }
+  }, [])
+
+  const filteredDestinations = useMemo(() => {
+    const byCountry = country
+      ? destinations.filter((dest) => dest.country.toLowerCase() === country.toLowerCase())
+      : destinations
+
+    const q = query.trim()
+    const byQuery =
+      q.length === 0
+        ? byCountry
+        : byCountry.filter((d) => {
+            const hay = normalizeText(
+              [d.name, d.country, d.city, ...(Array.isArray(d.tags) ? d.tags : [])].filter(Boolean).join(' ')
+            )
+            const needle = normalizeText(q)
+            return hay.includes(needle)
+          })
+
+    const byView =
+      view === 'favorites'
+        ? byQuery.filter((d) => favoriteIds.has(d.id))
+        : view === 'recent'
+          ? byQuery.filter((d) => recentMap.has(d.id))
+          : byQuery
+
+    const sorted =
+      sort === 'price_asc'
+        ? byView.slice().sort((a, b) => a.amount - b.amount)
+        : sort === 'price_desc'
+          ? byView.slice().sort((a, b) => b.amount - a.amount)
+          : sort === 'name_asc'
+            ? byView.slice().sort((a, b) => a.name.localeCompare(b.name, 'vi'))
+            : byView
+
+    if (view === 'recent') {
+      return sorted
+        .slice()
+        .sort((a, b) => (recentMap.get(b.id) ?? 0) - (recentMap.get(a.id) ?? 0))
+    }
+
+    return sorted
+  }, [country, destinations, favoriteIds, query, recentMap, sort, view])
 
   const totalPages = Math.ceil(filteredDestinations.length / itemsPerPage)
   const startIndex = (currentPage - 1) * itemsPerPage
@@ -36,6 +125,10 @@ export default function DestinationsPage({ initialDestinations, country }: Desti
     startIndex,
     startIndex + itemsPerPage
   )
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [country, query, sort, view])
 
   if (error) {
     return (
@@ -122,6 +215,65 @@ export default function DestinationsPage({ initialDestinations, country }: Desti
                 <p className="text-xs text-gray-500 font-medium italic">
                   Hiện có {filteredDestinations.length} điểm đến nổi bật
                 </p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                <div className="relative w-full sm:w-[260px]">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                  <Input
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="Tìm theo tên, quốc gia, tag..."
+                    className="pl-11 pr-10 rounded-2xl bg-white border-white shadow-sm"
+                  />
+                  {query.trim().length > 0 && (
+                    <button
+                      onClick={() => setQuery('')}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
+                      aria-label="Xóa tìm kiếm"
+                      type="button"
+                    >
+                      <X size={16} />
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant={view === 'all' ? 'default' : 'outline'}
+                    className="rounded-2xl"
+                    onClick={() => setView('all')}
+                    type="button"
+                  >
+                    Tất cả
+                  </Button>
+                  <Button
+                    variant={view === 'favorites' ? 'default' : 'outline'}
+                    className="rounded-2xl"
+                    onClick={() => setView('favorites')}
+                    type="button"
+                  >
+                    Yêu thích
+                  </Button>
+                  <Button
+                    variant={view === 'recent' ? 'default' : 'outline'}
+                    className="rounded-2xl"
+                    onClick={() => setView('recent')}
+                    type="button"
+                  >
+                    Gần đây
+                  </Button>
+                </div>
+
+                <select
+                  value={sort}
+                  onChange={(e) => setSort(e.target.value as typeof sort)}
+                  className="h-10 rounded-2xl border border-white bg-white px-4 text-sm font-bold text-primary shadow-sm"
+                >
+                  <option value="featured">Sắp xếp: Mặc định</option>
+                  <option value="price_asc">Giá: Thấp → Cao</option>
+                  <option value="price_desc">Giá: Cao → Thấp</option>
+                  <option value="name_asc">Tên: A → Z</option>
+                </select>
               </div>
             </div>
 

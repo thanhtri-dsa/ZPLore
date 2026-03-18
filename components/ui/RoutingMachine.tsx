@@ -16,6 +16,7 @@ interface RoutingMachineProps {
 type RoutingControl = L.Control & {
   getContainer: () => HTMLElement | undefined
   route: () => void
+  setWaypoints: (waypoints: L.LatLng[]) => void
   on: (event: string, handler: () => void) => void
 }
 
@@ -38,94 +39,90 @@ const RoutingMachine = ({ waypoints, showPanel = false }: RoutingMachineProps) =
   useEffect(() => {
     if (!map) return;
 
-    if (routingControlRef.current) {
-      try {
-        map.removeControl(routingControlRef.current);
-      } catch {}
-      routingControlRef.current = null;
+    if (waypoints.length < 2) {
+      if (routingControlRef.current) {
+        try {
+          map.removeControl(routingControlRef.current)
+        } catch {}
+        routingControlRef.current = null
+      }
+      return
     }
 
-    if (waypoints.length < 2) return;
+    const Leaflet = L as unknown as LeafletWithPlugins
 
-    // Initialize routing control with a small delay
-    const timer = setTimeout(() => {
-      const Leaflet = L as unknown as LeafletWithPlugins
+    if (!routingControlRef.current) {
       const geocoder = Leaflet.Control.Geocoder?.nominatim({
         params: {
           'accept-language': 'vi',
           countrycodes: 'vn,ke',
-          addressdetails: 1
-        }
+          addressdetails: 1,
+        },
       })
 
       const routingControl = Leaflet.Routing.control({
-        waypoints: waypoints,
+        waypoints,
         routeWhileDragging: true,
         lineOptions: {
-          styles: [{ color: '#10b981', opacity: 0.8, weight: 8 }]
+          styles: [{ color: '#10b981', opacity: 0.8, weight: 8 }],
         },
         ...(geocoder ? { geocoder } : {}),
-        createMarker: function(i: number, waypoint: { latLng: L.LatLng }, n: number) {
-          const isFirst = i === 0;
-          const isLast = i === n - 1;
-          
+        createMarker: function (i: number, waypoint: { latLng: L.LatLng }, n: number) {
+          const isFirst = i === 0
+          const isLast = i === n - 1
+
           const markerIcon = L.divIcon({
             className: 'custom-div-icon',
             html: `<div class="w-8 h-8 rounded-full border-4 border-white shadow-lg flex items-center justify-center ${isFirst ? 'bg-emerald-500' : (isLast ? 'bg-rose-500' : 'bg-amber-500')}">
                     <div class="w-2 h-2 rounded-full bg-white animate-ping"></div>
                    </div>`,
             iconSize: [32, 32],
-            iconAnchor: [16, 16]
-          });
+            iconAnchor: [16, 16],
+          })
 
           const marker = L.marker(waypoint.latLng, {
             icon: markerIcon,
             draggable: true,
-          });
+          })
 
           marker.bindPopup(`<div className="p-2 font-sans">
             <p className="font-bold text-gray-900 m-0">${isFirst ? '📍 Điểm đi' : (isLast ? '🏁 Hành trình ước mơ' : '⚓ Điểm dừng')}</p>
             <p className="text-xs text-gray-500 m-0 mt-1">Kéo để đổi vị trí</p>
-          </div>`);
-          return marker;
+          </div>`)
+          return marker
         },
         show: showPanel,
         addWaypoints: true,
         fitSelectedRoutes: true,
         collapsible: false,
         router: new Leaflet.Routing.osrmv1({
-          serviceUrl: 'https://router.project-osrm.org/route/v1'
-        })
-      }).addTo(map);
+          serviceUrl: 'https://router.project-osrm.org/route/v1',
+        }),
+      }).addTo(map)
 
-      routingControlRef.current = routingControl;
-
-      // FIX: Force route calculation when waypoints change or geocoded
       routingControl.on('waypointgeocoded', () => {
-        routingControl.route();
-      });
+        routingControl.route()
+      })
 
-      // Style the container
-      const container = routingControl.getContainer();
-      if (container) {
-        if (!showPanel) {
-          container.style.display = "none";
-        } else {
-          container.style.display = "block";
-          container.style.margin = "10px";
-        }
-      }
-    }, 200);
+      routingControlRef.current = routingControl
+    } else {
+      try {
+        routingControlRef.current.setWaypoints(waypoints)
+        routingControlRef.current.route()
+      } catch {}
+    }
 
-    return () => {
-      clearTimeout(timer);
-      if (routingControlRef.current) {
-        try {
-          map.removeControl(routingControlRef.current);
-        } catch {}
-        routingControlRef.current = null;
+    const container = routingControlRef.current?.getContainer()
+    if (container) {
+      if (!showPanel) {
+        container.style.display = 'none'
+      } else {
+        container.style.display = 'block'
+        container.style.margin = '10px'
       }
-    };
+    }
+
+    return () => {};
   }, [map, showPanel, waypoints]);
 
   return null;

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -42,11 +42,113 @@ interface BookingFormData {
 const EMAIL_REGEX = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i
 const PHONE_REGEX = /^[+\d][\d\s-]{7,}$/
 
+type StoredDestination = {
+  id: string
+  name: string
+  country: string
+  city: string
+  amount: number
+  imageData: string
+  updatedAt: number
+}
+
+const RECENT_DESTINATIONS_KEY = 'ecoTour.recent.destinations.v1'
+const FAVORITE_DESTINATIONS_KEY = 'ecoTour.favorites.destinations.v1'
+const MAX_RECENT_DESTINATIONS = 12
+const MAX_FAVORITE_DESTINATIONS = 50
+
+function readStoredList<T>(key: string): T[] {
+  try {
+    const raw = localStorage.getItem(key)
+    if (!raw) return []
+    const parsed = JSON.parse(raw) as unknown
+    return Array.isArray(parsed) ? (parsed as T[]) : []
+  } catch {
+    return []
+  }
+}
+
+function writeStoredList<T>(key: string, value: T[]) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value))
+  } catch {}
+}
+
+function upsertById<T extends { id: string }>(items: T[], item: T, max: number) {
+  const next = [item, ...items.filter((x) => x.id !== item.id)]
+  return next.slice(0, max)
+}
+
 export default function DestinationDetail({ destination }: DestinationDetailProps) {
   const [bookingDate, setBookingDate] = useState<Date>()
   const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState<Partial<BookingFormData>>({})
   const [isLiked, setIsLiked] = useState(false)
+
+  useEffect(() => {
+    const favorites = readStoredList<StoredDestination>(FAVORITE_DESTINATIONS_KEY)
+    setIsLiked(favorites.some((d) => d.id === destination.id))
+
+    const recentItem: StoredDestination = {
+      id: destination.id,
+      name: destination.name,
+      country: destination.country,
+      city: destination.city,
+      amount: destination.amount,
+      imageData: destination.imageData,
+      updatedAt: Date.now(),
+    }
+    const recent = readStoredList<StoredDestination>(RECENT_DESTINATIONS_KEY)
+    writeStoredList(RECENT_DESTINATIONS_KEY, upsertById(recent, recentItem, MAX_RECENT_DESTINATIONS))
+  }, [destination.amount, destination.city, destination.country, destination.id, destination.imageData, destination.name])
+
+  const handleToggleFavorite = () => {
+    const item: StoredDestination = {
+      id: destination.id,
+      name: destination.name,
+      country: destination.country,
+      city: destination.city,
+      amount: destination.amount,
+      imageData: destination.imageData,
+      updatedAt: Date.now(),
+    }
+    setIsLiked((prev) => {
+      const next = !prev
+      const favorites = readStoredList<StoredDestination>(FAVORITE_DESTINATIONS_KEY)
+      if (next) {
+        writeStoredList(FAVORITE_DESTINATIONS_KEY, upsertById(favorites, item, MAX_FAVORITE_DESTINATIONS))
+        toast.success('Đã thêm vào yêu thích')
+      } else {
+        writeStoredList(
+          FAVORITE_DESTINATIONS_KEY,
+          favorites.filter((d) => d.id !== destination.id)
+        )
+        toast.success('Đã bỏ yêu thích')
+      }
+      return next
+    })
+  }
+
+  const handleShare = async () => {
+    const url = typeof window !== 'undefined' ? window.location.href : ''
+    const title = destination.name
+    try {
+      if (typeof navigator !== 'undefined' && 'share' in navigator) {
+        await (navigator as Navigator & { share: (data: { title?: string; url?: string }) => Promise<void> }).share({ title, url })
+        return
+      }
+    } catch {}
+
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard && url) {
+        await navigator.clipboard.writeText(url)
+        toast.success('Đã copy link')
+        return
+      }
+    } catch {}
+
+    toast.error('Không thể chia sẻ lúc này')
+  }
 
   const validateForm = (formData: FormData): Partial<BookingFormData> => {
     const errors: Partial<BookingFormData> = {}
@@ -176,12 +278,12 @@ export default function DestinationDetail({ destination }: DestinationDetailProp
               </div>
               <div className="flex gap-4">
                 <button 
-                  onClick={() => setIsLiked(!isLiked)}
+                  onClick={handleToggleFavorite}
                   className={`p-3 rounded-full backdrop-blur-md border border-white/30 transition-all ${isLiked ? 'bg-red-500 border-red-500 text-white' : 'bg-white/10 text-white hover:bg-white/20'}`}
                 >
                   <Heart size={20} fill={isLiked ? "currentColor" : "none"} />
                 </button>
-                <button className="p-3 rounded-full bg-white/10 backdrop-blur-md border border-white/30 text-white hover:bg-white/20 transition-all">
+                <button onClick={handleShare} className="p-3 rounded-full bg-white/10 backdrop-blur-md border border-white/30 text-white hover:bg-white/20 transition-all">
                   <Share2 size={20} />
                 </button>
               </div>

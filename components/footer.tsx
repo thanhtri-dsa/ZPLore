@@ -15,8 +15,9 @@ const emailSchema = z.string().email({ message: "Invalid email address" });
 
 const TawkToWidget = () => {
   useEffect(() => {
-    window.Tawk_API = window.Tawk_API || {};
-    window.Tawk_LoadStart = new Date();
+    const w = window as Window & { Tawk_API?: unknown; Tawk_LoadStart?: Date }
+    w.Tawk_API = w.Tawk_API || {}
+    w.Tawk_LoadStart = new Date()
 
     const script = document.createElement('script');
     script.async = true;

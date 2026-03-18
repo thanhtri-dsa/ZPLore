@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { Menu, ChevronRight, Phone, Mail, Search, User, Globe, X, Star, Sparkles, Bike, ArrowUpRight } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import {
@@ -15,6 +16,10 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = React.useState(false)
   const [isScrolled, setIsScrolled] = React.useState(false)
   const [showSearch, setShowSearch] = React.useState(false)
+  const pathname = usePathname()
+
+  // Some pages (e.g. full-map explore) have busy backgrounds; force solid navbar for readability.
+  const forceSolid = pathname === "/explore" || pathname?.startsWith("/explore/")
 
   const { scrollYProgress } = useScroll()
   const scaleX = useSpring(scrollYProgress, {
@@ -98,7 +103,13 @@ const Navbar = () => {
         </div>
       </div>
 
-      <header className={`w-full transition-all duration-700 relative ${isScrolled ? 'bg-primary/95 backdrop-blur-2xl shadow-[0_10px_50px_rgba(0,0,0,0.3)] py-2 md:py-3' : 'bg-transparent py-3 md:py-8'}`}>
+      <header
+        className={`w-full transition-all duration-700 relative ${
+          isScrolled || forceSolid
+            ? 'bg-primary/95 backdrop-blur-2xl shadow-[0_10px_50px_rgba(0,0,0,0.35)] py-2 md:py-3 border-b border-white/10'
+            : 'bg-transparent py-3 md:py-8'
+        }`}
+      >
         {/* Subtle Vietnamese Pattern Overlay */}
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none vn-pattern rotate-180 overflow-hidden" />
         
@@ -116,8 +127,8 @@ const Navbar = () => {
                   ZPLore
                 </span>
                 <div className="flex items-center gap-2 md:gap-3 mt-1 md:mt-2">
-                  <span className="text-[8px] md:text-[12px] font-black text-secondary/80 tracking-[0.3em] md:tracking-[0.5em] uppercase leading-none">
-                    Việt Nam
+                  <span className="text-[8px] md:text-[12px] font-black text-secondary/80 tracking-[0.32em] md:tracking-[0.5em] uppercase leading-none">
+                    VIỆT NAM
                   </span>
                   <div className="h-[1px] md:h-[1.5px] w-4 md:w-8 bg-secondary/30 group-hover:w-12 transition-all duration-700" />
                   <Star size={8} className="md:w-3 md:h-3 text-secondary fill-secondary animate-pulse" />
@@ -128,20 +139,21 @@ const Navbar = () => {
             {/* Desktop Nav */}
             <div className="hidden lg:block">
               <div className="flex items-center space-x-1 xl:space-x-3">
-                <Link href="/" className="px-3 xl:px-6 py-3 text-white/90 hover:text-secondary transition-all font-bold text-[11px] xl:text-[12px] uppercase tracking-[0.2em] relative group">
-                  Trang chủ
-                  <span className="absolute bottom-0 left-3 xl:left-6 right-3 xl:right-6 h-0.5 bg-secondary scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
-                </Link>
-
-                <Link href="/dream-journey" className={`flex items-center gap-2 xl:gap-3 px-3 xl:px-6 py-3 transition-all font-bold text-[11px] xl:text-[12px] uppercase tracking-[0.2em] rounded-2xl text-white/90 hover:text-secondary hover:bg-white/5`}>
-                  Hành trình ước mơ
-                  <Sparkles size={14} className="text-secondary animate-pulse" />
-                </Link>
-
-                {['Gói du lịch', 'Tin tức', 'Liên hệ'].map((item) => (
-                  <Link key={item} href={`/${item === 'Gói du lịch' ? 'packages' : item === 'Tin tức' ? 'blogs' : 'contact'}`} className="px-3 xl:px-6 py-3 text-white/90 hover:text-secondary transition-all font-bold text-[11px] xl:text-[12px] uppercase tracking-[0.2em] relative group">
-                    {item}
-                    <span className="absolute bottom-0 left-3 xl:left-6 right-3 xl:right-6 h-0.5 bg-secondary scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
+                {[
+                  { label: "Trang chủ", href: "/" },
+                  { label: "Khám phá", href: "/explore" },
+                  { label: "Du lịch xanh 🌱", href: "/green-travel" },
+                  { label: "Gói tour", href: "/packages" },
+                  { label: "Cộng đồng", href: "/community" },
+                  { label: "Liên hệ", href: "/contact" },
+                ].map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="px-3 xl:px-5 py-3 text-white/90 hover:text-secondary transition-all font-black text-[11px] xl:text-[12px] uppercase tracking-[0.18em] relative group rounded-2xl hover:bg-white/5"
+                  >
+                    {item.label}
+                    <span className="absolute bottom-0 left-3 xl:left-5 right-3 xl:right-5 h-0.5 bg-secondary scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
                   </Link>
                 ))}
               </div>
@@ -149,21 +161,22 @@ const Navbar = () => {
 
             {/* Actions */}
             <div className="flex items-center space-x-2 xl:space-x-4">
-              <button onClick={() => setShowSearch(true)} className="hidden md:flex p-2 xl:p-3.5 text-white/80 hover:text-secondary hover:bg-white/10 rounded-xl xl:rounded-2xl transition-all border border-transparent hover:border-white/20">
-                <Search size={18} className="xl:w-5 xl:h-5" />
+              <button
+                onClick={() => setShowSearch(true)}
+                className="flex items-center justify-center w-10 h-10 md:w-12 md:h-12 xl:w-auto xl:h-auto p-0 xl:p-3.5 text-white/80 hover:text-secondary hover:bg-white/10 rounded-xl xl:rounded-2xl transition-all border border-white/10 xl:border-transparent hover:border-white/20"
+                aria-label="Tìm kiếm"
+              >
+                <Search className="w-5 h-5 xl:w-5 xl:h-5" />
               </button>
-              <button className="hidden md:flex p-2 xl:p-3.5 text-white/80 hover:text-secondary hover:bg-white/10 rounded-xl xl:rounded-2xl transition-all border border-transparent hover:border-white/20">
-                <User size={18} className="xl:w-5 xl:h-5" />
-              </button>
-              <div className="h-8 xl:h-10 w-[1px] bg-white/10 mx-1 xl:mx-2 hidden md:block" />
-              <Link href="/packages">
-                <Button className="hidden md:flex bg-secondary text-primary font-black px-6 xl:px-10 py-5 xl:py-7 rounded-xl xl:rounded-2xl hover:bg-white hover:text-primary transition-all duration-500 text-[10px] xl:text-[11px] uppercase tracking-[0.2em] border-none group shadow-2xl hover:scale-105 active:scale-95">
-                  <span className="hidden xl:inline">Đặt Tour Ngay</span>
-                  <span className="xl:hidden">Đặt Ngay</span>
-                  <ChevronRight size={14} className="ml-1 xl:ml-2 group-hover:translate-x-2 transition-transform duration-500" />
+
+              <Link href="/dream-journey" className="hidden lg:inline-flex">
+                <Button className="h-10 xl:h-12 px-4 xl:px-6 rounded-2xl font-black uppercase tracking-[0.18em] text-[11px] xl:text-[12px] bg-secondary text-primary hover:bg-secondary/90 shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
+                  <span className="flex items-center gap-2">
+                    Tạo hành trình
+                    <ArrowUpRight className="w-4 h-4" />
+                  </span>
                 </Button>
               </Link>
-
               <Sheet open={isOpen} onOpenChange={setIsOpen}>
                 <SheetTrigger asChild>
                   <Button variant="ghost" size="icon" className="lg:hidden text-white hover:bg-white/10 p-0 w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl border border-white/10">
@@ -171,7 +184,13 @@ const Navbar = () => {
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="right" className="p-0 border-l-white/10 w-full sm:w-[420px] bg-primary text-white [&>button]:hidden">
-                  <MobileNav onClose={() => setIsOpen(false)} />
+                  <MobileNav
+                    onClose={() => setIsOpen(false)}
+                    onSearch={() => {
+                      setIsOpen(false)
+                      setShowSearch(true)
+                    }}
+                  />
                 </SheetContent>
               </Sheet>
             </div>
@@ -182,14 +201,24 @@ const Navbar = () => {
       {/* Search Overlay */}
       <AnimatePresence>
         {showSearch && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[10001] bg-primary/95 backdrop-blur-2xl p-4 md:p-20">
-            <button onClick={() => setShowSearch(false)} className="absolute top-8 right-8 text-white/50 hover:text-white transition-colors">
-              <X size={32} />
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[10001] bg-primary/95 backdrop-blur-2xl px-4 py-[calc(env(safe-area-inset-top)+16px)] md:p-20">
+            <button
+              onClick={() => setShowSearch(false)}
+              className="absolute right-4 top-[calc(env(safe-area-inset-top)+12px)] md:top-8 md:right-8 text-white/60 hover:text-white transition-colors w-11 h-11 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 flex items-center justify-center"
+              aria-label="Đóng tìm kiếm"
+            >
+              <X className="w-5 h-5 md:w-8 md:h-8" />
             </button>
-            <div className="max-w-4xl mx-auto pt-20">
+            <div className="max-w-4xl mx-auto pt-14 md:pt-20">
               <div className="relative">
-                <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-secondary h-8 w-8" />
-                <input autoFocus type="text" placeholder="Bạn muốn đi đâu hôm nay?" className="w-full bg-white/5 border-b-2 border-secondary/30 focus:border-secondary py-8 pl-20 pr-8 text-3xl md:text-5xl font-serif text-white placeholder:text-white/20 outline-none transition-all" />
+                <Search className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 text-secondary h-5 w-5 md:h-8 md:w-8" />
+                <input
+                  autoFocus
+                  type="text"
+                  inputMode="search"
+                  placeholder="Bạn muốn đi đâu hôm nay?"
+                  className="w-full bg-white/5 border-b-2 border-secondary/30 focus:border-secondary py-4 md:py-8 pl-12 md:pl-20 pr-4 md:pr-8 text-xl sm:text-2xl md:text-5xl font-serif text-white placeholder:text-white/25 outline-none transition-all"
+                />
               </div>
             </div>
           </motion.div>
@@ -199,12 +228,13 @@ const Navbar = () => {
   )
 }
 
-const MobileNav = ({ onClose }: { onClose: () => void }) => {
+const MobileNav = ({ onClose, onSearch }: { onClose: () => void; onSearch: () => void }) => {
   const navItems = [
     { label: 'Trang chủ', href: '/' },
-    { label: 'Hành trình', href: '/destinations' },
-    { label: 'Gói du lịch', href: '/packages' },
-    { label: 'Tin tức', href: '/blogs' },
+    { label: 'Khám phá', href: '/explore' },
+    { label: 'Du lịch xanh 🌱', href: '/green-travel' },
+    { label: 'Gói tour', href: '/packages' },
+    { label: 'Cộng đồng', href: '/community' },
     { label: 'Liên hệ', href: '/contact' },
   ]
 
@@ -217,7 +247,7 @@ const MobileNav = ({ onClose }: { onClose: () => void }) => {
               <Bike className="h-6 w-6 text-secondary" />
             </div>
             <div className="flex flex-col leading-tight">
-              <span className="text-lg font-black font-serif tracking-tight">ZPLore</span>
+              <span className="text-lg font-black font-serif tracking-tight">Eco-Travel</span>
               <span className="text-[10px] font-bold tracking-[0.35em] text-secondary uppercase">Việt Nam</span>
             </div>
           </Link>
@@ -233,6 +263,14 @@ const MobileNav = ({ onClose }: { onClose: () => void }) => {
       </div>
 
       <div className="flex-1 overflow-y-auto px-5 py-5 space-y-2">
+        <button
+          onClick={onSearch}
+          className="w-full flex items-center justify-between rounded-2xl px-4 py-4 bg-white/5 hover:bg-white/10 transition-colors border border-white/10"
+          aria-label="Mở tìm kiếm"
+        >
+          <span className="text-base font-black tracking-wide">Tìm kiếm</span>
+          <Search size={18} className="text-secondary" />
+        </button>
         {navItems.map((item) => (
           <Link
             key={item.href}
@@ -258,10 +296,12 @@ const MobileNav = ({ onClose }: { onClose: () => void }) => {
       </div>
 
       <div className="px-5 pt-4 pb-[calc(env(safe-area-inset-bottom)+18px)] border-t border-white/10 bg-primary/95 backdrop-blur-xl">
-        <Link href="/packages" onClick={onClose} className="block">
-          <Button className="w-full bg-secondary text-primary font-black h-14 rounded-2xl uppercase tracking-[0.18em] text-[11px] shadow-2xl">
-            Đặt Tour Ngay
-            <ArrowUpRight size={18} className="ml-2" />
+        <Link href="/dream-journey" onClick={onClose} className="block">
+          <Button className="w-full h-12 rounded-2xl font-black uppercase tracking-[0.18em] text-[12px] bg-secondary text-primary hover:bg-secondary/90">
+            <span className="flex items-center justify-center gap-2">
+              Tạo hành trình
+              <ArrowUpRight className="w-4 h-4" />
+            </span>
           </Button>
         </Link>
       </div>

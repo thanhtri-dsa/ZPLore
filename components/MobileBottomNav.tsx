@@ -14,7 +14,7 @@ const MobileBottomNav = () => {
     { label: 'Hành trình', href: '/destinations', icon: MapPin },
     { label: 'Gói tour', href: '/packages', icon: Package },
     { label: 'Tin tức', href: '/blogs', icon: BookOpen },
-    { label: 'Cá nhân', href: '/management-portal/dashboard', icon: User },
+    { label: 'Cá nhân', href: '/me', icon: User },
   ]
 
   return (

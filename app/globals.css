@@ -397,6 +397,31 @@
   transform: scale(1.02) !important;
 }
 
+/* Hide Leaflet default controls (zoom +/- and attribution) for a cleaner UI */
+.leaflet-control-zoom,
+.leaflet-control-attribution {
+  display: none !important;
+}
+
+/* Hide Mapbox GL default controls (zoom +/- etc.) */
+.mapboxgl-ctrl,
+.mapboxgl-ctrl-group,
+.mapboxgl-ctrl-bottom-left,
+.mapboxgl-ctrl-bottom-right {
+  display: none !important;
+}
+
+/* Hide Google Maps UI controls (zoom buttons, terms, report map error, etc.) */
+.gm-style-cc,
+.gmnoprint,
+.gm-control-active,
+button.gm-control-active,
+.gm-fullscreen-control,
+.gm-svpc,
+.gm-ui-hover-effect {
+  display: none !important;
+}
+
 /* Geocoder search results list */
 .leaflet-control-geocoder-alternatives {
   background: white !important;

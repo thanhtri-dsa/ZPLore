@@ -28,9 +28,12 @@ const RouteMapLoader = ({
     };
     window.addEventListener('user-location-updated', handleUserLocationUpdate);
     
-    if (disableGeolocation) return;
-    if (Array.isArray(points) && points.length >= 2) return;
-    if ("geolocation" in navigator) {
+    const shouldTryGeolocation =
+      !disableGeolocation &&
+      !(Array.isArray(points) && points.length >= 2) &&
+      "geolocation" in navigator
+
+    if (shouldTryGeolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           setUserLocation({
@@ -38,8 +41,8 @@ const RouteMapLoader = ({
             lng: position.coords.longitude
           });
         },
-        (error) => {
-          console.error("Error getting user location:", error);
+        () => {
+          setUserLocation(null)
         }
       );
     }
@@ -109,7 +112,6 @@ const RouteMapLoader = ({
   return (
     <div className="w-full h-full relative">
       <RouteMap 
-        key={`${location}-${hasPoints ? pointsKey : userLocation ? 'with-loc' : 'no-loc'}`} 
         points={routePoints} 
         zoom={hasPoints ? 12 : userLocation ? 12 : 7} 
         showPanel={showPanel} 

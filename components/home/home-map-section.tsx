@@ -84,7 +84,7 @@ export function HomeMapSection() {
           </div>
 
           <motion.div
-            className="lg:col-span-2 h-[600px] rounded-[3rem] overflow-hidden shadow-[0_30px_100px_rgba(0,0,0,0.15)] border-8 border-white relative group"
+            className="lg:col-span-2 h-[360px] sm:h-[420px] md:h-[520px] lg:h-[600px] rounded-[2rem] sm:rounded-[2.5rem] lg:rounded-[3rem] overflow-hidden shadow-[0_30px_100px_rgba(0,0,0,0.15)] border-4 sm:border-6 lg:border-8 border-white relative group"
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8 }}

@@ -9,6 +9,11 @@ const prisma = new PrismaClient()
 type ItineraryLegInput = {
   order?: unknown
   mode?: unknown
+  day?: unknown
+  stopTitle?: unknown
+  stopDesc?: unknown
+  stopImage?: unknown
+  mapsQuery?: unknown
   fromName?: unknown
   toName?: unknown
   distanceKm?: unknown
@@ -31,6 +36,11 @@ function normalizeNumber(value: unknown): number | null {
 function normalizeItinerary(raw: unknown): Array<{
   order: number
   mode: string
+  day: number
+  stopTitle: string | null
+  stopDesc: string | null
+  stopImage: string | null
+  mapsQuery: string | null
   fromName: string
   toName: string
   distanceKm: number | null
@@ -48,6 +58,8 @@ function normalizeItinerary(raw: unknown): Array<{
       const toName = String(leg.toName ?? '').trim()
       if (!fromName || !toName) return null
       const order = normalizeNumber(leg.order) ?? idx
+      const dayRaw = normalizeNumber(leg.day)
+      const day = dayRaw && dayRaw > 0 ? Math.floor(dayRaw) : 1
       const distanceKm = normalizeNumber(leg.distanceKm)
       const fromLat = normalizeNumber(leg.fromLat)
       const fromLng = normalizeNumber(leg.fromLng)
@@ -55,9 +67,18 @@ function normalizeItinerary(raw: unknown): Array<{
       const toLng = normalizeNumber(leg.toLng)
       const mode = String(leg.mode ?? 'CAR').trim().toUpperCase() || 'CAR'
       const note = String(leg.note ?? '').trim()
+      const stopTitle = String(leg.stopTitle ?? '').trim()
+      const stopDesc = String(leg.stopDesc ?? '').trim()
+      const stopImage = typeof leg.stopImage === 'string' ? leg.stopImage.trim() : ''
+      const mapsQuery = String(leg.mapsQuery ?? '').trim()
       return {
         order: Math.max(0, Math.floor(order)),
         mode,
+        day,
+        stopTitle: stopTitle ? stopTitle : null,
+        stopDesc: stopDesc ? stopDesc : null,
+        stopImage: stopImage ? stopImage : null,
+        mapsQuery: mapsQuery ? mapsQuery : null,
         fromName,
         toName,
         distanceKm,
@@ -161,6 +182,11 @@ export async function POST(request: Request) {
               create: itineraryData.map((leg) => ({
                 order: leg.order,
                 mode: leg.mode,
+                day: leg.day,
+                stopTitle: leg.stopTitle,
+                stopDesc: leg.stopDesc,
+                stopImage: leg.stopImage,
+                mapsQuery: leg.mapsQuery,
                 fromName: leg.fromName,
                 toName: leg.toName,
                 distanceKm: leg.distanceKm,

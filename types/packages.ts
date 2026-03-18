@@ -20,6 +20,11 @@ export type PackageItineraryLeg = {
   id: string
   order: number
   mode: string
+  day?: number
+  stopTitle?: string | null
+  stopDesc?: string | null
+  stopImage?: string | null
+  mapsQuery?: string | null
   fromName: string
   toName: string
   distanceKm: number | null

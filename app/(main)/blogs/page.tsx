@@ -7,11 +7,25 @@ import { BlogListSkeleton } from "@/components/skeletons";
 import type { BlogPost } from "@/types/blogs";
 import Image from "next/image";
 
+type Topic = "all" | "green" | "tips"
+
+function normalizeText(v: string) {
+  return v.toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "")
+}
+
+function parseTags(tags: unknown): string[] {
+  if (Array.isArray(tags)) return tags.map(String).map((t) => t.trim()).filter(Boolean)
+  if (typeof tags === "string") return tags.split(",").map((t) => t.trim()).filter(Boolean)
+  return []
+}
+
 export default function BlogPage() {
   const [blogs, setBlogs] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [visibleBlogs, setVisibleBlogs] = useState(3);
+  const [topic, setTopic] = useState<Topic>("all");
+  const [q, setQ] = useState("");
 
   useEffect(() => {
     const fetchBlogs = async () => {
@@ -77,6 +91,42 @@ export default function BlogPage() {
             </p>
           </div>
 
+          {/* Filters */}
+          <div className="mb-10 flex flex-col md:flex-row md:items-center gap-4 justify-between">
+            <div className="flex flex-wrap gap-2">
+              {[
+                { id: "all" as const, label: "Tất cả" },
+                { id: "green" as const, label: "Du lịch xanh" },
+                { id: "tips" as const, label: "Tips" },
+              ].map((t) => (
+                <button
+                  key={t.id}
+                  onClick={() => {
+                    setTopic(t.id)
+                    setVisibleBlogs(3)
+                  }}
+                  className={`px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest border transition-colors ${
+                    topic === t.id
+                      ? "bg-green-700 text-white border-green-700"
+                      : "bg-white/70 text-green-900 border-green-100 hover:bg-white"
+                  }`}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
+            <input
+              value={q}
+              onChange={(e) => {
+                setQ(e.target.value)
+                setVisibleBlogs(3)
+              }}
+              placeholder="Tìm bài viết..."
+              className="h-11 w-full md:w-80 rounded-full px-5 bg-white/70 border border-green-100 shadow-sm outline-none focus:ring-2 focus:ring-green-500/30"
+            />
+          </div>
+
           <div className="space-y-10">
             {loading ? (
               Array(3)
@@ -94,10 +144,60 @@ export default function BlogPage() {
               </div>
             ) : (
               <>
-                {blogs.slice(0, visibleBlogs).map((blog) => (
-                  <BlogCard key={blog.id} blog={blog} />
-                ))}
-                {visibleBlogs < blogs.length && (
+                {(() => {
+                  const filtered = blogs
+                    .filter((b) => {
+                      const tags = parseTags((b as unknown as { tags?: unknown }).tags)
+                      const tagsNorm = tags.map(normalizeText)
+                      const topicOk =
+                        topic === "all"
+                          ? true
+                          : topic === "green"
+                            ? tagsNorm.some((t) => t.includes("xanh") || t.includes("eco") || t.includes("sustain"))
+                            : tagsNorm.some((t) => t.includes("tip") || t.includes("meo") || t.includes("kinh nghiem"))
+                      return topicOk
+                    })
+                    .filter((b) => {
+                      const query = normalizeText(q.trim())
+                      if (!query) return true
+                      const hay = normalizeText(`${b.title} ${b.content} ${parseTags((b as unknown as { tags?: unknown }).tags).join(" ")}`)
+                      return hay.includes(query)
+                    })
+
+                  const visible = filtered.slice(0, visibleBlogs)
+                  return (
+                    <>
+                      {visible.map((blog) => (
+                        <BlogCard key={blog.id} blog={blog} />
+                      ))}
+
+                      {visibleBlogs < filtered.length && (
+                        <div className="text-center mt-16">
+                          <button
+                            onClick={() => setVisibleBlogs((prev) => prev + 3)}
+                            className="group inline-flex items-center px-8 py-4 rounded-full 
+                              bg-green-600 text-white font-semibold 
+                              hover:bg-green-700 transition-all duration-300 
+                              shadow-lg hover:shadow-xl transform hover:-translate-y-1
+                              focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                          >
+                            <ChevronDown className="w-6 h-6 mr-3 group-hover:animate-bounce" />
+                            Xem thêm
+                          </button>
+                        </div>
+                      )}
+
+                      {!loading && filtered.length === 0 && (
+                        <div className="bg-white/70 border border-green-100 rounded-2xl p-10 text-center shadow-sm">
+                          <p className="text-lg text-green-900 font-black">Không có bài viết phù hợp.</p>
+                          <p className="text-gray-600 mt-2">Hãy thử đổi chủ đề hoặc từ khoá.</p>
+                        </div>
+                      )}
+                    </>
+                  )
+                })()}
+
+                {false && visibleBlogs < blogs.length && (
                   <div className="text-center mt-16">
                     <button
                       onClick={() => setVisibleBlogs((prev) => prev + 3)}

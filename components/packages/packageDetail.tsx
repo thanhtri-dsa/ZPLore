@@ -4,7 +4,7 @@ import React, { useMemo, useState, useEffect, useRef } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { ArrowLeft, MapPin, Calendar, Users, Crown, Share2, Heart, ChevronRight, Leaf, Navigation, Play, Square, Info, Sparkles } from 'lucide-react'
+import { ArrowLeft, MapPin, Calendar, Users, Crown, Share2, Heart, ChevronRight, Leaf, Navigation, Play, Square, Info, Sparkles, Clock, DollarSign, ShieldCheck, Compass, Utensils, Award, CheckCircle2, ExternalLink, Plus } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { computeDistanceKm, computeLegKgCo2e, normalizeMode, transportModeLabels, haversineDistanceKm, TransportMode } from '@/lib/emissions'
 import { format } from "date-fns"
@@ -38,6 +38,11 @@ interface PackageDestinationProps {
       id: string
       order: number
       mode: string
+      day?: number
+      stopTitle?: string | null
+      stopDesc?: string | null
+      stopImage?: string | null
+      mapsQuery?: string | null
       fromName: string
       toName: string
       distanceKm: number | null
@@ -59,14 +64,177 @@ interface FormErrors {
   bookingDate?: string
 }
 
+type StoredPackage = {
+  id: string
+  name: string
+  location: string
+  imageUrl: string
+  price: number
+  duration: string
+  updatedAt: number
+}
+
+const RECENT_PACKAGES_KEY = 'ecoTour.recent.packages.v1'
+const FAVORITE_PACKAGES_KEY = 'ecoTour.favorites.packages.v1'
+const MAX_RECENT_PACKAGES = 12
+const MAX_FAVORITE_PACKAGES = 50
+
+function readStoredList<T>(key: string): T[] {
+  try {
+    const raw = localStorage.getItem(key)
+    if (!raw) return []
+    const parsed = JSON.parse(raw) as unknown
+    return Array.isArray(parsed) ? (parsed as T[]) : []
+  } catch {
+    return []
+  }
+}
+
+function writeStoredList<T>(key: string, value: T[]) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value))
+  } catch {}
+}
+
+function upsertById<T extends { id: string }>(items: T[], item: T, max: number) {
+  const next = [item, ...items.filter((x) => x.id !== item.id)]
+  return next.slice(0, max)
+}
+
 // --- Sub-components moved outside to ensure stability ---
 
-const InfoTabContent = () => (
-  
-    <div className="bg-white/80 backdrop-blur-md p-8 md:p-16 rounded-[3rem] shadow-sm border border-white relative overflow-hidden">
-      <div className="absolute top-0 right-0 opacity-[0.05] vn-pattern w-64 h-64 rotate-12 -mr-10 -mt-10" />
-      <div className="absolute bottom-0 left-0 opacity-[0.05] vn-pattern w-48 h-48 -ml-10 -mb-10 rotate-45" />
+const InfoTabContent = ({
+  travelPackage,
+  itinerarySummary,
+}: {
+  travelPackage: PackageDestinationProps['package']
+  itinerarySummary: { totalDistanceKm: number; totalKgCo2e: number; totalSavings: number }
+}) => (
+  <div className="bg-white/80 backdrop-blur-md p-6 sm:p-8 md:p-12 lg:p-16 rounded-[2rem] sm:rounded-[2.5rem] md:rounded-[3rem] shadow-sm border border-white relative overflow-hidden">
+    <div className="absolute top-0 right-0 opacity-[0.05] vn-pattern w-64 h-64 rotate-12 -mr-10 -mt-10" />
+    <div className="absolute bottom-0 left-0 opacity-[0.05] vn-pattern w-48 h-48 -ml-10 -mb-10 rotate-45" />
+
+    <div className="relative z-10 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] xl:grid-cols-[minmax(0,1fr)_420px] gap-8 lg:gap-10">
+      <div className="min-w-0">
+        <div className="flex items-center gap-4 mb-6">
+          <div className="h-6 md:h-8 w-1.5 bg-secondary rounded-full" />
+          <h2 className="text-2xl md:text-4xl font-serif font-black text-primary leading-tight">Thông tin hành trình</h2>
+        </div>
+
+        <p className="text-sm sm:text-base md:text-lg text-gray-700 leading-relaxed whitespace-pre-line">
+          {travelPackage.description}
+        </p>
+
+        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="rounded-2xl bg-white p-5 border border-gray-100 shadow-sm flex items-start gap-4 min-w-0">
+            <div className="w-11 h-11 rounded-2xl bg-primary/5 flex items-center justify-center shrink-0">
+              <Clock className="text-primary" size={18} />
+            </div>
+            <div className="min-w-0">
+              <div className="text-[10px] font-black uppercase tracking-widest text-gray-400">Thời lượng</div>
+              <div className="font-black text-primary truncate">{travelPackage.duration}</div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl bg-white p-5 border border-gray-100 shadow-sm flex items-start gap-4 min-w-0">
+            <div className="w-11 h-11 rounded-2xl bg-primary/5 flex items-center justify-center shrink-0">
+              <Users className="text-primary" size={18} />
+            </div>
+            <div className="min-w-0">
+              <div className="text-[10px] font-black uppercase tracking-widest text-gray-400">Nhóm</div>
+              <div className="font-black text-primary truncate">{travelPackage.groupSize}</div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl bg-white p-5 border border-gray-100 shadow-sm flex items-start gap-4 min-w-0">
+            <div className="w-11 h-11 rounded-2xl bg-secondary/10 flex items-center justify-center shrink-0">
+              <DollarSign className="text-secondary" size={18} />
+            </div>
+            <div className="min-w-0">
+              <div className="text-[10px] font-black uppercase tracking-widest text-gray-400">Giá</div>
+              <div className="font-black text-primary truncate">{travelPackage.price.toLocaleString()} VNĐ</div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl bg-white p-5 border border-gray-100 shadow-sm flex items-start gap-4 min-w-0">
+            <div className="w-11 h-11 rounded-2xl bg-secondary/10 flex items-center justify-center shrink-0">
+              <Compass className="text-secondary" size={18} />
+            </div>
+            <div className="min-w-0">
+              <div className="text-[10px] font-black uppercase tracking-widest text-gray-400">Điểm đến</div>
+              <div className="font-black text-primary truncate">{travelPackage.location}</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-8 rounded-[2rem] bg-primary/5 border border-primary/10 p-6">
+          <div className="flex items-center justify-between gap-4 flex-wrap mb-5">
+            <div className="flex items-center gap-3">
+              <Leaf className="text-secondary" size={18} />
+              <div className="font-black text-primary uppercase tracking-widest text-[10px]">Tổng quan xanh</div>
+            </div>
+            <div className="flex items-center gap-2 rounded-full bg-white/70 px-3 py-1 border border-white">
+              <ShieldCheck className="text-primary" size={14} />
+              <div className="text-[10px] font-black text-primary uppercase tracking-widest">Eco Verified</div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3">
+            <div className="rounded-2xl bg-white p-4 border border-white shadow-sm">
+              <div className="text-[9px] font-black uppercase tracking-widest text-gray-400">Quãng đường</div>
+              <div className="text-base md:text-lg font-black text-primary">{itinerarySummary.totalDistanceKm.toFixed(1)} km</div>
+            </div>
+            <div className="rounded-2xl bg-white p-4 border border-white shadow-sm">
+              <div className="text-[9px] font-black uppercase tracking-widest text-gray-400">Khí thải</div>
+              <div className="text-base md:text-lg font-black text-secondary">{itinerarySummary.totalKgCo2e.toFixed(1)} kg</div>
+            </div>
+            <div className="rounded-2xl bg-white p-4 border border-white shadow-sm">
+              <div className="text-[9px] font-black uppercase tracking-widest text-gray-400">Tiết kiệm</div>
+              <div className="text-base md:text-lg font-black text-primary">{itinerarySummary.totalSavings.toFixed(1)} kg</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="min-w-0">
+        <div className="w-full rounded-[2rem] bg-white p-6 border border-gray-100 shadow-sm">
+          <div className="flex items-center gap-3 mb-5">
+            <Award className="text-secondary" size={18} />
+            <div className="font-black text-primary uppercase tracking-widest text-[10px]">Dịch vụ bao gồm</div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
+            {(travelPackage.included ?? []).slice(0, 10).map((inc) => (
+              <div key={inc.id} className="flex items-start gap-3 rounded-2xl bg-gray-50/60 border border-gray-100 p-4 min-w-0">
+                <div className="w-9 h-9 rounded-2xl bg-secondary/10 flex items-center justify-center shrink-0">
+                  <CheckCircle2 className="text-secondary" size={16} />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-sm font-bold text-gray-800 leading-snug whitespace-normal break-normal">{inc.item}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {(travelPackage.included?.length ?? 0) > 10 && (
+            <div className="mt-4 text-[10px] font-black uppercase tracking-widest text-gray-400">
+              +{(travelPackage.included?.length ?? 0) - 10} mục khác
+            </div>
+          )}
+
+          <div className="mt-6 rounded-2xl bg-primary/5 border border-primary/10 p-5">
+            <div className="flex items-center gap-3">
+              <Utensils className="text-primary" size={16} />
+              <div className="text-[10px] font-black uppercase tracking-widest text-primary">Gợi ý</div>
+            </div>
+            <div className="mt-2 text-sm text-gray-700 leading-relaxed">
+              Ưu tiên lựa chọn dịch vụ địa phương, hạn chế nhựa dùng một lần và mang theo bình nước cá nhân.
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 )
 
 const ItineraryTabContent = ({ 
@@ -97,13 +265,147 @@ const ItineraryTabContent = ({
   itinerarySummary: { legs: { id: string, fromName: string, toName: string, mode: string, kgCo2e?: number | null }[] }
 }) => (
   <div className="space-y-8 md:space-y-12">
+    {/* Timeline (tour chuẩn) */}
+    <div className="bg-white p-5 md:p-10 rounded-3xl md:rounded-[3rem] shadow-sm border border-gray-100">
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 md:mb-8 gap-4">
+        <h2 className="text-xl md:text-3xl font-serif font-black flex items-center gap-3 md:gap-4 text-primary">
+          <div className="h-6 md:h-8 w-1.5 bg-secondary rounded-full" />
+          Timeline hành trình
+        </h2>
+        <div className="text-[10px] font-black uppercase tracking-widest text-primary/60">
+          Mỗi điểm có link Google Maps • không cần map trong web
+        </div>
+      </div>
+
+      {(() => {
+        const legs = (travelPackage.itinerary ?? []).slice().sort((a, b) => (a.day ?? 1) - (b.day ?? 1) || a.order - b.order)
+        const groups = new Map<number, typeof legs>()
+        for (const l of legs) {
+          const d = l.day ?? 1
+          const arr = groups.get(d) ?? []
+          arr.push(l)
+          groups.set(d, arr)
+        }
+
+        const googleMapsLink = (query: string) =>
+          `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`
+
+        if (legs.length === 0) {
+          return <div className="text-sm text-muted-foreground">Chưa có timeline. Admin hãy thêm itinerary theo ngày.</div>
+        }
+
+        return (
+          <div className="space-y-8">
+            {[...groups.entries()].sort((a, b) => a[0] - b[0]).map(([day, items]) => (
+              <div key={day} className="rounded-[2rem] border border-primary/10 bg-primary/5 p-5 md:p-6">
+                <div className="flex items-center justify-between gap-4 flex-wrap mb-5">
+                  <div className="font-black text-primary text-lg md:text-xl">Ngày {day}</div>
+                  <div className="text-[10px] font-black uppercase tracking-widest text-primary/60">
+                    {items.length} điểm
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  {items.map((leg) => {
+                    const title = leg.stopTitle?.trim() || leg.toName
+                    const desc = leg.stopDesc?.trim() || leg.note || ""
+                    const img = leg.stopImage?.trim() || ""
+                    const query = (leg.mapsQuery?.trim() || `${title} ${travelPackage.location}`).trim()
+                    const distance = leg.distanceKm ?? null
+
+                    const mode = normalizeMode(leg.mode)
+                    const inferredDistance =
+                      distance ??
+                      computeDistanceKm({
+                        fromLat: leg.fromLat,
+                        fromLng: leg.fromLng,
+                        toLat: leg.toLat,
+                        toLng: leg.toLng,
+                      }) ??
+                      0
+                    const safeDistance = typeof inferredDistance === "number" && Number.isFinite(inferredDistance) && inferredDistance > 0 ? inferredDistance : 0
+                    const kgCo2e = safeDistance > 0 ? computeLegKgCo2e({ mode, distanceKm: safeDistance }) : 0
+                    const kgCar = safeDistance > 0 ? computeLegKgCo2e({ mode: "CAR", distanceKm: safeDistance }) : 0
+                    const savings = Math.max(0, kgCar - kgCo2e)
+
+                    return (
+                      <div key={leg.id} className="bg-white rounded-3xl border border-white shadow-sm p-4 md:p-5 flex gap-4">
+                        <div className="w-20 h-20 rounded-2xl overflow-hidden border border-gray-100 bg-gray-50 shrink-0">
+                          {img ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={img} alt={title} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-xs font-black text-primary/40">
+                              ZPLore
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <div className="font-black text-primary truncate">{title}</div>
+                              {desc ? <div className="mt-1 text-sm text-muted-foreground line-clamp-2">{desc}</div> : null}
+                            </div>
+                            <a
+                              href={googleMapsLink(query)}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="shrink-0 inline-flex items-center gap-2 rounded-2xl bg-secondary text-primary px-3 py-2 text-[10px] font-black uppercase tracking-widest"
+                            >
+                              <ExternalLink className="w-4 h-4" />
+                              Google Maps
+                            </a>
+                          </div>
+
+                          <div className="mt-3 grid grid-cols-3 gap-2">
+                            <div className="rounded-2xl bg-primary/5 border border-primary/10 p-3">
+                              <div className="text-[9px] font-black uppercase tracking-widest text-primary/60">Khoảng cách</div>
+                              <div className="text-sm font-black text-primary mt-0.5">{distance ? `${distance.toFixed(1)} km` : "—"}</div>
+                            </div>
+                            <div className="rounded-2xl bg-primary/5 border border-primary/10 p-3">
+                              <div className="text-[9px] font-black uppercase tracking-widest text-primary/60">Gợi ý</div>
+                              <div className="text-sm font-black text-primary mt-0.5">{transportModeLabels[mode]}</div>
+                            </div>
+                            <div className="rounded-2xl bg-secondary/10 border border-secondary/20 p-3">
+                              <div className="text-[9px] font-black uppercase tracking-widest text-primary/60">CO₂ tiết kiệm</div>
+                              <div className="text-sm font-black text-primary mt-0.5">{savings.toFixed(2)} kg</div>
+                            </div>
+                          </div>
+
+                          <div className="mt-3 flex items-center justify-end gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className="h-10 rounded-2xl text-[10px] font-black uppercase tracking-widest"
+                              onClick={() => {
+                                // Minimal: open planner with context (can be improved to deep-link adding a stop)
+                                window.location.href = `/dream-journey?add=${encodeURIComponent(title)}`
+                              }}
+                            >
+                              <Plus className="w-4 h-4 mr-2" />
+                              Thêm vào hành trình
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        )
+      })()}
+    </div>
+
     <div className="bg-white p-5 md:p-10 rounded-3xl md:rounded-[3rem] shadow-sm border border-gray-100">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 md:mb-8 gap-4">
         <h2 className="text-xl md:text-3xl font-serif font-black flex items-center gap-3 md:gap-4 text-primary">
           <div className="h-6 md:h-8 w-1.5 bg-secondary rounded-full" />
           Lộ trình di chuyển
         </h2>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap items-center gap-2">
             <Button 
               onClick={() => {
                 const event = new CustomEvent('ai-ask-route', { detail: { tourName: travelPackage.name } });
@@ -111,16 +413,16 @@ const ItineraryTabContent = ({
                 toast.success("Đang hỏi AI về đường đi...");
               }} 
               variant="outline" 
-              className="rounded-full h-8 md:h-10 px-4 text-[10px] font-bold bg-secondary/10 border-secondary/20 text-primary flex gap-2"
+              className="rounded-full h-9 md:h-10 px-4 text-[10px] font-bold bg-secondary/10 border-secondary/20 text-primary flex gap-2 whitespace-nowrap flex-1 sm:flex-none justify-center"
             >
               <Sparkles size={14} className="text-secondary" /> Hỏi AI đường đi
             </Button>
             {googleTripUrl && (
-            <Button asChild variant="outline" className="rounded-full h-8 md:h-10 px-4 text-[10px] font-bold">
+            <Button asChild variant="outline" className="rounded-full h-9 md:h-10 px-4 text-[10px] font-bold whitespace-nowrap flex-1 sm:flex-none justify-center">
               <a href={googleTripUrl} target="_blank" rel="noreferrer">Google Maps</a>
             </Button>
           )}
-          <Button onClick={() => setShowMapPanel(!showMapPanel)} variant="outline" className={`rounded-full h-8 md:h-10 px-4 text-[10px] font-bold ${showMapPanel ? 'bg-primary text-white' : ''}`}>
+          <Button onClick={() => setShowMapPanel(!showMapPanel)} variant="outline" className={`rounded-full h-9 md:h-10 px-4 text-[10px] font-bold whitespace-nowrap flex-1 sm:flex-none justify-center ${showMapPanel ? 'bg-primary text-white' : ''}`}>
             {showMapPanel ? 'Đóng' : 'Chỉnh sửa'}
           </Button>
         </div>
@@ -172,13 +474,13 @@ const ItineraryTabContent = ({
               <div className="absolute -left-[41px] top-0 bg-white p-2 rounded-full border-2 border-primary text-primary">
                 <Navigation size={14} />
               </div>
-              <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex justify-between items-center">
+              <div className="bg-white rounded-2xl p-5 sm:p-6 border border-gray-100 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                   <p className="text-[10px] font-black uppercase text-primary">Chặng {index + 1}</p>
                   <h4 className="font-bold text-gray-900">{leg.fromName} → {leg.toName}</h4>
                   <p className="text-xs text-gray-500 italic">{transportModeLabels[leg.mode as TransportMode]}</p>
                 </div>
-                <div className="text-right">
+                <div className="sm:text-right">
                   <p className="text-[10px] font-black text-gray-400 uppercase">Khí thải</p>
                   <p className="text-lg font-black text-primary">{leg.kgCo2e?.toFixed(2) || '0.00'} kg</p>
                 </div>
@@ -210,7 +512,7 @@ const BookingForm = ({
   setTravelerCount: (n: number) => void
   isLoading: boolean
 }) => (
-  <div className={`bg-white/90 backdrop-blur-2xl rounded-[3rem] shadow-[0_40px_100px_rgba(0,0,0,0.1)] border border-white relative overflow-hidden ${isMobile ? 'p-8' : 'p-10 sticky top-32'}`}>
+  <div className={`bg-white/90 backdrop-blur-2xl rounded-[3rem] shadow-[0_40px_100px_rgba(0,0,0,0.1)] border border-white relative overflow-hidden ${isMobile ? 'p-6 sm:p-8' : 'p-10 sticky top-[calc(env(safe-area-inset-top)+96px)]'}`}>
     <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-primary via-secondary to-primary opacity-80" />
     <div className="absolute -top-10 -right-10 w-32 h-32 bg-secondary/10 rounded-full blur-3xl" />
     <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-primary/10 rounded-full blur-3xl" />
@@ -224,7 +526,7 @@ const BookingForm = ({
     </div>
 
     <form ref={formRef} onSubmit={handleSubmit} className="space-y-6 relative z-10">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label className="text-[10px] font-black uppercase ml-1 text-primary/60 tracking-wider">Tên</Label>
           <Input name="firstname" placeholder="Tên" className="rounded-2xl h-14 bg-gray-50/50 border-gray-100 focus:bg-white transition-all" required />
@@ -240,7 +542,7 @@ const BookingForm = ({
         <Input name="email" type="email" placeholder="email@vi-du.com" className="rounded-2xl h-14 bg-gray-50/50 border-gray-100 focus:bg-white transition-all" required />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label className="text-[10px] font-black uppercase ml-1 text-primary/60 tracking-wider">Ngày khởi hành</Label>
           <Popover>
@@ -437,7 +739,78 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
       })
       setItineraryModes(modes)
     }
-  }, [travelPackage.id, travelPackage.itinerary]);
+
+    const favorites = readStoredList<StoredPackage>(FAVORITE_PACKAGES_KEY)
+    setIsLiked(favorites.some((p) => p.id === travelPackage.id))
+
+    const recentItem: StoredPackage = {
+      id: travelPackage.id,
+      name: travelPackage.name,
+      location: travelPackage.location,
+      imageUrl: travelPackage.imageUrl,
+      price: travelPackage.price,
+      duration: travelPackage.duration,
+      updatedAt: Date.now(),
+    }
+    const recent = readStoredList<StoredPackage>(RECENT_PACKAGES_KEY)
+    writeStoredList(RECENT_PACKAGES_KEY, upsertById(recent, recentItem, MAX_RECENT_PACKAGES))
+  }, [
+    travelPackage.duration,
+    travelPackage.id,
+    travelPackage.imageUrl,
+    travelPackage.itinerary,
+    travelPackage.location,
+    travelPackage.name,
+    travelPackage.price,
+  ])
+
+  const handleToggleFavorite = () => {
+    const item: StoredPackage = {
+      id: travelPackage.id,
+      name: travelPackage.name,
+      location: travelPackage.location,
+      imageUrl: travelPackage.imageUrl,
+      price: travelPackage.price,
+      duration: travelPackage.duration,
+      updatedAt: Date.now(),
+    }
+    setIsLiked((prev) => {
+      const next = !prev
+      const favorites = readStoredList<StoredPackage>(FAVORITE_PACKAGES_KEY)
+      if (next) {
+        writeStoredList(FAVORITE_PACKAGES_KEY, upsertById(favorites, item, MAX_FAVORITE_PACKAGES))
+        toast.success('Đã thêm vào yêu thích')
+      } else {
+        writeStoredList(
+          FAVORITE_PACKAGES_KEY,
+          favorites.filter((p) => p.id !== travelPackage.id)
+        )
+        toast.success('Đã bỏ yêu thích')
+      }
+      return next
+    })
+  }
+
+  const handleShare = async () => {
+    const url = typeof window !== 'undefined' ? window.location.href : ''
+    const title = travelPackage.name
+    try {
+      if (typeof navigator !== 'undefined' && 'share' in navigator) {
+        await (navigator as Navigator & { share: (data: { title?: string; url?: string }) => Promise<void> }).share({ title, url })
+        return
+      }
+    } catch {}
+
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard && url) {
+        await navigator.clipboard.writeText(url)
+        toast.success('Đã copy link')
+        return
+      }
+    } catch {}
+
+    toast.error('Không thể chia sẻ lúc này')
+  }
 
   // Save tracking distance whenever it changes
   useEffect(() => {
@@ -629,7 +1002,7 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
                 <motion.button 
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
-                  onClick={() => setIsLiked(!isLiked)} 
+                  onClick={handleToggleFavorite} 
                   className={`p-4 rounded-2xl backdrop-blur-xl border border-white/20 transition-all shadow-2xl ${isLiked ? 'bg-red-500 border-red-500 text-white' : 'bg-white/10 text-white hover:bg-white/20'}`}
                 >
                   <Heart size={20} fill={isLiked ? "currentColor" : "none"} />
@@ -637,6 +1010,7 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
                 <motion.button 
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
+                  onClick={handleShare}
                   className="p-4 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 text-white hover:bg-white/20 shadow-2xl"
                 >
                   <Share2 size={20} />
@@ -651,7 +1025,7 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
       </section>
 
       {/* Mobile Tab Navigation */}
-      <div className="sticky top-[64px] z-40 lg:hidden bg-white/80 backdrop-blur-xl border-b border-gray-100">
+      <div className="sticky top-[calc(env(safe-area-inset-top)+64px)] z-40 lg:hidden bg-white/80 backdrop-blur-xl border-b border-gray-100">
         <div className="flex items-center justify-around">
           {[
             { id: 'info', label: 'Thông tin', icon: Info },
@@ -676,36 +1050,38 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
           {/* Main Content Area */}
           <div className="lg:col-span-8">
             {!hasMounted ? (
-              <div className="space-y-8"><InfoTabContent /></div>
+              <div className="space-y-8">
+                <InfoTabContent travelPackage={travelPackage} itinerarySummary={itinerarySummary} />
+              </div>
             ) : (
               <div className="space-y-8 md:space-y-12">
-                {window.innerWidth >= 1024 ? (
-                  <>
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-                      <InfoTabContent />
-                    </motion.div>
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
-                      <ItineraryTabContent 
-                        travelPackage={travelPackage}
-                        googleTripUrl={googleTripUrl}
-                        showMapPanel={showMapPanel}
-                        setShowMapPanel={setShowMapPanel}
-                        mapPoints={aiPoints || mapPoints}
-                        isTracking={isTracking}
-                        setIsTracking={setIsTracking}
-                        trackedDistance={trackedDistance}
-                        trackedEmissions={trackedEmissions}
-                        trackingMode={trackingMode}
-                        setTrackingMode={setTrackingMode}
-                        itinerarySummary={itinerarySummary}
-                      />
-                    </motion.div>
-                  </>
-                ) : (
+                <div className="hidden lg:block space-y-8 md:space-y-12">
+                  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+                    <InfoTabContent travelPackage={travelPackage} itinerarySummary={itinerarySummary} />
+                  </motion.div>
+                  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
+                    <ItineraryTabContent 
+                      travelPackage={travelPackage}
+                      googleTripUrl={googleTripUrl}
+                      showMapPanel={showMapPanel}
+                      setShowMapPanel={setShowMapPanel}
+                      mapPoints={aiPoints || mapPoints}
+                      isTracking={isTracking}
+                      setIsTracking={setIsTracking}
+                      trackedDistance={trackedDistance}
+                      trackedEmissions={trackedEmissions}
+                      trackingMode={trackingMode}
+                      setTrackingMode={setTrackingMode}
+                      itinerarySummary={itinerarySummary}
+                    />
+                  </motion.div>
+                </div>
+
+                <div className="lg:hidden">
                   <AnimatePresence mode="wait">
                     {activeTab === 'info' && (
                       <motion.div key="info" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}>
-                        <InfoTabContent />
+                        <InfoTabContent travelPackage={travelPackage} itinerarySummary={itinerarySummary} />
                       </motion.div>
                     )}
                     {activeTab === 'itinerary' && (
@@ -741,7 +1117,7 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
                       </motion.div>
                     )}
                   </AnimatePresence>
-                )}
+                </div>
               </div>
             )}
           </div>
@@ -762,7 +1138,7 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
       </div>
 
       {/* Mobile Sticky Booking Bar */}
-      <motion.div initial={{ y: 100 }} animate={{ y: 0 }} className="fixed bottom-0 left-0 right-0 z-[100] lg:hidden bg-white/90 backdrop-blur-xl border-t border-gray-100 p-4 pb-[calc(env(safe-area-inset-bottom)+16px)]">
+      <motion.div initial={{ y: 100 }} animate={{ y: 0 }} className="fixed left-0 right-0 z-[100] lg:hidden bg-white/90 backdrop-blur-xl border-t border-gray-100 p-4 bottom-[calc(env(safe-area-inset-bottom)+74px)]">
         <div className="flex items-center justify-between gap-4 max-w-md mx-auto">
           <div className="flex flex-col">
             <span className="text-[10px] font-black uppercase text-gray-400">Giá chỉ từ</span>

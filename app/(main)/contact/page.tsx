@@ -22,7 +22,6 @@ import MapLoader from '@/components/ui/MapLoader';
 interface FormState {
   fullName: string;
   email: string;
-  phone: string;
   message: string;
 }
 
@@ -35,7 +34,6 @@ export default function ContactSection() {
   const [formState, setFormState] = useState<FormState>({
     fullName: "",
     email: "",
-    phone: "",
     message: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -44,7 +42,6 @@ export default function ContactSection() {
     setFormState({
       fullName: "",
       email: "",
-      phone: "",
       message: "",
     });
   };
@@ -112,7 +109,7 @@ export default function ContactSection() {
       />
           <div className="absolute inset-0 flex items-center justify-center">
             <h1 className="text-4xl md:text-5xl font-bold text-white drop-shadow-lg text-center px-4">
-              Contact Us
+              Liên hệ
             </h1>
           </div>
         </div>
@@ -131,12 +128,11 @@ export default function ContactSection() {
       <div className="text-center mb-8 md:mb-12 lg:mb-16">
       <div className="inline-flex items-center justify-center mb-4 md:mb-6">
         <span className="text-xs sm:text-sm md:text-base font-semibold uppercase tracking-wide text-green-800 bg-green-100 px-2 sm:px-3 py-1 rounded-full">
-       Do you have any questions?
+       Bạn cần hỗ trợ?
         </span>
       </div>
       <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 md:mb-6 leading-tight">
-      Chat <span className="text-green-600">With</span>{" "}
-        US
+      Gửi <span className="text-green-600">tin nhắn</span> cho tụi mình
       </h2>
     </div>
 
@@ -150,7 +146,7 @@ export default function ContactSection() {
 
             {/* Contact Information */}
             <div className="space-y-6">
-              <h3 className="text-2xl font-bold text-emerald-900">Contact Details</h3>
+              <h3 className="text-2xl font-bold text-emerald-900">Thông tin liên hệ</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 {[
                   {
@@ -188,7 +184,7 @@ export default function ContactSection() {
 
               {/* Social Links */}
               <div className="pt-6 border-t border-emerald-200">
-                <p className="text-sm font-semibold text-emerald-900 mb-4">Follow Our Journey</p>
+                <p className="text-sm font-semibold text-emerald-900 mb-4">Mạng xã hội</p>
                 <div className="flex space-x-4">
                   {socialLinks.map(({ icon: Icon, href, label }, index) => (
                     <a
@@ -209,83 +205,48 @@ export default function ContactSection() {
 
           {/* Right Column: Contact Form */}
           <div className="bg-white p-8 md:p-12 rounded-2xl shadow-xl border border-emerald-50">
-            <h2 className="text-3xl font-bold text-gray-800 mb-2">Send a Message</h2>
-            <p className="text-gray-500 mb-8">We usually respond within 24 hours.</p>
+            <h2 className="text-3xl font-bold text-gray-800 mb-2">Gửi tin nhắn</h2>
+            <p className="text-gray-500 mb-8">Tụi mình thường phản hồi trong vòng 24 giờ.</p>
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label
-                    htmlFor="fullName"
-                    className="block mb-2 text-sm font-semibold"
-                  >
-                    Full Name
-                    <span className="text-red-600">*</span>
+                  <Label htmlFor="fullName" className="block mb-2 text-sm font-semibold">
+                    Tên <span className="text-red-600">*</span>
                   </Label>
                   <Input
                     id="fullName"
                     className="w-full"
-                    placeholder="John Doe"
+                    placeholder="Nguyễn Văn A"
                     value={formState.fullName}
-                    onChange={(e) =>
-                      setFormState({ ...formState, fullName: e.target.value })
-                    }
+                    onChange={(e) => setFormState({ ...formState, fullName: e.target.value })}
                     required
                   />
                 </div>
                 <div>
-                  <Label
-                    htmlFor="email"
-                    className="block mb-2 text-sm font-semibold"
-                  >
-                    Email
-                    <span className="text-red-600">*</span>
+                  <Label htmlFor="email" className="block mb-2 text-sm font-semibold">
+                    Email <span className="text-red-600">*</span>
                   </Label>
                   <Input
                     id="email"
                     type="email"
                     className="w-full"
-                    placeholder="johndoe@example.com"
+                    placeholder="ban@example.com"
                     value={formState.email}
-                    onChange={(e) =>
-                      setFormState({ ...formState, email: e.target.value })
-                    }
+                    onChange={(e) => setFormState({ ...formState, email: e.target.value })}
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <Label
-                  htmlFor="phone"
-                  className="block mb-2 text-sm font-semibold"
-                >
-                  Phone Number
-                </Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  className="w-full"
-                  placeholder="+2547000000"
-                  value={formState.phone}
-                  onChange={(e) =>
-                    setFormState({ ...formState, phone: e.target.value })
-                  }
-                />
-              </div>
-
-              <div>
-                <Label
-                  htmlFor="message"
-                  className="block mb-2 text-sm font-semibold"
-                >
-                  Message
-                  <span className="text-red-600">*</span>
+                <Label htmlFor="message" className="block mb-2 text-sm font-semibold">
+                  Nội dung <span className="text-red-600">*</span>
                 </Label>
                 <Textarea
                   id="message"
                   className="w-full h-32"
-                  placeholder="Tell us about your dream eco-tour..."
+                  placeholder="Bạn cần tư vấn tour / hợp tác / góp ý..."
                   value={formState.message}
                   onChange={(e) =>
                     setFormState({ ...formState, message: e.target.value })
@@ -299,7 +260,7 @@ export default function ContactSection() {
                 className="w-full py-3 bg-emerald-700 hover:bg-emerald-800 text-white text-base transition-colors"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? "Sending..." : "Start Your Journey"}
+                {isSubmitting ? "Đang gửi..." : "Gửi tin nhắn"}
               </Button>
             </form>
           </div>

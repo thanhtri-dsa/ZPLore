@@ -5,5 +5,12 @@
       "static/css/_app-pages-browser_components_ui_DestinationsMap_tsx.css",
       "static/chunks/_app-pages-browser_components_ui_DestinationsMap_tsx.js"
     ]
+  },
+  "components\\ui\\DestinationsMapLoader.tsx -> ./DestinationsMap": {
+    "id": "components\\ui\\DestinationsMapLoader.tsx -> ./DestinationsMap",
+    "files": [
+      "static/css/_app-pages-browser_components_ui_DestinationsMap_tsx.css",
+      "static/chunks/_app-pages-browser_components_ui_DestinationsMap_tsx.js"
+    ]
   }
 }

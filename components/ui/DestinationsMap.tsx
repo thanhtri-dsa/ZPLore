@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Destination } from '@/types/destinations'
 import Link from 'next/link'
-import { Circle as LeafletCircle, CircleMarker as LeafletCircleMarker, MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet'
+import { Circle as LeafletCircle, CircleMarker as LeafletCircleMarker, MapContainer, Marker, TileLayer, Tooltip, useMap, useMapEvents } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 import RoutingMachine from './RoutingMachine'
@@ -162,11 +162,21 @@ function circlePolygon(center: [number, number], radiusMeters: number, steps = 6
 interface DestinationsMapProps {
   destinations: Destination[];
   highlightCountry?: string;
+  /**
+   * Force the initial viewport to a fixed bounding box (e.g. Vietnam),
+   * optionally preventing auto-fit to destinations.
+   */
+  fixedBounds?: { south: number; west: number; north: number; east: number };
+  /** If true, keep the view constrained to `fixedBounds` (no auto-fit to points). */
+  lockToBounds?: boolean;
+  /** Extra markers to render (e.g. Hoàng Sa / Trường Sa). */
+  extraMarkers?: Array<{ lat: number; lng: number; label: string }>;
 }
 
-const DestinationsMap: React.FC<DestinationsMapProps> = ({ destinations, highlightCountry }) => {
+const DestinationsMap: React.FC<DestinationsMapProps> = ({ destinations, highlightCountry, fixedBounds, lockToBounds, extraMarkers }) => {
   const [aiWaypoints, setAiWaypoints] = useState<L.LatLng[]>([])
   const [ecoPoints, setEcoPoints] = useState<Array<{ lat: number, lng: number, label: string, type: string }>>([])
+  const [activeId, setActiveId] = useState<string | null>(null)
 
   useEffect(() => {
     const handleAiMapCommand = (e: Event) => {
@@ -225,6 +235,11 @@ const DestinationsMap: React.FC<DestinationsMapProps> = ({ destinations, highlig
     [validDestinations]
   )
 
+  const extraPoints = useMemo<Array<[number, number]>>(
+    () => (Array.isArray(extraMarkers) ? extraMarkers.map((m) => [m.lat, m.lng] as [number, number]) : []),
+    [extraMarkers]
+  )
+
   const highlightedPoints = useMemo<Array<[number, number]>>(() => {
     if (!highlightCountry) return []
     return validDestinations
@@ -268,7 +283,8 @@ const DestinationsMap: React.FC<DestinationsMapProps> = ({ destinations, highlig
         iconUrl: '/images/marker-icon.png',
         iconSize: [25, 41],
         iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
+        // Open popup BELOW the marker (per UX request)
+        popupAnchor: [0, 18],
         shadowUrl: '/images/marker-shadow.png',
         shadowSize: [41, 41],
       }),
@@ -302,7 +318,7 @@ const DestinationsMap: React.FC<DestinationsMapProps> = ({ destinations, highlig
     if (!googleKey || !googleReady || !isClient) return
     const container = mapDivRef.current
     if (!container) return
-    if (validDestinations.length === 0 || allPoints.length === 0) return
+    if (!fixedBounds && (validDestinations.length === 0 || allPoints.length === 0) && extraPoints.length === 0) return
 
     let map: unknown = null
     let infoWindow: { setContent: (content: HTMLElement) => void; open: (opts: Record<string, unknown>) => void; close: () => void } | null = null
@@ -314,7 +330,13 @@ const DestinationsMap: React.FC<DestinationsMapProps> = ({ destinations, highlig
       .then((google) => {
         if (!container) return
         const focusPoints = highlightedPoints.length > 0 ? highlightedPoints : allPoints
-        const initial = focusPoints[0] || allPoints[0]
+        const initial =
+          fixedBounds
+            ? ([
+                (fixedBounds.south + fixedBounds.north) / 2,
+                (fixedBounds.west + fixedBounds.east) / 2,
+              ] as [number, number])
+            : (focusPoints[0] || allPoints[0] || extraPoints[0])
 
         map = new google.maps.Map(container, {
           center: { lat: initial[0], lng: initial[1] } as unknown as Record<string, unknown>,
@@ -325,11 +347,29 @@ const DestinationsMap: React.FC<DestinationsMapProps> = ({ destinations, highlig
           clickableIcons: false,
           gestureHandling: 'greedy',
           backgroundColor: '#f8fafc',
+          ...(fixedBounds
+            ? {
+                restriction: {
+                  latLngBounds: {
+                    north: fixedBounds.north,
+                    south: fixedBounds.south,
+                    east: fixedBounds.east,
+                    west: fixedBounds.west,
+                  },
+                  strictBounds: true,
+                },
+              }
+            : {}),
         })
 
         const bounds = new google.maps.LatLngBounds()
-        for (const p of focusPoints) {
-          bounds.extend(new google.maps.LatLng(p[0], p[1]))
+        if (fixedBounds) {
+          bounds.extend(new google.maps.LatLng(fixedBounds.south, fixedBounds.west))
+          bounds.extend(new google.maps.LatLng(fixedBounds.north, fixedBounds.east))
+        } else {
+          for (const p of [...focusPoints, ...extraPoints]) {
+            bounds.extend(new google.maps.LatLng(p[0], p[1]))
+          }
         }
         const mapRecord = map as unknown as Record<string, unknown>
         const fitBoundsFn = mapRecord['fitBounds']
@@ -411,6 +451,33 @@ const DestinationsMap: React.FC<DestinationsMapProps> = ({ destinations, highlig
 
           markers.push(marker)
         }
+
+        for (const m of extraMarkers ?? []) {
+          const mk = new google.maps.Marker({
+            map,
+            position: { lat: m.lat, lng: m.lng } as unknown as Record<string, unknown>,
+            title: m.label,
+          })
+          mk.addListener('click', () => {
+            if (!infoWindow) return
+            const wrap = document.createElement('div')
+            wrap.style.padding = '6px'
+            const title = document.createElement('div')
+            title.textContent = m.label
+            title.style.fontWeight = '800'
+            title.style.color = '#065f46'
+            title.style.marginBottom = '6px'
+            wrap.appendChild(title)
+            const meta = document.createElement('div')
+            meta.textContent = `Việt Nam`
+            meta.style.fontSize = '12px'
+            meta.style.color = '#475569'
+            wrap.appendChild(meta)
+            infoWindow.setContent(wrap)
+            infoWindow.open({ map, anchor: mk })
+          })
+          markers.push(mk)
+        }
       })
       .catch(() => {})
 
@@ -440,7 +507,7 @@ const DestinationsMap: React.FC<DestinationsMapProps> = ({ destinations, highlig
     if (!mapboxToken || !mapboxReady || !isClient) return
     const container = mapDivRef.current
     if (!container) return
-    if (validDestinations.length === 0 || allPoints.length === 0) return
+    if (!fixedBounds && (validDestinations.length === 0 || allPoints.length === 0) && extraPoints.length === 0) return
 
     let map: { remove: () => void } | null = null
     const markers: Array<{ remove: () => void }> = []
@@ -450,18 +517,38 @@ const DestinationsMap: React.FC<DestinationsMapProps> = ({ destinations, highlig
         mapboxgl.accessToken = mapboxToken
 
         const focusPoints = highlightedPoints.length > 0 ? highlightedPoints : allPoints
-        const initial = focusPoints[0] || allPoints[0]
+        const initial =
+          fixedBounds
+            ? ([
+                (fixedBounds.south + fixedBounds.north) / 2,
+                (fixedBounds.west + fixedBounds.east) / 2,
+              ] as [number, number])
+            : (focusPoints[0] || allPoints[0] || extraPoints[0])
 
         map = new mapboxgl.Map({
           container,
           style: 'mapbox://styles/mapbox/streets-v12',
           center: [initial[1], initial[0]],
           zoom: 4.8,
+          ...(fixedBounds
+            ? {
+                maxBounds: [
+                  [fixedBounds.west, fixedBounds.south],
+                  [fixedBounds.east, fixedBounds.north],
+                ],
+                renderWorldCopies: false,
+              }
+            : {}),
         }) as unknown as { remove: () => void }
 
         ;(map as unknown as { on: (e: string, h: () => void) => void }).on('load', () => {
           const bounds = new mapboxgl.LngLatBounds()
-          for (const p of focusPoints) bounds.extend([p[1], p[0]])
+          if (fixedBounds) {
+            bounds.extend([fixedBounds.west, fixedBounds.south])
+            bounds.extend([fixedBounds.east, fixedBounds.north])
+          } else {
+            for (const p of [...focusPoints, ...extraPoints]) bounds.extend([p[1], p[0]])
+          }
           ;(map as unknown as { fitBounds: (b: unknown, o?: unknown) => void }).fitBounds(bounds as unknown, { padding: 60 } as unknown)
 
           if (highlightCenter) {
@@ -505,6 +592,17 @@ const DestinationsMap: React.FC<DestinationsMapProps> = ({ destinations, highlig
             const marker = new mapboxgl.Marker().setLngLat([dest.longitude!, dest.latitude!]).setPopup(popup).addTo(map as unknown)
             markers.push(marker as unknown as { remove: () => void })
           }
+
+          for (const m of extraMarkers ?? []) {
+            const popup = new mapboxgl.Popup({ offset: 16 }).setHTML(
+              `<div style="padding:6px">
+                <div style="font-weight:800;color:#065f46;margin-bottom:6px">${m.label}</div>
+                <div style="font-size:12px;color:#475569">Việt Nam</div>
+              </div>`
+            )
+            const marker = new mapboxgl.Marker().setLngLat([m.lng, m.lat]).setPopup(popup).addTo(map as unknown)
+            markers.push(marker as unknown as { remove: () => void })
+          }
         })
       })
       .catch(() => {})
@@ -524,7 +622,7 @@ const DestinationsMap: React.FC<DestinationsMapProps> = ({ destinations, highlig
 
   if (!isClient) return null
 
-  if (validDestinations.length === 0) {
+  if (validDestinations.length === 0 && !fixedBounds) {
     return (
       <div className="flex items-center justify-center h-full bg-muted/30 rounded-xl border border-border">
         <div className="text-center px-6 py-10">
@@ -537,15 +635,40 @@ const DestinationsMap: React.FC<DestinationsMapProps> = ({ destinations, highlig
 
   if (provider === 'osm') {
     const focusPoints = highlightedPoints.length > 0 ? highlightedPoints : allPoints
-    const centerPoint = focusPoints[0] || allPoints[0]
+    const pointsForFit =
+      fixedBounds
+        ? [
+            [fixedBounds.south, fixedBounds.west] as [number, number],
+            [fixedBounds.north, fixedBounds.east] as [number, number],
+          ]
+        : [...focusPoints, ...extraPoints]
+    const centerPoint =
+      fixedBounds
+        ? ([(fixedBounds.south + fixedBounds.north) / 2, (fixedBounds.west + fixedBounds.east) / 2] as [number, number])
+        : (focusPoints[0] || allPoints[0] || extraPoints[0])
 
     return (
       <MapContainer
         center={centerPoint}
         zoom={5}
-        scrollWheelZoom={true}
+        scrollWheelZoom={false}
+          zoomControl={false}
+          attributionControl={false}
+        doubleClickZoom={true}
+        {...(fixedBounds
+          ? {
+              maxBounds: [
+                [fixedBounds.south, fixedBounds.west],
+                [fixedBounds.north, fixedBounds.east],
+              ] as unknown as L.LatLngBoundsExpression,
+              maxBoundsViscosity: lockToBounds ? 1.0 : 0.2,
+                minZoom: 4,
+              maxZoom: 14,
+            }
+          : {})}
         style={{ height: '100%', width: '100%', borderRadius: '0.75rem' }}
       >
+        <CloseTooltipOnMapClick onClose={() => setActiveId(null)} />
         {aiWaypoints.length >= 2 && <RoutingMachine waypoints={aiWaypoints} showPanel={false} />}
 
         {ecoPoints.map((p, idx) => (
@@ -561,16 +684,20 @@ const DestinationsMap: React.FC<DestinationsMapProps> = ({ destinations, highlig
               iconAnchor: [16, 16]
             })}
           >
-            <Popup>
+            <Tooltip direction="bottom" offset={[0, 18]} opacity={1} interactive>
               <div className="p-1">
                 <p className="font-bold text-emerald-700 m-0">{p.label}</p>
                 <p className="text-[10px] text-gray-500 m-0 capitalize italic">{p.type}</p>
               </div>
-            </Popup>
+            </Tooltip>
           </Marker>
         ))}
 
-        <FitBoundsAndCenterLeaflet points={focusPoints} aiWaypoints={aiWaypoints} />
+        {lockToBounds ? (
+          <FitBoundsAndCenterLeaflet points={pointsForFit} aiWaypoints={[]} />
+        ) : (
+          <FitBoundsAndCenterLeaflet points={[...focusPoints, ...extraPoints]} aiWaypoints={aiWaypoints} />
+        )}
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
           url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
@@ -595,21 +722,79 @@ const DestinationsMap: React.FC<DestinationsMapProps> = ({ destinations, highlig
         ))}
 
         {validDestinations.map((dest) => (
-          <Marker key={dest.id} position={[dest.latitude!, dest.longitude!]} icon={leafletIcon}>
-            <Popup>
+          <Marker
+            key={dest.id}
+            position={[dest.latitude!, dest.longitude!]}
+            icon={leafletIcon}
+            eventHandlers={{
+              click: () => setActiveId(dest.id),
+            }}
+          >
+            {activeId === dest.id ? (
+              <Tooltip direction="bottom" offset={[0, 20]} opacity={1} interactive>
+                <div className="p-1 w-[240px]">
+                  <div className="w-full h-28 rounded-xl overflow-hidden border border-white/50 mb-3 bg-muted/30">
+                    <img
+                      src={
+                        typeof dest.imageData === 'string' && dest.imageData.trim().length > 0 && dest.imageData !== '/images/saigon.jpg'
+                          ? dest.imageData
+                          : "/images/travel_detsinations.jpg"
+                      }
+                      alt={dest.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <h3 className="font-black text-primary m-0 leading-snug">{dest.name}</h3>
+                  <p className="text-xs text-muted-foreground m-0 mt-1">
+                    {dest.city}, {dest.country}
+                  </p>
+                  <div className="mt-3 grid grid-cols-3 gap-2">
+                    <div className="rounded-lg bg-primary/5 border border-primary/10 px-2 py-2">
+                      <div className="text-[9px] font-black uppercase tracking-widest text-primary/60">Giá</div>
+                      <div className="text-[11px] font-black text-primary mt-0.5">{Number(dest.amount).toLocaleString('vi-VN')} VNĐ</div>
+                    </div>
+                    <div className="rounded-lg bg-primary/5 border border-primary/10 px-2 py-2">
+                      <div className="text-[9px] font-black uppercase tracking-widest text-primary/60">Thời lượng</div>
+                      <div className="text-[11px] font-black text-primary mt-0.5">{dest.daysNights} {dest.tourType}</div>
+                    </div>
+                    <div className="rounded-lg bg-primary/5 border border-primary/10 px-2 py-2">
+                      <div className="text-[9px] font-black uppercase tracking-widest text-primary/60">Loại</div>
+                      <div className="text-[11px] font-black text-primary mt-0.5">
+                        {(Array.isArray(dest.tags) && dest.tags[0]) ? String(dest.tags[0]) : "Eco"}
+                      </div>
+                    </div>
+                  </div>
+                  <Link
+                    href={`/destinations/${dest.country.toLowerCase()}/${dest.id}`}
+                    className="mt-3 text-xs bg-secondary text-primary px-3 py-2 rounded-xl hover:bg-secondary/90 transition-colors inline-flex items-center justify-center w-full font-black uppercase tracking-widest no-underline"
+                  >
+                    Xem chi tiết
+                  </Link>
+                </div>
+              </Tooltip>
+            ) : null}
+          </Marker>
+        ))}
+
+        {(extraMarkers ?? []).map((m, idx) => (
+          <Marker
+            key={`extra-${idx}-${m.lat}-${m.lng}`}
+            position={[m.lat, m.lng]}
+            icon={L.divIcon({
+              className: 'sovereignty-marker',
+              html: `<div class="w-9 h-9 rounded-full bg-white border-2 border-yellow-400 shadow-lg flex items-center justify-center">
+                      <span class="text-[12px]">🏝️</span>
+                     </div>`,
+              iconSize: [36, 36],
+              iconAnchor: [18, 18],
+            })}
+          >
+            <Tooltip direction="bottom" offset={[0, 16]} opacity={1} interactive>
               <div className="p-1">
-                <h3 className="font-bold text-green-700 m-0">{dest.name}</h3>
-                <p className="text-sm text-gray-600 m-0 mb-2">
-                  {dest.city}, {dest.country}
-                </p>
-                <Link
-                  href={`/destinations/${dest.country.toLowerCase()}/${dest.id}`}
-                  className="text-xs bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700 transition-colors inline-block no-underline"
-                >
-                  View Details
-                </Link>
+                <p className="font-bold text-primary m-0">{m.label}</p>
+                <p className="text-[10px] text-muted-foreground m-0 italic">Việt Nam</p>
               </div>
-            </Popup>
+            </Tooltip>
           </Marker>
         ))}
       </MapContainer>
@@ -631,6 +816,13 @@ const DestinationsMap: React.FC<DestinationsMapProps> = ({ destinations, highlig
 }
 
 export default DestinationsMap
+
+function CloseTooltipOnMapClick({ onClose }: { onClose: () => void }) {
+  useMapEvents({
+    click: () => onClose(),
+  })
+  return null
+}
 
 function FitBoundsAndCenterLeaflet({ points, aiWaypoints }: { points: Array<[number, number]>, aiWaypoints: L.LatLng[] }) {
   const map = useMap()

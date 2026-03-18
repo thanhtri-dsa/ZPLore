@@ -8,6 +8,43 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+// --- Enums (v2) ---
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+enum TourType {
+  DAYS
+  NIGHTS
+}
+
+enum TransportMode {
+  CAR
+  BUS
+  TRAIN
+  PLANE
+  BOAT
+  WALK
+  BIKE
+  BICYCLE
+  MOTORBIKE
+}
+
+enum ImageEntityType {
+  DESTINATION
+  PACKAGE
+  BLOG
+  COMMUNITY_POST
+}
+
+enum ImageEditSuggestionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
@@ -27,16 +64,22 @@ model Blog {
   updatedAt  DateTime @updatedAt
   authorName String
   imageData  String?
+
+  @@index([createdAt])
 }
 
 model Booking {
   id              String    @id @default(cuid())
+  userId          String?
+  customerId      String?
   firstname       String
   lastname        String
   email           String
   phone           String
   country         String?
   status          String    @default("PENDING")
+  // v2 typed status (keep `status` for backward compatibility)
+  statusV2        BookingStatus @default(PENDING)
   bookingDate     DateTime?
   numberOfGuests  Int       @default(1)
   specialRequests String?
@@ -44,16 +87,25 @@ model Booking {
   price           Float?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+  customer        Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([statusV2])
+  @@index([customerId, createdAt])
+  @@index([email, createdAt])
 }
 
 model PackageBooking {
   id              String    @id @default(cuid())
+  userId          String?
+  customerId      String?
   firstname       String
   lastname        String
   email           String
   phone           String
   country         String?
   status          String    @default("PENDING")
+  statusV2        BookingStatus @default(PENDING)
   bookingDate     DateTime?
   numberOfGuests  Int       @default(1)
   specialRequests String?
@@ -62,6 +114,12 @@ model PackageBooking {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   package         Package   @relation(fields: [packageId], references: [id])
+  customer        Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  @@index([packageId, createdAt])
+  @@index([userId, createdAt])
+  @@index([statusV2])
+  @@index([customerId, createdAt])
 }
 
 model Package {
@@ -80,6 +138,9 @@ model Package {
   included    Included[]
   bookings    PackageBooking[]
   itinerary   PackageItineraryLeg[]
+
+  @@index([createdAt])
+  @@index([price])
 }
 
 model Included {
@@ -87,6 +148,8 @@ model Included {
   item      String
   packageId String
   package   Package @relation(fields: [packageId], references: [id])
+
+  @@index([packageId])
 }
 
 model PackageItineraryLeg {
@@ -94,6 +157,13 @@ model PackageItineraryLeg {
   packageId   String
   order       Int
   mode        String
+  modeV2      TransportMode @default(CAR)
+  // Timeline fields (v3) for "tour chuẩn"
+  day         Int      @default(1)
+  stopTitle   String?
+  stopDesc    String?  @db.Text
+  stopImage   String?
+  mapsQuery   String?
   fromName    String
   toName      String
   distanceKm  Float?
@@ -106,6 +176,9 @@ model PackageItineraryLeg {
   updatedAt   DateTime @updatedAt
 
   package     Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
+
+  @@index([packageId, order])
+  @@index([packageId, day, order])
 }
 
 model KeepAlive {
@@ -114,13 +187,74 @@ model KeepAlive {
   random String? @default(uuid())
 }
 
+model CommunityPost {
+  id          String             @id @default(cuid())
+  userId      String?
+  authorName  String
+  title       String?
+  content     String
+  imageData   String?
+  tags        String?            // comma-separated
+  location    String?
+  likesCount  Int                @default(0)
+  savesCount  Int                @default(0)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  comments    CommunityComment[]
+  likes       CommunityPostLike[]
+  saves       CommunityPostSave[]
+
+  @@index([createdAt])
+  @@index([userId, createdAt])
+}
+
+model CommunityComment {
+  id         String        @id @default(cuid())
+  postId     String
+  userId     String?
+  authorName String
+  content    String
+  createdAt  DateTime      @default(now())
+  post       CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId, createdAt])
+  @@index([userId, createdAt])
+}
+
+// Per-user interactions (v2). Keep counts on CommunityPost as denormalized aggregates.
+model CommunityPostLike {
+  id        String        @id @default(cuid())
+  postId    String
+  userId    String
+  createdAt DateTime      @default(now())
+  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([userId, createdAt])
+}
+
+model CommunityPostSave {
+  id        String        @id @default(cuid())
+  postId    String
+  userId    String
+  createdAt DateTime      @default(now())
+  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([userId, createdAt])
+}
+
 model AIPlannerBooking {
   id              String    @id @default(cuid())
+  // Shareable public link token for /trip/[token]
+  publicToken     String?   @unique
+  customerId      String?
   firstname       String
   lastname        String
   email           String
   phone           String?
   status          String    @default("PENDING")
+  statusV2        BookingStatus @default(PENDING)
   bookingDate     DateTime?
   numberOfGuests  Int       @default(1)
   
@@ -128,6 +262,7 @@ model AIPlannerBooking {
   startLocation   String
   endLocation     String
   transportMode   String
+  transportModeV2 TransportMode @default(CAR)
   distanceKm      Float?
   co2Kg           Float?
   
@@ -135,9 +270,35 @@ model AIPlannerBooking {
   routePoints     String?   @db.Text
   ecoPoints       String?   @db.Text
   expertInsights  String?   @db.Text
+  itemsUsed       String?   @db.Text
   
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+  customer        Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([customerId, createdAt])
+  @@index([email, createdAt])
+}
+
+model Customer {
+  id              String   @id @default(cuid())
+  clerkUserId     String?  @unique
+  firstName       String?
+  lastName        String?
+  fullName        String?
+  email           String
+  emailNormalized String   @unique
+  phone           String?
+  phoneNormalized String?
+  country         String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  lastSeenAt      DateTime?
+
+  bookings        Booking[]
+  packageBookings PackageBooking[]
+  aiPlannerBookings AIPlannerBooking[]
 }
 
 model Destination {
@@ -151,8 +312,29 @@ model Destination {
   description String
   daysNights  Int
   tourType    String
+  tourTypeV2  TourType @default(DAYS)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   latitude    Float?
   longitude   Float?
+
+  @@index([country, city])
+  @@index([createdAt])
+}
+
+model ImageEditSuggestion {
+  id         String                   @id @default(cuid())
+  entityType ImageEntityType
+  entityId   String
+  field      String                   @default("imageData")
+  oldValue   String?
+  newValue   String
+  note       String?
+  status     ImageEditSuggestionStatus @default(PENDING)
+  appliedAt  DateTime?
+  createdAt  DateTime                 @default(now())
+  updatedAt  DateTime                 @updatedAt
+
+  @@index([entityType, entityId])
+  @@index([status, createdAt])
 }

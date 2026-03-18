@@ -11,6 +11,15 @@ function isBookingStatus(value: unknown): value is BookingStatus {
   return typeof value === 'string' && (BOOKING_STATUSES as readonly string[]).includes(value)
 }
 
+function normalizeEmail(email: string) {
+  return email.trim().toLowerCase()
+}
+
+function normalizePhone(phone: string) {
+  const digits = phone.replace(/\D/g, '')
+  return digits.length ? digits : null
+}
+
 // GET endpoint - Protected with Clerk authentication
 export async function GET(req: NextRequest) {
   console.log('GET request received'); // Debug log
@@ -105,6 +114,20 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   console.log('POST request received'); // Debug log
   try {
+    const clerkEnabled =
+      !!process.env.CLERK_SECRET_KEY?.trim() &&
+      !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim() &&
+      (process.env.NODE_ENV === 'production' || process.env.FORCE_CLERK_AUTH === 'true')
+
+    let clerkUserId: string | null = null
+    if (clerkEnabled) {
+      try {
+        clerkUserId = getAuth(req).userId
+      } catch {
+        clerkUserId = null
+      }
+    }
+
     const bookingData = await req.json();
     console.log('Received booking data:', bookingData); // Debug log
     
@@ -150,14 +173,47 @@ export async function POST(req: NextRequest) {
     }
 
     // Create the booking without requiring user authentication
+    const emailNormalized = normalizeEmail(bookingData.email)
+    const phoneNormalized = normalizePhone(bookingData.phone)
+    const fullName = `${bookingData.firstname} ${bookingData.lastname}`.trim()
+
+    const customer = await prisma.customer.upsert({
+      where: { emailNormalized },
+      create: {
+        email: bookingData.email,
+        emailNormalized,
+        phone: bookingData.phone,
+        phoneNormalized,
+        country: bookingData.country || null,
+        firstName: bookingData.firstname,
+        lastName: bookingData.lastname,
+        fullName,
+        lastSeenAt: new Date(),
+      },
+      update: {
+        email: bookingData.email,
+        phone: bookingData.phone,
+        phoneNormalized,
+        country: bookingData.country || null,
+        firstName: bookingData.firstname,
+        lastName: bookingData.lastname,
+        fullName,
+        lastSeenAt: new Date(),
+      },
+      select: { id: true },
+    })
+
     const booking = await prisma.booking.create({
       data: {
+        customerId: customer.id,
+        userId: clerkUserId,
         firstname: bookingData.firstname,
         lastname: bookingData.lastname,
         email: bookingData.email,
         phone: bookingData.phone,
         country: bookingData.country || null,
         status: 'PENDING',
+        statusV2: 'PENDING',
         numberOfGuests: bookingData.numberOfGuests,
         bookingDate: bookingData.bookingDate ? new Date(bookingData.bookingDate) : null,
         specialRequests: bookingData.specialRequests || null,
