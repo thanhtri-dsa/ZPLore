@@ -27,16 +27,27 @@ const TawkToWidget = () => {
     
     const style = document.createElement('style');
     style.textContent = `
-      #tawk-to-widget {
-        margin: 16px !important;
-        height: 48px !important;
-        width: 48px !important;
+      /* Wrap container that Tawk uses for the floating button */
+      #tawk-to-widget, #tawkchat-minified-container, .tawk-min-container {
+        bottom: calc(env(safe-area-inset-bottom, 0px) + 76px) !important;
+        right: 16px !important;
+        margin: 0 !important;
+        z-index: 90 !important; /* dưới bottom nav (100) để không che icon */
       }
+
+      #tawk-to-widget {
+        height: 52px !important;
+        width: 52px !important;
+      }
+
       @media (max-width: 640px) {
+        #tawk-to-widget, #tawkchat-minified-container, .tawk-min-container {
+          bottom: calc(env(safe-area-inset-bottom, 0px) + 88px) !important;
+          right: 14px !important;
+        }
         #tawk-to-widget {
-          margin: 12px !important;
-          height: 40px !important;
-          width: 40px !important;
+          height: 44px !important;
+          width: 44px !important;
         }
       }
     `;

@@ -39,3 +39,8 @@ build_output*.txt
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+.next
+.next-dev
+node_modules
+.env
