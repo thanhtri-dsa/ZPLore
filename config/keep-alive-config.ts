@@ -19,6 +19,7 @@ export const keepAliveConfig = {
   otherEndpoints: [
     'https://www.forestlinetours.com/api/keep-alive',
     // 'https://your-other-supabase-app.com/api/keep-alive',
-    'http://localhost:3001/api/keep-alive'
+    // Avoid calling this same endpoint itself in local dev:
+    // 'http://localhost:3001/api/keep-alive'
   ]
 }

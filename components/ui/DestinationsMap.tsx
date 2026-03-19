@@ -329,12 +329,13 @@ const DestinationsMap: React.FC<DestinationsMapProps> = ({ destinations, highlig
     }
   }, [googleKey, isClient, mapboxToken, provider])
 
+  const fallbackCenter = useMemo<[number, number]>(() => [16.0471, 108.206], [])
+
   useEffect(() => {
     if (provider !== 'google') return
     if (!googleKey || !googleReady || !isClient) return
     const container = mapDivRef.current
     if (!container) return
-    if (!fixedBounds && (validDestinations.length === 0 || allPoints.length === 0) && extraPoints.length === 0) return
 
     let map: unknown = null
     let infoWindow: { setContent: (content: HTMLElement) => void; open: (opts: Record<string, unknown>) => void; close: () => void } | null = null
@@ -352,7 +353,7 @@ const DestinationsMap: React.FC<DestinationsMapProps> = ({ destinations, highlig
                 (fixedBounds.south + fixedBounds.north) / 2,
                 (fixedBounds.west + fixedBounds.east) / 2,
               ] as [number, number])
-            : (focusPoints[0] || allPoints[0] || extraPoints[0])
+            : (focusPoints[0] || allPoints[0] || extraPoints[0] || fallbackCenter)
 
         map = new google.maps.Map(container, {
           center: { lat: initial[0], lng: initial[1] } as unknown as Record<string, unknown>,
@@ -378,19 +379,22 @@ const DestinationsMap: React.FC<DestinationsMapProps> = ({ destinations, highlig
             : {}),
         })
 
-        const bounds = new google.maps.LatLngBounds()
-        if (fixedBounds) {
-          bounds.extend(new google.maps.LatLng(fixedBounds.south, fixedBounds.west))
-          bounds.extend(new google.maps.LatLng(fixedBounds.north, fixedBounds.east))
-        } else {
-          for (const p of [...focusPoints, ...extraPoints]) {
+        const pointsForBounds = fixedBounds
+          ? [
+              [fixedBounds.south, fixedBounds.west] as [number, number],
+              [fixedBounds.north, fixedBounds.east] as [number, number],
+            ]
+          : [...focusPoints, ...extraPoints]
+        if (pointsForBounds.length > 0) {
+          const bounds = new google.maps.LatLngBounds()
+          for (const p of pointsForBounds) {
             bounds.extend(new google.maps.LatLng(p[0], p[1]))
           }
-        }
-        const mapRecord = map as unknown as Record<string, unknown>
-        const fitBoundsFn = mapRecord['fitBounds']
-        if (typeof fitBoundsFn === 'function') {
-          ;(fitBoundsFn as (b: unknown, o?: unknown) => void)(bounds as unknown, { padding: 60 } as unknown)
+          const mapRecord = map as unknown as Record<string, unknown>
+          const fitBoundsFn = mapRecord['fitBounds']
+          if (typeof fitBoundsFn === 'function') {
+            ;(fitBoundsFn as (b: unknown, o?: unknown) => void)(bounds as unknown, { padding: 60 } as unknown)
+          }
         }
 
         infoWindow = new google.maps.InfoWindow()
@@ -516,14 +520,13 @@ const DestinationsMap: React.FC<DestinationsMapProps> = ({ destinations, highlig
       }
       map = null
     }
-  }, [allPoints, googleKey, googleReady, highlightCenter, highlightRadius, highlightedPoints, isClient, provider, validDestinations, extraMarkers, extraPoints, fixedBounds])
+  }, [allPoints, googleKey, googleReady, highlightCenter, highlightRadius, highlightedPoints, isClient, provider, validDestinations, extraMarkers, extraPoints, fixedBounds, fallbackCenter])
 
   useEffect(() => {
     if (provider !== 'mapbox') return
     if (!mapboxToken || !mapboxReady || !isClient) return
     const container = mapDivRef.current
     if (!container) return
-    if (!fixedBounds && (validDestinations.length === 0 || allPoints.length === 0) && extraPoints.length === 0) return
 
     let map: { remove: () => void } | null = null
     const markers: Array<{ remove: () => void }> = []
@@ -539,7 +542,7 @@ const DestinationsMap: React.FC<DestinationsMapProps> = ({ destinations, highlig
                 (fixedBounds.south + fixedBounds.north) / 2,
                 (fixedBounds.west + fixedBounds.east) / 2,
               ] as [number, number])
-            : (focusPoints[0] || allPoints[0] || extraPoints[0])
+            : (focusPoints[0] || allPoints[0] || extraPoints[0] || fallbackCenter)
 
         map = new mapboxgl.Map({
           container,
@@ -558,14 +561,17 @@ const DestinationsMap: React.FC<DestinationsMapProps> = ({ destinations, highlig
         }) as unknown as { remove: () => void }
 
         ;(map as unknown as { on: (e: string, h: () => void) => void }).on('load', () => {
-          const bounds = new mapboxgl.LngLatBounds()
-          if (fixedBounds) {
-            bounds.extend([fixedBounds.west, fixedBounds.south])
-            bounds.extend([fixedBounds.east, fixedBounds.north])
-          } else {
-            for (const p of [...focusPoints, ...extraPoints]) bounds.extend([p[1], p[0]])
+          const pointsForBounds = fixedBounds
+            ? [
+                [fixedBounds.south, fixedBounds.west] as [number, number],
+                [fixedBounds.north, fixedBounds.east] as [number, number],
+              ]
+            : [...focusPoints, ...extraPoints]
+          if (pointsForBounds.length > 0) {
+            const bounds = new mapboxgl.LngLatBounds()
+            for (const p of pointsForBounds) bounds.extend([p[1], p[0]])
+            ;(map as unknown as { fitBounds: (b: unknown, o?: unknown) => void }).fitBounds(bounds as unknown, { padding: 60 } as unknown)
           }
-          ;(map as unknown as { fitBounds: (b: unknown, o?: unknown) => void }).fitBounds(bounds as unknown, { padding: 60 } as unknown)
 
           if (highlightCenter) {
             const polygon = circlePolygon(highlightCenter, highlightRadius)
@@ -634,20 +640,9 @@ const DestinationsMap: React.FC<DestinationsMapProps> = ({ destinations, highlig
       } catch {}
       map = null
     }
-  }, [allPoints, highlightCenter, highlightRadius, highlightedPoints, isClient, mapboxReady, mapboxToken, provider, validDestinations, extraPoints, extraMarkers, fixedBounds])
+  }, [allPoints, highlightCenter, highlightRadius, highlightedPoints, isClient, mapboxReady, mapboxToken, provider, validDestinations, extraPoints, extraMarkers, fixedBounds, fallbackCenter])
 
   if (!isClient) return null
-
-  if (validDestinations.length === 0 && !fixedBounds) {
-    return (
-      <div className="flex items-center justify-center h-full bg-muted/30 rounded-xl border border-border">
-        <div className="text-center px-6 py-10">
-          <div className="text-sm font-bold text-primary mb-2">Chưa có tọa độ để hiển thị</div>
-          <div className="text-xs text-muted-foreground">Vui lòng bổ sung latitude/longitude cho điểm đến.</div>
-        </div>
-      </div>
-    )
-  }
 
   if (provider === 'osm') {
     const focusPoints = highlightedPoints.length > 0 ? highlightedPoints : allPoints
@@ -661,7 +656,7 @@ const DestinationsMap: React.FC<DestinationsMapProps> = ({ destinations, highlig
     const centerPoint =
       fixedBounds
         ? ([(fixedBounds.south + fixedBounds.north) / 2, (fixedBounds.west + fixedBounds.east) / 2] as [number, number])
-        : (focusPoints[0] || allPoints[0] || extraPoints[0])
+        : (focusPoints[0] || allPoints[0] || extraPoints[0] || fallbackCenter)
 
     return (
       <MapContainer

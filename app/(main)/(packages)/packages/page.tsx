@@ -128,17 +128,23 @@ export default function PackagesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8fafc]">
+    <div className="min-h-screen bg-gradient-to-b from-[#f6fff8] via-white to-[#fbf4ea]">
       {/* Hero Section */}
       <div className="relative z-10 overflow-hidden bg-primary h-[32vh] md:h-[40vh] flex items-center justify-center">
         <Image
           src="/images/hero_packages.jpg"
           alt="Eco-Tour Packages"
           fill
-          className="z-0 object-cover opacity-60"
+          className="z-0 object-cover opacity-65"
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/70 via-primary/25 to-[#f8fafc]" />
+        {/* Organic abstract shapes */}
+        <div className="absolute inset-0">
+          <div className="absolute -top-24 left-[-120px] w-[520px] h-[520px] rounded-full bg-emerald-200/55 blur-3xl opacity-70" />
+          <div className="absolute -bottom-24 right-[-140px] w-[560px] h-[560px] rounded-full bg-[#e9a07c]/35 blur-3xl opacity-70" />
+          <div className="absolute top-20 left-1/3 w-[420px] h-[420px] rounded-full bg-[#f1e7d6]/70 blur-3xl opacity-50" />
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/70 via-primary/25 to-transparent" />
         
         <div className="relative z-10 text-center px-4">
           <motion.div
@@ -150,10 +156,10 @@ export default function PackagesPage() {
               Khám phá hành trình xanh
             </span>
             <h1 className="text-4xl md:text-7xl font-serif font-black text-white drop-shadow-2xl">
-              Gói Tour <span className="text-secondary italic">VIP</span>
+              Gói Tour <span className="text-secondary italic">Eco</span>
             </h1>
             <p className="mt-4 text-white/80 max-w-2xl mx-auto text-sm md:text-base">
-              Chọn tour đẹp – rõ giá – lịch trình chi tiết – đặt nhanh trong 1 phút.
+              Đi cùng nhóm bạn bè, chạm thiên nhiên xanh mát và hoàn thành hành trình bền vững.
             </p>
           </motion.div>
         </div>
@@ -162,7 +168,7 @@ export default function PackagesPage() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 md:-mt-20 relative z-20 pb-20">
         {/* Top filter bar (mobile-first) */}
-        <div className="mb-6 md:mb-8 rounded-[2rem] bg-white/70 backdrop-blur-xl border border-white shadow-sm p-4 md:p-5">
+        <div className="mb-6 md:mb-8 rounded-[2rem] bg-white/65 backdrop-blur-xl border border-white shadow-sm p-4 md:p-5">
           <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-primary/50" />
@@ -173,7 +179,7 @@ export default function PackagesPage() {
                   setCurrentPage(1);
                 }}
                 placeholder="Tìm gói tour (vd: Hội An, Sapa, eco...)"
-                className="w-full h-12 rounded-2xl pl-12 pr-4 bg-white/70 border border-white/80 shadow-sm outline-none focus:ring-2 focus:ring-secondary/40"
+                className="w-full h-12 rounded-2xl pl-12 pr-4 border border-white/85 shadow-sm outline-none focus:ring-2 focus:ring-emerald-300/50 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.14),transparent_55%),radial-gradient(circle_at_bottom_right,rgba(233,160,124,0.18),transparent_50%),linear-gradient(180deg,rgba(255,255,255,0.86),rgba(255,255,255,0.62))]"
               />
             </div>
 

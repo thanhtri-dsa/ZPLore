@@ -8,6 +8,7 @@ type ItineraryLegInput = {
   order?: unknown
   mode?: unknown
   day?: unknown
+  offsetMinutes?: unknown
   stopTitle?: unknown
   stopDesc?: unknown
   stopImage?: unknown
@@ -35,6 +36,7 @@ function normalizeItinerary(raw: unknown): Array<{
   order: number
   mode: string
   day: number
+  offsetMinutes: number
   stopTitle: string | null
   stopDesc: string | null
   stopImage: string | null
@@ -52,12 +54,20 @@ function normalizeItinerary(raw: unknown): Array<{
   return raw
     .map((l, idx) => {
       const leg = (l ?? {}) as ItineraryLegInput
-      const fromName = String(leg.fromName ?? '').trim()
-      const toName = String(leg.toName ?? '').trim()
-      if (!fromName || !toName) return null
+      const stopTitleRaw = String(leg.stopTitle ?? '').trim()
+      const fallbackTitle = stopTitleRaw || `Chặng ${idx + 1}`
+
+      // Allow admin to configure only time/day (and optionally stopTitle) without filling from/to.
+      const fromName = String(leg.fromName ?? '').trim() || fallbackTitle
+      const toName = String(leg.toName ?? '').trim() || fallbackTitle
       const order = normalizeNumber(leg.order) ?? idx
       const dayRaw = normalizeNumber(leg.day)
       const day = dayRaw && dayRaw > 0 ? Math.floor(dayRaw) : 1
+      const offsetMinutesRaw = normalizeNumber(leg.offsetMinutes)
+      const offsetMinutes =
+        offsetMinutesRaw != null && Number.isFinite(offsetMinutesRaw)
+          ? Math.max(0, Math.floor(offsetMinutesRaw))
+          : 0
       const distanceKm = normalizeNumber(leg.distanceKm)
       const fromLat = normalizeNumber(leg.fromLat)
       const fromLng = normalizeNumber(leg.fromLng)
@@ -65,7 +75,7 @@ function normalizeItinerary(raw: unknown): Array<{
       const toLng = normalizeNumber(leg.toLng)
       const mode = String(leg.mode ?? 'CAR').trim().toUpperCase() || 'CAR'
       const note = String(leg.note ?? '').trim()
-      const stopTitle = String(leg.stopTitle ?? '').trim()
+      const stopTitle = stopTitleRaw
       const stopDesc = String(leg.stopDesc ?? '').trim()
       const stopImage = typeof leg.stopImage === 'string' ? leg.stopImage.trim() : ''
       const mapsQuery = String(leg.mapsQuery ?? '').trim()
@@ -73,6 +83,7 @@ function normalizeItinerary(raw: unknown): Array<{
         order: Math.max(0, Math.floor(order)),
         mode,
         day,
+        offsetMinutes,
         stopTitle: stopTitle ? stopTitle : null,
         stopDesc: stopDesc ? stopDesc : null,
         stopImage: stopImage ? stopImage : null,
@@ -87,7 +98,6 @@ function normalizeItinerary(raw: unknown): Array<{
         note: note ? note : null,
       }
     })
-    .filter((v): v is NonNullable<typeof v> => v != null)
     .sort((a, b) => a.order - b.order)
     .map((leg, idx) => ({ ...leg, order: idx }))
 }
@@ -192,6 +202,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
                 order: leg.order,
                 mode: leg.mode,
                 day: leg.day,
+                offsetMinutes: leg.offsetMinutes,
                 stopTitle: leg.stopTitle,
                 stopDesc: leg.stopDesc,
                 stopImage: leg.stopImage,

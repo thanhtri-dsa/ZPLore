@@ -160,6 +160,9 @@ model PackageItineraryLeg {
   modeV2      TransportMode @default(CAR)
   // Timeline fields (v3) for "tour chuẩn"
   day         Int      @default(1)
+  // Minutes offset from 00:00 of the booking date (admin-configured time)
+  // Example: leg 1 at 09:00 => offsetMinutes = 540
+  offsetMinutes Int   @default(0)
   stopTitle   String?
   stopDesc    String?  @db.Text
   stopImage   String?
@@ -279,6 +282,34 @@ model AIPlannerBooking {
   @@index([createdAt])
   @@index([customerId, createdAt])
   @@index([email, createdAt])
+}
+
+// --- Admin-editable Home content ---
+model HomeReview {
+  id        String   @id @default(cuid())
+  name      String
+  location  String
+  rating    Int      @default(5)
+  content   String   @db.Text
+  isActive  Boolean  @default(true)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive, order])
+  @@index([createdAt])
+}
+
+model HomeFeaturedBlog {
+  id        String   @id @default(cuid())
+  blogId    String
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive, order])
+  @@unique([blogId])
 }
 
 enum EcoActionType {

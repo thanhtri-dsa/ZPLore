@@ -26,8 +26,11 @@ export default function HomePage() {
   const [q, setQ] = React.useState("")
   const [packages, setPackages] = React.useState<Package[]>([])
   const [blogs, setBlogs] = React.useState<BlogPost[]>([])
+  const [featuredBlogs, setFeaturedBlogs] = React.useState<BlogPost[]>([])
   const [loadingPackages, setLoadingPackages] = React.useState(true)
   const [loadingBlogs, setLoadingBlogs] = React.useState(true)
+  const [loadingHomeContent, setLoadingHomeContent] = React.useState(true)
+  const [reviews, setReviews] = React.useState<Review[]>([])
 
   React.useEffect(() => {
     let cancelled = false
@@ -59,39 +62,34 @@ export default function HomePage() {
       }
     }
 
+    async function fetchHomeContent() {
+      try {
+        setLoadingHomeContent(true)
+        const res = await fetch("/api/home-content")
+        const data = (await res.json()) as unknown as { blogs?: BlogPost[]; reviews?: Review[] }
+        if (cancelled) return
+        setFeaturedBlogs(Array.isArray(data?.blogs) ? (data.blogs as BlogPost[]) : [])
+        setReviews(Array.isArray(data?.reviews) ? (data.reviews as Review[]) : [])
+      } catch {
+        if (!cancelled) {
+          setFeaturedBlogs([])
+          setReviews([])
+        }
+      } finally {
+        if (!cancelled) setLoadingHomeContent(false)
+      }
+    }
+
     fetchPackages()
     fetchBlogs()
+    fetchHomeContent()
     return () => {
       cancelled = true
     }
   }, [])
 
-  const reviews: Review[] = [
-    {
-      id: "r1",
-      name: "Minh Anh",
-      location: "Hà Nội",
-      rating: 5,
-      content: "Tour làng nghề rất hay: gặp nghệ nhân, được tự tay làm thử và mang sản phẩm về làm kỷ niệm.",
-    },
-    {
-      id: "r2",
-      name: "Quang Huy",
-      location: "Đà Nẵng",
-      rating: 5,
-      content: "Map gợi ý điểm đến rõ ràng, đặt tour nhanh. Team support nhiệt tình.",
-    },
-    {
-      id: "r3",
-      name: "Thảo Vy",
-      location: "TP.HCM",
-      rating: 4,
-      content: "Rất thích phần cộng đồng và review — chọn tour làng nghề tự tin hơn.",
-    },
-  ]
-
   const hotTours = packages.slice(0, 6)
-  const featuredPosts = blogs.slice(0, 3)
+  const featuredPosts = featuredBlogs.length ? featuredBlogs.slice(0, 3) : blogs.slice(0, 3)
 
   const onSearch = (e?: React.FormEvent) => {
     e?.preventDefault()
@@ -130,10 +128,10 @@ export default function HomePage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-serif font-black tracking-tight text-primary leading-[1.05]"
+                className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-serif font-black tracking-tight text-emerald-700 leading-[1.05]"
               >
-                Khám phá <span className="text-secondary italic">Làng Nghề</span> <br className="hidden lg:block" />
-                Việt Nam
+                Khám phá <span className="text-emerald-500 italic">Làng Nghề</span> <br className="hidden lg:block" />
+                Sài Gòn - Việt Nam
               </motion.h1>
 
               <motion.p 
@@ -142,7 +140,7 @@ export default function HomePage() {
                 transition={{ delay: 0.2 }}
                 className="mt-6 text-base md:text-lg lg:text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto lg:mx-0"
               >
-                Tìm làng nghề, chọn tour trải nghiệm, xem review cộng đồng — và bắt đầu hành trình về nguồn cội ngay hôm nay.
+              Len lỏi vào những làng nghề ẩn mình, tự viết nên cung đường “độc bản” giữa lòng Sài Thành và chạm vào những giá trị di sản qua góc nhìn chân thực nhất. Hành trình tìm về nguồn cội đang chờ bạn khai phá ngay hôm nay!
               </motion.p>
 
               {/* Desktop Search Form */}
@@ -152,6 +150,21 @@ export default function HomePage() {
                 transition={{ delay: 0.3 }}
                 className="hidden lg:block mt-10"
               >
+                <div className="mb-4 p-3 rounded-2xl border border-emerald-100 bg-white/70 backdrop-blur-md">
+                  <div className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-700">Quick start</div>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <Link href="/explore?onboarding=1">
+                      <Button variant="outline" className="h-9 rounded-xl text-[11px] font-black uppercase tracking-[0.14em]">
+                        Bắt đầu theo nhóm
+                      </Button>
+                    </Link>
+                    <Link href="/explore?onboarding=1">
+                      <Button variant="outline" className="h-9 rounded-xl text-[11px] font-black uppercase tracking-[0.14em]">
+                        Hành trình xanh nhanh
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
                 <form onSubmit={onSearch} className="flex flex-col sm:flex-row gap-3">
                   <div className="relative flex-1">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/50 w-5 h-5" />
@@ -220,7 +233,7 @@ export default function HomePage() {
                 className="mt-8 flex flex-wrap justify-center lg:justify-start items-center gap-3 text-xs"
               >
                 <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mr-1 hidden lg:block">Phổ biến:</span>
-                {["Lê Minh Xuân","Thái Mỹ", "Tân Thông Hội"].map((tag) => (
+                {["Lê Minh Xuân","Thái Mỹ", "Tân Thông Hội"," Phú Hòa Đông","Gò Vấp"].map((tag) => (
                   <button
                     key={tag}
                     onClick={() => {
@@ -318,7 +331,7 @@ export default function HomePage() {
       </section>
 
       {/* 🗺️ Map preview */}
-      <div id="map-preview" className="relative z-20 -mt-10 lg:-mt-24 px-4">
+      <div id="map-preview" className="relative z-20 -mt-10 lg:-mt-16 px-4">
         <div className="container mx-auto max-w-6xl">
           <div className="rounded-[2rem] lg:rounded-[3rem] overflow-hidden shadow-[0_30px_70px_rgba(0,0,0,0.12)] border-4 md:border-8 border-white bg-white relative">
             <div className="absolute top-4 left-4 lg:top-8 lg:left-8 z-30 inline-flex items-center gap-3 px-4 py-2 rounded-2xl bg-white/90 backdrop-blur-md border border-emerald-100 shadow-xl">

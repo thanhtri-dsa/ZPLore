@@ -39,6 +39,7 @@ interface Package {
     order: number
     mode: string
     day: number
+      offsetMinutes?: number | null
     stopTitle: string | null
     stopDesc: string | null
     stopImage: string | null
@@ -60,6 +61,7 @@ interface PackageFormData extends Omit<Package, 'id' | 'price' | 'included' | 'i
   itinerary: Array<{
     mode: TransportMode
     day: string
+    offsetMinutes: string
     stopTitle: string
     stopDesc: string
     stopImage: string
@@ -140,6 +142,7 @@ export default function PackageForm({ params }: { params: { id?: string } }) {
           .map((l) => ({
             mode: normalizeMode(l.mode),
             day: String(l.day ?? 1),
+                    offsetMinutes: String(l.offsetMinutes ?? 0),
             stopTitle: l.stopTitle ?? '',
             stopDesc: l.stopDesc ?? '',
             stopImage: l.stopImage ?? '',
@@ -188,6 +191,7 @@ export default function PackageForm({ params }: { params: { id?: string } }) {
           order: idx,
           mode: l.mode,
           day: l.day.trim() ? Number(l.day) : 1,
+          offsetMinutes: l.offsetMinutes.trim() ? Number(l.offsetMinutes) : 0,
           stopTitle: l.stopTitle.trim() || null,
           stopDesc: l.stopDesc.trim() || null,
           stopImage: l.stopImage.trim() || null,
@@ -201,7 +205,8 @@ export default function PackageForm({ params }: { params: { id?: string } }) {
           toLng: l.toLng.trim() ? Number(l.toLng) : null,
           note: l.note.trim() || null,
         }))
-        .filter((l) => l.fromName && l.toName)
+        // Do not require fromName/toName. Backend will fallback from stopTitle (or "Chặng X")
+        // so admin can configure only time/day for testing.
 
       const response = await fetch(
         `/api/packages${isEditing ? `/${params.id}` : ''}`,
@@ -311,6 +316,7 @@ export default function PackageForm({ params }: { params: { id?: string } }) {
         {
           mode: 'CAR',
           day: '1',
+          offsetMinutes: '0',
           stopTitle: '',
           stopDesc: '',
           stopImage: '',
@@ -522,6 +528,15 @@ export default function PackageForm({ params }: { params: { id?: string } }) {
                             value={leg.day}
                             onChange={(e) => updateLeg(idx, { day: e.target.value })}
                             placeholder="1"
+                            inputMode="numeric"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Offset phút (từ 00:00)</Label>
+                          <Input
+                            value={leg.offsetMinutes}
+                            onChange={(e) => updateLeg(idx, { offsetMinutes: e.target.value })}
+                            placeholder="Ví dụ: 540 (09:00)"
                             inputMode="numeric"
                           />
                         </div>

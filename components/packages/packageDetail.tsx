@@ -39,6 +39,7 @@ interface PackageDestinationProps {
       order: number
       mode: string
       day?: number
+      offsetMinutes?: number | null
       stopTitle?: string | null
       stopDesc?: string | null
       stopImage?: string | null
@@ -240,6 +241,7 @@ const InfoTabContent = ({
 const ItineraryTabContent = ({ 
   travelPackage, 
   googleTripUrl, 
+  gpsOrigin,
   showMapPanel, 
   setShowMapPanel, 
   mapPoints, 
@@ -249,10 +251,14 @@ const ItineraryTabContent = ({
   trackedEmissions, 
   trackingMode, 
   setTrackingMode, 
-  itinerarySummary 
+  itinerarySummary,
+  bookingDate,
+  checkpointDone,
+  onCheckIn
 }: {
   travelPackage: PackageDestinationProps['package']
   googleTripUrl: string | null
+  gpsOrigin: { lat: number; lng: number } | null
   showMapPanel: boolean
   setShowMapPanel: (v: boolean) => void
   mapPoints: { lat: number; lng: number; label?: string }[] | undefined
@@ -263,6 +269,9 @@ const ItineraryTabContent = ({
   trackingMode: TransportMode
   setTrackingMode: (v: TransportMode) => void
   itinerarySummary: { legs: { id: string, fromName: string, toName: string, mode: string, kgCo2e?: number | null }[] }
+  bookingDate: Date | undefined
+  checkpointDone: Record<string, boolean>
+  onCheckIn: (legId: string) => void
 }) => (
   <div className="space-y-8 md:space-y-12">
     {/* Timeline (tour chuẩn) */}
@@ -277,8 +286,15 @@ const ItineraryTabContent = ({
         </div>
       </div>
 
+      {bookingDate ? (
+        <div className="mb-4 text-[10px] font-black uppercase tracking-widest text-primary/60">
+          Tiến độ check-in: {Object.values(checkpointDone).filter(Boolean).length}/{travelPackage.itinerary?.length ?? 0}
+        </div>
+      ) : null}
+
       {(() => {
         const legs = (travelPackage.itinerary ?? []).slice().sort((a, b) => (a.day ?? 1) - (b.day ?? 1) || a.order - b.order)
+        const legIndexById = new Map<string, number>(legs.map((l, i) => [l.id, i]))
         const firstLegId = legs[0]?.id
         const groups = new Map<number, typeof legs>()
         for (const l of legs) {
@@ -288,8 +304,13 @@ const ItineraryTabContent = ({
           groups.set(d, arr)
         }
 
-        const googleMapsLink = (query: string) =>
-          `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`
+        const googleMapsLink = (query: string) => {
+          if (gpsOrigin) {
+            const origin = `${gpsOrigin.lat},${gpsOrigin.lng}`
+            return `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(query)}&travelmode=driving`
+          }
+          return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`
+        }
 
         if (legs.length === 0) {
           return <div className="text-sm text-muted-foreground">Chưa có timeline. Admin hãy thêm itinerary theo ngày.</div>
@@ -334,6 +355,21 @@ const ItineraryTabContent = ({
                     const kgCo2e = safeDistance > 0 ? computeLegKgCo2e({ mode, distanceKm: safeDistance }) : 0
                     const kgCar = safeDistance > 0 ? computeLegKgCo2e({ mode: "CAR", distanceKm: safeDistance }) : 0
                     const savings = Math.max(0, kgCar - kgCo2e)
+                    const legNumber = (legIndexById.get(leg.id) ?? 0) + 1
+                    const isChecked = checkpointDone[leg.id] === true
+                    const prevLegId =
+                      legNumber > 1 ? legs[legNumber - 2]?.id : null
+                    const canCheckIn =
+                      bookingDate && !isChecked && (!prevLegId || checkpointDone[prevLegId] === true)
+                    const etaLabel = (() => {
+                      if (!bookingDate) return null
+                      const offsetMinutes = typeof leg.offsetMinutes === 'number' ? leg.offsetMinutes : 0
+                      const base = new Date(bookingDate)
+                      base.setHours(0, 0, 0, 0)
+                      const t = new Date(base.getTime() + offsetMinutes * 60_000)
+                      if (!Number.isFinite(t.getTime())) return null
+                      return t.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+                    })()
 
                     return (
                       <div key={leg.id} className="bg-white rounded-3xl border border-white shadow-sm p-4 md:p-5 flex gap-4">
@@ -380,7 +416,25 @@ const ItineraryTabContent = ({
                             </div>
                           </div>
 
-                          <div className="mt-3 flex items-center justify-end gap-2">
+                          <div className="mt-3 flex items-center justify-end gap-2 flex-wrap">
+                            {etaLabel ? (
+                              <div className="text-[10px] font-black uppercase tracking-widest text-primary/60 bg-primary/5 border border-primary/10 rounded-2xl px-3 py-2">
+                                Dự kiến {etaLabel}
+                              </div>
+                            ) : null}
+
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className={`h-10 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${
+                                isChecked ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-emerald-600 border-emerald-600 text-white hover:bg-emerald-700'
+                              }`}
+                              disabled={!canCheckIn}
+                              onClick={() => onCheckIn(leg.id)}
+                            >
+                              {isChecked ? 'Đã check-in' : `Checkpoint chặng ${legNumber}`}
+                            </Button>
+
                             <Button
                               type="button"
                               variant="outline"
@@ -434,15 +488,17 @@ const ItineraryTabContent = ({
           </Button>
         </div>
       </div>
-      <div className="h-[300px] md:h-[500px] w-full rounded-2xl md:rounded-[2.5rem] overflow-hidden border-2 border-white shadow-xl relative bg-gray-50">
-        <RouteMapLoader
-          location={travelPackage.location}
-          name={travelPackage.name}
-          showPanel={showMapPanel}
-          points={mapPoints}
-          forceProvider="google"
-        />
-      </div>
+      {showMapPanel ? (
+        <div className="h-[300px] md:h-[500px] w-full rounded-2xl md:rounded-[2.5rem] overflow-hidden border-2 border-white shadow-xl relative bg-gray-50">
+          <RouteMapLoader
+            location={travelPackage.location}
+            name={travelPackage.name}
+            showPanel={showMapPanel}
+            points={mapPoints}
+            forceProvider="google"
+          />
+        </div>
+      ) : null}
 
       <div className="mt-8 rounded-2xl md:rounded-[2.5rem] border border-primary/10 bg-primary/5 p-5 md:p-8">
         <div className="flex justify-between items-center mb-6">
@@ -514,6 +570,7 @@ const BookingForm = ({
   setBookingDate, 
   travelerCount, 
   setTravelerCount, 
+  errors,
   isLoading 
 }: {
   isMobile?: boolean
@@ -523,6 +580,7 @@ const BookingForm = ({
   setBookingDate: (d: Date | undefined) => void
   travelerCount: number
   setTravelerCount: (n: number) => void
+  errors: FormErrors
   isLoading: boolean
 }) => (
   <div className={`bg-white/90 backdrop-blur-2xl rounded-[3rem] shadow-[0_40px_100px_rgba(0,0,0,0.1)] border border-white relative overflow-hidden ${isMobile ? 'p-6 sm:p-8' : 'p-10 sticky top-[calc(env(safe-area-inset-top)+96px)]'}`}>
@@ -539,20 +597,36 @@ const BookingForm = ({
     </div>
 
     <form ref={formRef} onSubmit={handleSubmit} className="space-y-6 relative z-10">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label className="text-[10px] font-black uppercase ml-1 text-primary/60 tracking-wider">Tên</Label>
           <Input name="firstname" placeholder="Tên" className="rounded-2xl h-14 bg-gray-50/50 border-gray-100 focus:bg-white transition-all" required />
+          {errors.firstname ? <p className="text-[11px] text-red-600 font-bold">{errors.firstname}</p> : null}
         </div>
         <div className="space-y-2">
           <Label className="text-[10px] font-black uppercase ml-1 text-primary/60 tracking-wider">Họ</Label>
           <Input name="lastname" placeholder="Họ" className="rounded-2xl h-14 bg-gray-50/50 border-gray-100 focus:bg-white transition-all" required />
+          {errors.lastname ? <p className="text-[11px] text-red-600 font-bold">{errors.lastname}</p> : null}
         </div>
       </div>
       
       <div className="space-y-2">
         <Label className="text-[10px] font-black uppercase ml-1 text-primary/60 tracking-wider">Email liên hệ</Label>
         <Input name="email" type="email" placeholder="email@vi-du.com" className="rounded-2xl h-14 bg-gray-50/50 border-gray-100 focus:bg-white transition-all" required />
+        {errors.email ? <p className="text-[11px] text-red-600 font-bold">{errors.email}</p> : null}
+      </div>
+
+      <div className="space-y-2">
+        <Label className="text-[10px] font-black uppercase ml-1 text-primary/60 tracking-wider">Số điện thoại</Label>
+        <Input
+          name="phone"
+          type="tel"
+          inputMode="tel"
+          placeholder="+84 9xxxxxxx hoặc 09xxxxxxxx"
+          className="rounded-2xl h-14 bg-gray-50/50 border-gray-100 focus:bg-white transition-all"
+          required
+        />
+        {errors.phone ? <p className="text-[11px] text-red-600 font-bold">{errors.phone}</p> : null}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -575,6 +649,7 @@ const BookingForm = ({
               />
             </PopoverContent>
           </Popover>
+          {errors.bookingDate ? <p className="text-[11px] text-red-600 font-bold">{errors.bookingDate}</p> : null}
         </div>
         <div className="space-y-2">
           <Label className="text-[10px] font-black uppercase ml-1 text-primary/60 tracking-wider">Số khách</Label>
@@ -626,17 +701,35 @@ const BookingForm = ({
 export default function PackageDestination({ package: travelPackage }: PackageDestinationProps) {
   const [hasMounted, setHasMounted] = useState(false)
   const [bookingDate, setBookingDate] = useState<Date>()
+  const [checkpointDone, setCheckpointDone] = useState<Record<string, boolean>>({})
   const [isLoading, setIsLoading] = useState(false)
   const [showMapPanel, setShowMapPanel] = useState(false)
+  const [gpsOrigin, setGpsOrigin] = useState<{ lat: number; lng: number } | null>(null)
     const [_errors, setErrors] = useState<FormErrors>({})
   const [isLiked, setIsLiked] = useState(false)
   const [travelerCount, setTravelerCount] = useState(1)
     const [aiPoints, setAiPoints] = useState<{ lat: number; lng: number; }[] | null>(null)
   const formRef = useRef<HTMLFormElement>(null)
 
+  const persistBookingDate = (d: Date | undefined) => {
+    try {
+      if (!d) {
+        localStorage.removeItem(`ecoTour.package.lastBookingDate.${travelPackage.id}`)
+        return
+      }
+      localStorage.setItem(`ecoTour.package.lastBookingDate.${travelPackage.id}`, d.toISOString())
+    } catch {
+      // ignore localStorage errors
+    }
+  }
+
+  const handleSetBookingDate = (d: Date | undefined) => {
+    setBookingDate(d)
+    persistBookingDate(d)
+  }
+
   // Mobile Tab State
-  // This page currently disables customer booking. We only keep view tabs (info + itinerary).
-  const [activeTab, setActiveTab] = useState<'info' | 'itinerary'>('info')
+  const [activeTab, setActiveTab] = useState<'info' | 'itinerary' | 'booking'>('info')
 
   // Local state for itinerary leg modes
   const [itineraryModes, setItineraryModes] = useState<Record<string, TransportMode>>({})
@@ -716,13 +809,16 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
     const enc = (v: string) => encodeURIComponent(v)
     const coord = (lat?: number | null, lng?: number | null) =>
       typeof lat === 'number' && typeof lng === 'number' && Number.isFinite(lat) && Number.isFinite(lng) ? `${lat},${lng}` : null
-    const origin = coord(originLeg.fromLat, originLeg.fromLng) ?? originLeg.fromName
+    const origin =
+      gpsOrigin
+        ? `${gpsOrigin.lat},${gpsOrigin.lng}`
+        : coord(originLeg.fromLat, originLeg.fromLng) ?? originLeg.fromName
     const destination = coord(destLeg.toLat, destLeg.toLng) ?? destLeg.toName
     const waypoints = itinerarySummary.legs.slice(0, -1).map((l) => coord(l.toLat, l.toLng) ?? l.toName).filter(Boolean)
     const base = `https://www.google.com/maps/dir/?api=1&origin=${enc(origin)}&destination=${enc(destination)}&travelmode=driving`
     if (waypoints.length === 0) return base
     return `${base}&waypoints=${enc(waypoints.join('|'))}`
-  }, [itinerarySummary.legs])
+  }, [itinerarySummary.legs, gpsOrigin])
 
   // Listen for AI Map Commands
     useEffect(() => {
@@ -798,6 +894,73 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
     travelPackage.name,
     travelPackage.price,
   ])
+
+  // Get GPS origin once to build Google Maps directions (A = user location)
+  useEffect(() => {
+    if (!("geolocation" in navigator)) return
+    if (!hasMounted) return
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setGpsOrigin({ lat: position.coords.latitude, lng: position.coords.longitude })
+      },
+      () => {
+        setGpsOrigin(null)
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60_000 }
+    )
+  }, [hasMounted])
+
+  // Restore last booking date (so checkpoint/ETA stays visible after refresh)
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(`ecoTour.package.lastBookingDate.${travelPackage.id}`)
+      if (!raw) return
+      const d = new Date(raw)
+      if (Number.isFinite(d.getTime())) setBookingDate(d)
+    } catch {
+      // ignore
+    }
+  }, [travelPackage.id])
+
+  // Load checkpoint state (per package + selected booking date)
+  useEffect(() => {
+    if (!bookingDate) {
+      setCheckpointDone({})
+      return
+    }
+    const dateKey = bookingDate.toISOString().slice(0, 10)
+    const storageKey = `ecoTour.package.checkpoints.${travelPackage.id}.${dateKey}`
+    try {
+      const raw = localStorage.getItem(storageKey)
+      if (!raw) {
+        setCheckpointDone({})
+        return
+      }
+      const parsed = JSON.parse(raw) as Record<string, boolean>
+      setCheckpointDone(parsed ?? {})
+    } catch {
+      setCheckpointDone({})
+    }
+  }, [bookingDate, travelPackage.id])
+
+  const handleCheckIn = (legId: string) => {
+    if (!bookingDate) {
+      toast.error('Chọn ngày khởi hành trước khi check-in')
+      return
+    }
+    const dateKey = bookingDate.toISOString().slice(0, 10)
+    const storageKey = `ecoTour.package.checkpoints.${travelPackage.id}.${dateKey}`
+    setCheckpointDone((prev) => {
+      const next = { ...prev, [legId]: true }
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(next))
+      } catch {
+        // ignore localStorage errors
+      }
+      return next
+    })
+    toast.success('Đã check-in chặng này!')
+  }
 
   const handleToggleFavorite = () => {
     const item: StoredPackage = {
@@ -939,7 +1102,7 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
       return
     }
     try {
-      const response = await fetch('/api/packages/bookings', {
+      const response = await fetch('/api/bookings/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -956,8 +1119,8 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
       if (!response.ok) throw new Error('Booking failed')
       toast.success('Đặt tour thành công!')
       formRef.current?.reset()
-      setBookingDate(undefined)
       setErrors({})
+      persistBookingDate(bookingDate)
     } catch {
       toast.error('Đặt tour thất bại. Vui lòng thử lại.')
     } finally {
@@ -1065,10 +1228,11 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
           {[
             { id: 'info', label: 'Thông tin', icon: Info },
             { id: 'itinerary', label: 'Lộ trình', icon: Navigation },
+            { id: 'booking', label: 'Đặt tour', icon: Calendar },
           ].map((tab: { id: string; label: string; icon: React.ElementType }) => (
             <button
                             key={tab.id}
-              onClick={() => setActiveTab(tab.id as 'info' | 'itinerary')}
+              onClick={() => setActiveTab(tab.id as 'info' | 'itinerary' | 'booking')}
               className={`flex-1 flex flex-col items-center py-4 transition-all relative ${activeTab === tab.id ? 'text-primary' : 'text-gray-400'}`}
             >
               <tab.icon size={20} className="mb-1" />
@@ -1097,6 +1261,7 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
                     <ItineraryTabContent 
                       travelPackage={travelPackage}
                       googleTripUrl={googleTripUrl}
+                      gpsOrigin={gpsOrigin}
                       showMapPanel={showMapPanel}
                       setShowMapPanel={setShowMapPanel}
                       mapPoints={aiPoints || mapPoints}
@@ -1107,6 +1272,9 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
                       trackingMode={trackingMode}
                       setTrackingMode={setTrackingMode}
                       itinerarySummary={itinerarySummary}
+                      bookingDate={bookingDate}
+                      checkpointDone={checkpointDone}
+                      onCheckIn={handleCheckIn}
                     />
                   </motion.div>
                 </div>
@@ -1123,6 +1291,7 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
                         <ItineraryTabContent 
                           travelPackage={travelPackage}
                           googleTripUrl={googleTripUrl}
+                          gpsOrigin={gpsOrigin}
                           showMapPanel={showMapPanel}
                           setShowMapPanel={setShowMapPanel}
                           mapPoints={aiPoints || mapPoints}
@@ -1133,6 +1302,24 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
                           trackingMode={trackingMode}
                           setTrackingMode={setTrackingMode}
                           itinerarySummary={itinerarySummary}
+                          bookingDate={bookingDate}
+                          checkpointDone={checkpointDone}
+                          onCheckIn={handleCheckIn}
+                        />
+                      </motion.div>
+                    )}
+                    {activeTab === 'booking' && (
+                      <motion.div key="booking" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}>
+                        <BookingForm
+                          isMobile
+                          formRef={formRef}
+                          handleSubmit={handleSubmit}
+                          bookingDate={bookingDate}
+                          setBookingDate={handleSetBookingDate}
+                          travelerCount={travelerCount}
+                          setTravelerCount={setTravelerCount}
+                          errors={_errors}
+                          isLoading={isLoading}
                         />
                       </motion.div>
                     )}
@@ -1144,7 +1331,16 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
 
           {/* Desktop Sidebar */}
           <div className="hidden lg:block lg:col-span-4">
-            {/* Customer booking is disabled on this page for now. */}
+            <BookingForm
+              formRef={formRef}
+              handleSubmit={handleSubmit}
+              bookingDate={bookingDate}
+              setBookingDate={handleSetBookingDate}
+              travelerCount={travelerCount}
+              setTravelerCount={setTravelerCount}
+              errors={_errors}
+              isLoading={isLoading}
+            />
           </div>
         </div>
       </div>

@@ -91,7 +91,7 @@ export default function CommunityPage() {
   const [commentDraft, setCommentDraft] = React.useState<Record<string, string>>({})
   const [loadingComments, setLoadingComments] = React.useState<Record<string, boolean>>({})
 
-  async function loadPosts() {
+  const loadPosts = React.useCallback(async () => {
     setLoading(true)
     try {
       const res = await fetch(`/api/community/posts?limit=30&q=${encodeURIComponent(q.trim())}`)
@@ -102,9 +102,9 @@ export default function CommunityPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [q])
 
-  async function loadEcoData() {
+  const loadEcoData = React.useCallback(async () => {
     setLoadingEco(true)
     try {
       const pointsRes = await fetch("/api/eco/points")
@@ -124,12 +124,12 @@ export default function CommunityPage() {
     } finally {
       setLoadingEco(false)
     }
-  }
+  }, [])
 
   React.useEffect(() => {
     loadPosts()
     loadEcoData()
-  }, [])
+  }, [loadPosts, loadEcoData])
 
   async function redeemReward(rewardId: string) {
     setRedeeming(rewardId)

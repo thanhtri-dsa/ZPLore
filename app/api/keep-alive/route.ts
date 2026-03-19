@@ -49,31 +49,36 @@ const fetchOtherEndpoints = async (): Promise<string[]> => {
 }
 
 export async function GET() {
-  const supabase = createClient()  // maybe switch to ClientSide Client
+  try {
+    const supabase = createClient() // maybe switch to ClientSide Client
 
-  let responseMessage: string = ''
-  let successfulResponses: boolean = true
+    let responseMessage: string = ''
+    let successfulResponses: boolean = true
 
-  if (config?.disableRandomStringQuery != true) {
-    const querySupabaseResponse: QueryResponse = await querySupabase(supabase)
+    if (config?.disableRandomStringQuery != true) {
+      const querySupabaseResponse: QueryResponse = await querySupabase(supabase)
 
-    successfulResponses = successfulResponses && querySupabaseResponse.successful
-    responseMessage += querySupabaseResponse.message + '\n\n'
+      successfulResponses = successfulResponses && querySupabaseResponse.successful
+      responseMessage += querySupabaseResponse.message + '\n\n'
+    }
+
+    if (config?.allowInsertionAndDeletion == true) {
+      const insertOrDeleteResults: QueryResponse = await determineAction(supabase)
+
+      successfulResponses = successfulResponses && insertOrDeleteResults.successful
+      responseMessage += insertOrDeleteResults.message + '\n\n'
+    }
+
+    if (config?.otherEndpoints != null && config?.otherEndpoints.length > 0) {
+      const fetchResults: string[] = await fetchOtherEndpoints()
+      responseMessage += `\n\nOther Endpoint Results:\n${fetchResults.join('\n')}`
+    }
+
+    return new Response(responseMessage, {
+      status: successfulResponses == true ? 200 : 400
+    })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown keep-alive error'
+    return new Response(`Supabase keep-alive failed: ${message}`, { status: 500 })
   }
-
-  if (config?.allowInsertionAndDeletion == true) {
-    const insertOrDeleteResults: QueryResponse = await determineAction(supabase)
-
-    successfulResponses = successfulResponses && insertOrDeleteResults.successful
-    responseMessage += insertOrDeleteResults.message + '\n\n'
-  }
-
-  if (config?.otherEndpoints != null && config?.otherEndpoints.length > 0) {
-    const fetchResults: string[] = await fetchOtherEndpoints()
-    responseMessage += `\n\nOther Endpoint Results:\n${fetchResults.join('\n')}`
-  }
-
-  return new Response(responseMessage, {
-    status: (successfulResponses == true) ? 200 : 400
-  })
 }

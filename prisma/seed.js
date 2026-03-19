@@ -4,6 +4,13 @@ const prisma = new PrismaClient()
 async function main() {
   console.log('Starting seed...')
 
+  // --- Content reset: web sections ---
+  // Delete in an order that avoids FK constraint issues.
+  await prisma.homeFeaturedBlog.deleteMany()
+  await prisma.homeReview.deleteMany()
+  await prisma.communityPost.deleteMany()
+  await prisma.ecoReward.deleteMany()
+
   // Clear existing data
   await prisma.included.deleteMany()
   await prisma.packageBooking.deleteMany()
@@ -318,8 +325,43 @@ async function main() {
     }
   ]
 
+  // Seed sample "itinerary legs" so that Timeline + Checkpoint UI can be tested immediately.
+  // Note: we intentionally allow from/to to be derived from stopTitle to keep this seed simple.
+  const buildSampleItinerary = (pkg, legsCount = 3) => {
+    const safeLocation = String(pkg.location ?? '')
+    const safeName = String(pkg.name ?? '')
+    return Array.from({ length: legsCount }, (_, idx) => {
+      const legNumber = idx + 1
+      return {
+        order: idx,
+        mode: idx === 0 ? 'CAR' : 'WALK',
+        day: 1,
+        offsetMinutes: idx * 60, // 00:00, 01:00, 02:00 ...
+        stopTitle: `Chặng ${legNumber}`,
+        stopDesc: `Check-in chặng ${legNumber}`,
+        stopImage: null,
+        mapsQuery: `${safeLocation} chặng ${legNumber}`.trim(),
+        fromName: `${safeName} - Chặng ${legNumber} (đi)`,
+        toName: `${safeName} - Chặng ${legNumber} (đến)`,
+        distanceKm: 2 + idx * 1.5,
+        fromLat: null,
+        fromLng: null,
+        toLat: null,
+        toLng: null,
+        note: null
+      }
+    })
+  }
+
   for (const pkg of packages) {
-    await prisma.package.create({ data: pkg })
+    await prisma.package.create({
+      data: {
+        ...pkg,
+        itinerary: {
+          create: buildSampleItinerary(pkg, 3)
+        }
+      }
+    })
   }
 
   // Create Sample Destinations
@@ -525,29 +567,147 @@ async function main() {
     await prisma.destination.create({ data: dest })
   }
 
-  // Create Sample Blogs
+  // Create Sample Blogs (and capture created IDs for HomeFeaturedBlog)
   const blogs = [
     {
       title: 'Top 5 Safari Tips for First-Timers',
-      content: 'Going on your first safari can be overwhelming. Here are our top tips to make your experience unforgettable...',
+      content:
+        'Going on your first safari can be overwhelming. Here are our top tips to make your experience unforgettable...',
       authorId: 'admin_1',
       authorName: 'Forestline Team',
       tags: 'Safari,Tips,Travel',
-      imageData: '/images/lion.jpeg'
+      imageData: '/images/lion.jpeg',
     },
     {
       title: 'Why Sustainable Tourism Matters',
-      content: 'Eco-tourism is more than just a buzzword. It is about protecting the environment and supporting local communities...',
+      content:
+        'Eco-tourism is more than just a buzzword. It is about protecting the environment and supporting local communities...',
       authorId: 'admin_1',
       authorName: 'Forestline Team',
       tags: 'Eco-Tourism,Environment',
-      imageData: '/images/conserve.svg'
-    }
+      imageData: '/images/conserve.svg',
+    },
   ]
 
+  const createdBlogs = []
   for (const blog of blogs) {
-    await prisma.blog.create({ data: blog })
+    const created = await prisma.blog.create({ data: blog })
+    createdBlogs.push(created)
   }
+
+  // Create Sample Home Reviews
+  await prisma.homeReview.createMany({
+    data: [
+      {
+        name: 'An Nhiên',
+        location: 'Sài Gòn',
+        rating: 5,
+        content: 'Tour nhẹ nhàng, lên itinerary rõ ràng, cả nhóm đi vui mà vẫn giữ nhịp xanh.',
+        isActive: true,
+        order: 1,
+      },
+      {
+        name: 'Minh Khang',
+        location: 'Đà Nẵng',
+        rating: 5,
+        content: 'Đúng kiểu trải nghiệm bền vững: check-in có ý nghĩa, CO2 ước tính hợp lý, tổ chức chuyên nghiệp.',
+        isActive: true,
+        order: 2,
+      },
+      {
+        name: 'Thu Hương',
+        location: 'Hà Nội',
+        rating: 5,
+        content: 'Đi nhóm rất hợp. App dẫn lộ trình tốt, checkpoint dễ check và có thưởng cho nỗ lực.',
+        isActive: true,
+        order: 3,
+      },
+    ],
+  })
+
+  // Create Sample Featured Blogs on Home
+  const featured = createdBlogs.slice(0, 2)
+  for (let i = 0; i < featured.length; i++) {
+    await prisma.homeFeaturedBlog.create({
+      data: {
+        blogId: featured[i].id,
+        order: i,
+        isActive: true,
+      },
+    })
+  }
+
+  // Create Sample Community Posts (public GET endpoint)
+  await prisma.communityPost.createMany({
+    data: [
+      {
+        userId: null,
+        authorName: 'Forestline Admin',
+        title: 'Checkpoint xanh: cả nhóm cùng làm một điều nhỏ',
+        content:
+          'Điểm danh dễ hơn mình nghĩ. Chỉ cần đúng vị trí, đúng thời điểm là cảm giác “làm được gì đó” hiện ngay trên màn hình.',
+        imageData: '/images/recycle.svg',
+        tags: 'eco,checkpoint,group',
+        location: 'Sài Gòn',
+        likesCount: 12,
+        savesCount: 5,
+      },
+      {
+        userId: null,
+        authorName: 'Forestline Admin',
+        title: 'Kayaking cuối tuần: vui – mát – và nhẹ nhàng',
+        content:
+          'Chèo cùng nhóm, nhịp chậm vừa đủ để nghe thiên nhiên. Tổng quan CO2 ước tính cũng cho mình thấy thay đổi nhỏ thật sự có tác động.',
+        imageData: '/images/conserve.svg',
+        tags: 'water,kayaking,eco',
+        location: 'Bình Thuận',
+        likesCount: 24,
+        savesCount: 9,
+      },
+      {
+        userId: null,
+        authorName: 'Forestline Admin',
+        title: 'Tree planting: trồng cây xong là muốn đi thêm chuyến nữa',
+        content:
+          'Cả nhóm trồng cây, chụp ảnh lại và ghi cảm nghĩ. Tối về điểm thưởng hiện lên như một lời “cảm ơn” động lực để quay lại.',
+        imageData: '/images/community.svg',
+        tags: 'tree,planting,green',
+        location: 'Đà Lạt',
+        likesCount: 18,
+        savesCount: 7,
+      },
+    ],
+  })
+
+  // Create Sample Eco Rewards
+  await prisma.ecoReward.createMany({
+    data: [
+      {
+        title: 'Eco Badge (Bronze)',
+        description: 'Đạt mốc điểm thưởng cơ bản và nhận badge Bronze cho hành trình xanh đầu tiên.',
+        pointsRequired: 120,
+        stock: 100,
+        imageData: '/images/conserve.svg',
+        isActive: true,
+      },
+      {
+        title: 'Group Perk: Giảm 5%',
+        description: 'Dùng điểm thưởng để nhận ưu đãi giảm 5% cho chuyến đi nhóm tiếp theo.',
+        pointsRequired: 300,
+        stock: 50,
+        imageData: '/images/recycle.svg',
+        isActive: true,
+      },
+      {
+        title: 'Eco Experience Upgrade',
+        description: 'Nâng cấp trải nghiệm thêm hoạt động xanh trong itinerary (tùy lịch).',
+        pointsRequired: 600,
+        stock: 20,
+        imageData: '/images/community.svg',
+        isActive: true,
+      },
+    ],
+  })
 
   console.log('Seed completed successfully!')
 }

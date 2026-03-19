@@ -14,6 +14,7 @@ import { toast } from "sonner"
 type ItineraryLegForm = {
   mode: TransportMode
   day: string
+  offsetMinutes: string
   stopTitle: string
   stopDesc: string
   stopImage: string
@@ -60,6 +61,7 @@ export function CreatePackageForm() {
       {
         mode: 'CAR',
         day: '1',
+        offsetMinutes: '0',
         stopTitle: '',
         stopDesc: '',
         stopImage: '',
@@ -91,10 +93,8 @@ export function CreatePackageForm() {
 
     const itineraryData = itinerary
       .map((l, idx) => {
-        const fromName = l.fromName.trim()
-        const toName = l.toName.trim()
-        if (!fromName || !toName) return null
         const day = l.day.trim() ? Number(l.day) : 1
+        const offsetMinutes = l.offsetMinutes.trim() ? Number(l.offsetMinutes) : 0
         const n = l.distanceKm.trim() ? Number(l.distanceKm) : null
         const fromLat = l.fromLat.trim() ? Number(l.fromLat) : null
         const fromLng = l.fromLng.trim() ? Number(l.fromLng) : null
@@ -104,12 +104,13 @@ export function CreatePackageForm() {
           order: idx,
           mode: l.mode,
           day: Number.isFinite(day) && day > 0 ? Math.floor(day) : 1,
+          offsetMinutes: Number.isFinite(offsetMinutes) && offsetMinutes > 0 ? Math.floor(offsetMinutes) : 0,
           stopTitle: l.stopTitle.trim() || null,
           stopDesc: l.stopDesc.trim() || null,
           stopImage: l.stopImage.trim() || null,
           mapsQuery: l.mapsQuery.trim() || null,
-          fromName,
-          toName,
+          fromName: l.fromName.trim() || '',
+          toName: l.toName.trim() || '',
           distanceKm: typeof n === 'number' && Number.isFinite(n) && n > 0 ? n : null,
           fromLat: typeof fromLat === 'number' && Number.isFinite(fromLat) ? fromLat : null,
           fromLng: typeof fromLng === 'number' && Number.isFinite(fromLng) ? fromLng : null,
@@ -219,6 +220,15 @@ export function CreatePackageForm() {
                       value={leg.day}
                       onChange={(e) => updateLeg(idx, { day: e.target.value })}
                       placeholder="1"
+                      inputMode="numeric"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Offset phút</Label>
+                    <Input
+                      value={leg.offsetMinutes}
+                      onChange={(e) => updateLeg(idx, { offsetMinutes: e.target.value })}
+                      placeholder="0 (09:00)"
                       inputMode="numeric"
                     />
                   </div>
