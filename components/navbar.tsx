@@ -109,12 +109,12 @@ const Navbar = () => {
       <header
         className={`w-full transition-all duration-700 relative ${
           isScrolled || forceSolid
-            ? 'bg-white/85 backdrop-blur-2xl shadow-[0_10px_50px_rgba(2,44,34,0.12)] py-2 md:py-3 border-b border-primary/10'
-            : 'bg-white/35 backdrop-blur-xl py-3 md:py-6 border-b border-white/60'
+            ? 'bg-white/90 backdrop-blur-2xl shadow-[0_10px_50px_rgba(2,44,34,0.12)] py-2 md:py-3 border-b border-primary/10'
+            : 'bg-transparent py-4 md:py-8'
         }`}
       >
         {/* Subtle Vietnamese Pattern Overlay */}
-        <div className="absolute inset-0 opacity-[0.05] pointer-events-none vn-pattern rotate-180 overflow-hidden" />
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none vn-pattern rotate-180 overflow-hidden" />
         
         <nav className="container mx-auto px-4 relative z-[101]">
           <div className="flex items-center justify-between gap-4">
@@ -129,8 +129,6 @@ const Navbar = () => {
                   className="object-contain p-2 md:p-2.5"
                   priority
                 />
-                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                <div className="absolute -bottom-2 -right-2 w-8 h-8 md:w-12 md:h-12 bg-emerald-500/10 rounded-full blur-xl group-hover:bg-emerald-500/20 transition-all" />
               </div>
               <div className="flex flex-col">
                 <span className="text-xl md:text-4xl font-black text-primary font-serif tracking-tighter leading-none group-hover:scale-105 transition-transform duration-500 origin-left">
@@ -140,8 +138,6 @@ const Navbar = () => {
                   <span className="text-[8px] md:text-[12px] font-black text-emerald-700/80 tracking-[0.32em] md:tracking-[0.5em] uppercase leading-none">
                     TRAVEL
                   </span>
-                  <div className="h-[1px] md:h-[1.5px] w-4 md:w-8 bg-emerald-500/30 group-hover:w-12 transition-all duration-700" />
-                  <Star size={8} className="md:w-3 md:h-3 text-emerald-600 fill-emerald-600 animate-pulse" />
                 </div>
               </div>
             </Link>
@@ -152,7 +148,6 @@ const Navbar = () => {
                 {[
                   { label: "Trang chủ", href: "/" },
                   { label: "Khám phá", href: "/explore" },
-                  { label: "Du lịch xanh ", href: "/green-travel" },
                   { label: "Gói tour", href: "/packages" },
                   { label: "Cộng đồng", href: "/community" },
                   { label: "Liên hệ", href: "/contact" },
@@ -181,20 +176,21 @@ const Navbar = () => {
               </button>
 
               <Link href="/dream-journey" className="hidden lg:inline-flex">
-                <Button className="h-10 xl:h-12 px-4 xl:px-6 rounded-2xl font-black uppercase tracking-[0.18em] text-[11px] xl:text-[12px] eco-gradient text-white shadow-[0_10px_30px_rgba(2,44,34,0.2)] hover:opacity-95">
+                <Button className="h-10 xl:h-12 px-4 xl:px-6 rounded-2xl font-black uppercase tracking-[0.18em] text-[11px] xl:text-[12px] bg-primary text-white shadow-lg shadow-primary/20 hover:opacity-95 transition-all">
                   <span className="flex items-center gap-2">
                     Tạo hành trình
                     <ArrowUpRight className="w-4 h-4" />
                   </span>
                 </Button>
               </Link>
+
               <Sheet open={isOpen} onOpenChange={setIsOpen}>
                 <SheetTrigger asChild>
                   <Button variant="ghost" size="icon" className="lg:hidden text-primary hover:bg-emerald-500/10 p-0 w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl border border-primary/10">
                     <Menu className="h-6 w-6 md:h-7 md:w-7" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="right" className="p-0 border-l border-slate-200 w-full sm:w-[420px] bg-white text-primary [&>button]:hidden">
+                <SheetContent side="right" className="p-0 border-l border-slate-200 w-full sm:w-[420px] bg-white">
                   <MobileNav
                     onClose={() => setIsOpen(false)}
                     onSearch={() => {

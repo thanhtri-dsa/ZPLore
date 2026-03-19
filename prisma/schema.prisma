@@ -281,6 +281,20 @@ model AIPlannerBooking {
   @@index([email, createdAt])
 }
 
+enum EcoActionType {
+  EARN_BOOKING
+  EARN_CHALLENGE
+  EARN_REPORT_VERIFIED
+  SPEND_REDEEM
+  PENALTY_VIOLATION
+}
+
+enum EcoReportStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
 model Customer {
   id              String   @id @default(cuid())
   clerkUserId     String?  @unique
@@ -296,9 +310,64 @@ model Customer {
   updatedAt       DateTime @updatedAt
   lastSeenAt      DateTime?
 
+  // Eco Features
+  ecoPoints       Int      @default(0)
+  pointLogs       EcoPointLog[]
+  reports         EcoReport[] @relation("Reporter")
+  violations      EcoReport[] @relation("Violator")
+
   bookings        Booking[]
   packageBookings PackageBooking[]
   aiPlannerBookings AIPlannerBooking[]
+}
+
+model EcoReward {
+  id              String   @id @default(cuid())
+  title           String
+  description     String   @db.Text
+  pointsRequired  Int
+  stock           Int      @default(0)
+  imageData       String?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  redemptions     EcoPointLog[] @relation("RewardRedemption")
+}
+
+model EcoPointLog {
+  id              String        @id @default(cuid())
+  customerId      String
+  actionType      EcoActionType
+  pointsChange    Int           // Positive for earn, negative for spend/penalty
+  description     String?
+  rewardId        String?
+  createdAt       DateTime      @default(now())
+  
+  customer        Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  reward          EcoReward?    @relation("RewardRedemption", fields: [rewardId], references: [id])
+
+  @@index([customerId, createdAt])
+}
+
+model EcoReport {
+  id              String          @id @default(cuid())
+  reporterId      String?
+  violatorId      String?         // The user who didn't use the tour as an eco-tour
+  bookingId       String?         // Optional: link to a specific booking
+  packageId       String?
+  description     String          @db.Text
+  proofImageData  String?
+  status          EcoReportStatus @default(PENDING)
+  adminNote       String?
+  pointsPenalty   Int             @default(0)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  reporter        Customer?       @relation("Reporter", fields: [reporterId], references: [id])
+  violator        Customer?       @relation("Violator", fields: [violatorId], references: [id])
+
+  @@index([violatorId, status])
+  @@index([reporterId, status])
 }
 
 model Destination {

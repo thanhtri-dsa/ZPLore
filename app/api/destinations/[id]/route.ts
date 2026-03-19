@@ -110,9 +110,18 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
       return NextResponse.json({ error: 'Destination not found' }, { status: 404 })
     }
 
-    await prisma.destination.delete({
-      where: { id },
-    })
+    // Use a transaction to delete suggestions first
+    await prisma.$transaction([
+      prisma.imageEditSuggestion.deleteMany({
+        where: {
+          entityId: id,
+          entityType: 'DESTINATION'
+        }
+      }),
+      prisma.destination.delete({
+        where: { id },
+      })
+    ])
 
     return NextResponse.json({ message: 'Destination deleted successfully' })
   } catch (error) {

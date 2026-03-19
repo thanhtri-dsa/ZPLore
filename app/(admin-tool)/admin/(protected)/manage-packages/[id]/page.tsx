@@ -38,6 +38,11 @@ interface Package {
     id: string
     order: number
     mode: string
+    day: number
+    stopTitle: string | null
+    stopDesc: string | null
+    stopImage: string | null
+    mapsQuery: string | null
     fromName: string
     toName: string
     distanceKm: number | null
@@ -54,6 +59,11 @@ interface PackageFormData extends Omit<Package, 'id' | 'price' | 'included' | 'i
   included: string[]
   itinerary: Array<{
     mode: TransportMode
+    day: string
+    stopTitle: string
+    stopDesc: string
+    stopImage: string
+    mapsQuery: string
     fromName: string
     toName: string
     distanceKm: string
@@ -129,6 +139,11 @@ export default function PackageForm({ params }: { params: { id?: string } }) {
           .sort((a, b) => a.order - b.order)
           .map((l) => ({
             mode: normalizeMode(l.mode),
+            day: String(l.day ?? 1),
+            stopTitle: l.stopTitle ?? '',
+            stopDesc: l.stopDesc ?? '',
+            stopImage: l.stopImage ?? '',
+            mapsQuery: l.mapsQuery ?? '',
             fromName: l.fromName,
             toName: l.toName,
             distanceKm: typeof l.distanceKm === 'number' && Number.isFinite(l.distanceKm) ? String(l.distanceKm) : '',
@@ -172,6 +187,11 @@ export default function PackageForm({ params }: { params: { id?: string } }) {
         .map((l, idx) => ({
           order: idx,
           mode: l.mode,
+          day: l.day.trim() ? Number(l.day) : 1,
+          stopTitle: l.stopTitle.trim() || null,
+          stopDesc: l.stopDesc.trim() || null,
+          stopImage: l.stopImage.trim() || null,
+          mapsQuery: l.mapsQuery.trim() || null,
           fromName: l.fromName.trim(),
           toName: l.toName.trim(),
           distanceKm: l.distanceKm.trim() ? Number(l.distanceKm) : null,
@@ -288,7 +308,22 @@ export default function PackageForm({ params }: { params: { id?: string } }) {
       ...prev,
       itinerary: [
         ...prev.itinerary,
-        { mode: 'CAR', fromName: '', toName: '', distanceKm: '', fromLat: '', fromLng: '', toLat: '', toLng: '', note: '' },
+        {
+          mode: 'CAR',
+          day: '1',
+          stopTitle: '',
+          stopDesc: '',
+          stopImage: '',
+          mapsQuery: '',
+          fromName: '',
+          toName: '',
+          distanceKm: '',
+          fromLat: '',
+          fromLng: '',
+          toLat: '',
+          toLng: '',
+          note: '',
+        },
       ],
     }))
   }
@@ -482,6 +517,15 @@ export default function PackageForm({ params }: { params: { id?: string } }) {
 
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div className="space-y-2">
+                          <Label>Day</Label>
+                          <Input
+                            value={leg.day}
+                            onChange={(e) => updateLeg(idx, { day: e.target.value })}
+                            placeholder="1"
+                            inputMode="numeric"
+                          />
+                        </div>
+                        <div className="space-y-2">
                           <Label>Mode</Label>
                           <Select value={leg.mode} onValueChange={(v) => updateLeg(idx, { mode: normalizeMode(v) })}>
                             <SelectTrigger>
@@ -512,6 +556,44 @@ export default function PackageForm({ params }: { params: { id?: string } }) {
                             value={leg.toName}
                             onChange={(e) => updateLeg(idx, { toName: e.target.value })}
                             placeholder="Điểm đến"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="space-y-2">
+                          <Label>Stop title (hiển thị)</Label>
+                          <Input
+                            value={leg.stopTitle}
+                            onChange={(e) => updateLeg(idx, { stopTitle: e.target.value })}
+                            placeholder="Ví dụ: Hồ Xuân Hương"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Google Maps query</Label>
+                          <Input
+                            value={leg.mapsQuery}
+                            onChange={(e) => updateLeg(idx, { mapsQuery: e.target.value })}
+                            placeholder="Hồ Xuân Hương Đà Lạt"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="space-y-2">
+                          <Label>Stop image (URL hoặc data:)</Label>
+                          <Input
+                            value={leg.stopImage}
+                            onChange={(e) => updateLeg(idx, { stopImage: e.target.value })}
+                            placeholder="https://... hoặc data:image/.."
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Stop description</Label>
+                          <Input
+                            value={leg.stopDesc}
+                            onChange={(e) => updateLeg(idx, { stopDesc: e.target.value })}
+                            placeholder="Mô tả ngắn..."
                           />
                         </div>
                       </div>

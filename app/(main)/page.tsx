@@ -5,6 +5,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { MapPin, Search, Leaf, Footprints, Bike, Trees, Star, ArrowUpRight } from "lucide-react"
+import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { HomeMapSection } from "@/components/home/home-map-section"
 import { PackageCard } from "@/components/packages/package-card"
@@ -105,175 +106,228 @@ export default function HomePage() {
   return (
     <main className="bg-background overflow-x-hidden">
       {/* 🔝 Hero */}
-      <section className="relative">
-        {/* Background */}
+      <section className="relative min-h-[85vh] flex items-center pt-24 md:pt-32 pb-16">
+        {/* Background Effects */}
         <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-white/40" />
-        <div className="absolute inset-0 vn-pattern opacity-[0.06]" />
-        <div className="absolute -top-32 -right-32 w-[520px] h-[520px] rounded-full bg-secondary/10 blur-3xl" />
-        <div className="absolute top-40 -left-32 w-[520px] h-[520px] rounded-full bg-primary/10 blur-3xl" />
-
-        <div className="container mx-auto px-4 pt-24 md:pt-28 pb-10 md:pb-16 relative">
-          <div className="grid lg:grid-cols-12 gap-10 lg:gap-12 items-center">
-            {/* Left */}
-            <div className="lg:col-span-7">
-              <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-[10px] md:text-xs font-black text-primary uppercase tracking-[0.22em] border border-white/60 shadow-sm">
+        <div className="absolute inset-0 vn-pattern opacity-[0.06] pointer-events-none" />
+        <div className="absolute -top-32 -right-32 w-[520px] h-[520px] rounded-full bg-secondary/10 blur-3xl opacity-50" />
+        <div className="absolute top-40 -left-32 w-[520px] h-[520px] rounded-full bg-primary/10 blur-3xl opacity-50" />
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="grid lg:grid-cols-12 gap-10 lg:gap-16 items-center">
+            {/* Left Content */}
+            <div className="lg:col-span-7 text-center lg:text-left max-w-3xl mx-auto lg:max-w-none">
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-[10px] md:text-xs font-black text-primary uppercase tracking-[0.22em] border border-white/60 shadow-sm mb-6"
+              >
                 <Leaf className="w-4 h-4" />
                 Hành trình làng nghề
-              </div>
+              </motion.div>
 
-              <h1 className="mt-5 text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif font-black tracking-tight text-primary leading-[1.02]">
-                Khám phá Làng Nghề Việt Nam <span className="text-secondary italic"></span>
-              </h1>
+              <motion.h1 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-serif font-black tracking-tight text-primary leading-[1.05]"
+              >
+                Khám phá <span className="text-secondary italic">Làng Nghề</span> <br className="hidden lg:block" />
+                Việt Nam
+              </motion.h1>
 
-              <p className="mt-5 text-base md:text-lg text-muted-foreground leading-relaxed max-w-2xl">
+              <motion.p 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="mt-6 text-base md:text-lg lg:text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto lg:mx-0"
+              >
                 Tìm làng nghề, chọn tour trải nghiệm, xem review cộng đồng — và bắt đầu hành trình về nguồn cội ngay hôm nay.
-              </p>
+              </motion.p>
 
-              <div className="mt-6 flex flex-wrap gap-2">
-                {[
-                  { label: "Thành Phố Hồ Chí Minh ", value: "HCM" },
-                  { label: "Tour làng nghề", value: "Craft" },
-                  { label: "Workshop trải nghiệm", value: "Hands-on" },
-                ].map((s) => (
-                  <div
-                    key={s.label}
-                    className="inline-flex items-center gap-2 rounded-full bg-white/60 border border-white/70 px-4 py-2 text-xs text-primary font-bold backdrop-blur-xl"
-                  >
-                    <span className="text-secondary font-black">{s.value}</span>
-                    <span className="text-primary/80">{s.label}</span>
+              {/* Desktop Search Form */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="hidden lg:block mt-10"
+              >
+                <form onSubmit={onSearch} className="flex flex-col sm:flex-row gap-3">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/50 w-5 h-5" />
+                    <input
+                      value={q}
+                      onChange={(e) => setQ(e.target.value)}
+                      inputMode="search"
+                      placeholder="Tìm làng nghề / tour trải nghiệm..."
+                      className="w-full h-14 pl-12 pr-4 rounded-2xl border border-white/70 bg-white/70 backdrop-blur-xl shadow-sm outline-none focus:ring-2 focus:ring-secondary/40"
+                    />
                   </div>
-                ))}
-              </div>
-
-              <form onSubmit={onSearch} className="mt-8 flex flex-col sm:flex-row gap-3">
-                <div className="relative flex-1">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/50 w-5 h-5" />
-                  <input
-                    value={q}
-                    onChange={(e) => setQ(e.target.value)}
-                    inputMode="search"
-                    placeholder="Tìm làng nghề / tour trải nghiệm (ví dụ: Bát Tràng, Vạn Phúc...)"
-                    className="w-full h-12 md:h-14 pl-12 pr-4 rounded-2xl border border-white/70 bg-white/70 backdrop-blur-xl shadow-sm outline-none focus:ring-2 focus:ring-secondary/40"
-                  />
-                </div>
-                <div className="flex gap-3">
-                  <Button
-                    type="submit"
-                    className="h-12 md:h-14 rounded-2xl px-6 font-black uppercase tracking-[0.18em] text-[11px] bg-primary text-white hover:bg-primary/90"
-                  >
-                    Tìm kiếm
-                  </Button>
-                  <Link href="/dream-journey" className="flex-1 sm:flex-none">
-                    <Button className="w-full h-12 md:h-14 rounded-2xl px-6 font-black uppercase tracking-[0.18em] text-[11px] bg-secondary text-primary hover:bg-secondary/90 shadow-[0_12px_30px_rgba(0,0,0,0.12)]">
-                      <span className="flex items-center gap-2">
-                        Tạo hành trình
-                        <ArrowUpRight className="w-4 h-4" />
-                      </span>
+                  <div className="flex gap-3">
+                    <Button
+                      type="submit"
+                      className="h-14 rounded-2xl px-8 font-black uppercase tracking-[0.18em] text-[11px] bg-primary text-white hover:bg-primary/90"
+                    >
+                      Tìm kiếm
                     </Button>
-                  </Link>
-                </div>
-              </form>
+                    <Link href="/dream-journey">
+                      <Button className="h-14 rounded-2xl px-8 font-black uppercase tracking-[0.18em] text-[11px] bg-secondary text-primary hover:bg-secondary/90 shadow-[0_12px_30px_rgba(0,0,0,0.12)]">
+                        <span className="flex items-center gap-2">
+                          Tạo hành trình
+                          <ArrowUpRight className="w-4 h-4" />
+                        </span>
+                      </Button>
+                    </Link>
+                  </div>
+                </form>
+              </motion.div>
 
-              <div className="mt-6 flex flex-wrap items-center gap-3 text-xs">
-                {["Hương Lê Minh Xuân","Mây tre Thái Mỹ", "Mành trúc Tân Thông Hội"].map((tag) => (
+              {/* Mobile Search Card */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="lg:hidden mt-10 max-w-md mx-auto"
+              >
+                <form onSubmit={onSearch} className="p-2 bg-white rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.08)] border border-emerald-100/50 backdrop-blur-xl flex flex-col gap-2">
+                  <div className="relative flex items-center">
+                    <Search className="absolute left-5 text-emerald-600/50 w-5 h-5" />
+                    <input
+                      value={q}
+                      onChange={(e) => setQ(e.target.value)}
+                      inputMode="search"
+                      placeholder="Bạn muốn đi đâu?"
+                      className="w-full h-14 pl-14 pr-4 rounded-3xl bg-transparent text-lg font-medium outline-none"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button type="submit" className="flex-1 h-14 rounded-[1.5rem] font-black uppercase text-[11px] bg-primary text-white">
+                      Tìm kiếm
+                    </Button>
+                    <Link href="/dream-journey" className="flex-1">
+                      <Button className="w-full h-14 rounded-[1.5rem] font-black uppercase text-[11px] bg-secondary text-primary">
+                        Tạo chuyến đi
+                      </Button>
+                    </Link>
+                  </div>
+                </form>
+              </motion.div>
+
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4 }}
+                className="mt-8 flex flex-wrap justify-center lg:justify-start items-center gap-3 text-xs"
+              >
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mr-1 hidden lg:block">Phổ biến:</span>
+                {["Lê Minh Xuân","Thái Mỹ", "Tân Thông Hội"].map((tag) => (
                   <button
                     key={tag}
                     onClick={() => {
                       setQ(tag)
                       router.push(`/packages?search=${encodeURIComponent(tag)}`)
                     }}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/60 border border-white/70 hover:bg-white transition-colors text-primary font-bold"
-                    aria-label={`Tìm ${tag}`}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/60 border border-white/70 hover:bg-white transition-all text-primary font-bold shadow-sm"
                   >
-                    <MapPin className="w-4 h-4 text-secondary" />
+                    <MapPin className="w-3.5 h-3.5 text-secondary" />
                     {tag}
                   </button>
                 ))}
-
-                <a
-                  href="#map-preview"
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-white/70 hover:bg-primary/15 transition-colors text-primary font-black uppercase tracking-[0.18em]"
-                >
-                  Khám phá trực quan <ArrowUpRight className="w-4 h-4 text-secondary" />
-                </a>
-              </div>
+              </motion.div>
             </div>
 
-            {/* Right */}
-            <div className="lg:col-span-5">
-              <div className="vn-card-vip overflow-hidden">
-                <div className="relative h-[280px] sm:h-[340px] lg:h-[420px]">
+            {/* Right Content (Desktop Only) */}
+            <div className="hidden lg:block lg:col-span-5">
+              <motion.div 
+                initial={{ opacity: 0, x: 30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="vn-card-vip overflow-hidden"
+              >
+                <div className="relative h-[480px] xl:h-[560px]">
                   <Image
                     src="/images/manh-truc.jpg"
                     alt="Điểm đến nổi bật"
                     fill
                     priority
                     className="object-cover"
-                    sizes="(max-width: 1024px) 100vw, 520px"
+                    sizes="520px"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-primary/60 via-primary/10 to-transparent" />
-                  <div className="absolute top-4 left-4 right-4 flex items-center justify-between gap-3">
-                    <div className="inline-flex items-center gap-2 rounded-full bg-white/70 backdrop-blur-xl border border-white/70 px-4 py-2 text-[10px] font-black uppercase tracking-[0.22em] text-primary">
+                  <div className="absolute top-6 left-6 right-6 flex items-center justify-between gap-3">
+                    <div className="inline-flex items-center gap-2 rounded-full bg-white/80 backdrop-blur-xl border border-white/70 px-4 py-2 text-[10px] font-black uppercase tracking-[0.22em] text-primary">
                       <span className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
                       Điểm đến nổi bật
                     </div>
-                    <div className="hidden sm:inline-flex items-center gap-2 rounded-full bg-white/70 backdrop-blur-xl border border-white/70 px-4 py-2 text-[10px] font-black uppercase tracking-[0.22em] text-primary">
+                    <div className="inline-flex items-center gap-2 rounded-full bg-white/80 backdrop-blur-xl border border-white/70 px-4 py-2 text-[10px] font-black uppercase tracking-[0.22em] text-primary">
                       <Star className="w-4 h-4 text-secondary fill-secondary" />
-                      5.0/5.0
+                      5.0
                     </div>
                   </div>
 
-                  <div className="absolute bottom-4 left-4 right-4">
-                    <div className="glass-morphism-dark rounded-3xl p-4 border border-white/10">
+                  <div className="absolute bottom-6 left-6 right-6">
+                    <div className="glass-morphism-dark rounded-3xl p-6 border border-white/10">
                       <div className="flex items-start justify-between gap-4">
                         <div className="min-w-0">
-                          <div className="text-white font-black text-lg">Mành trúc Tân Thông Hội</div>
-                          <div className="text-white/70 text-xs mt-0.5">Làng nghề • Trải nghiệm • Di sản</div>
+                          <div className="text-white font-black text-xl">Mành trúc Tân Thông Hội</div>
+                          <div className="text-white/70 text-sm mt-1">Làng nghề • Trải nghiệm • Di sản</div>
                         </div>
                         <Link href="/packages" className="shrink-0">
-                          <Button className="h-10 rounded-2xl bg-secondary text-primary hover:bg-secondary/90 font-black uppercase tracking-[0.18em] text-[10px] px-4">
+                          <Button className="h-12 rounded-2xl bg-secondary text-primary hover:bg-secondary/90 font-black uppercase tracking-[0.18em] text-[11px] px-6">
                             Xem tour <ArrowUpRight className="w-4 h-4 ml-1" />
                           </Button>
                         </Link>
                       </div>
-                      <div className="mt-3 grid grid-cols-3 gap-2">
+                      <div className="mt-5 grid grid-cols-3 gap-3">
                         {[
-                          { k: "Lịch trình", v: "Trong Ngày " },
+                          { k: "Lịch trình", v: "Trong Ngày" },
                           { k: "Chủ đề", v: "Làng nghề" },
-                          { k: "Phù hợp", v: "Cá Nhân - Gia đình" },
+                          { k: "Phù hợp", v: "Gia đình" },
                         ].map((m) => (
                           <div key={m.k} className="rounded-2xl bg-white/5 border border-white/10 p-3">
                             <div className="text-[10px] text-white/60 font-bold uppercase tracking-widest">{m.k}</div>
-                            <div className="text-white font-black text-sm mt-0.5">{m.v}</div>
+                            <div className="text-white font-black text-xs xl:text-sm mt-1">{m.v}</div>
                           </div>
                         ))}
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-              <div className="mt-5 grid grid-cols-3 gap-3">
+              </motion.div>
+              
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="mt-6 grid grid-cols-3 gap-4"
+              >
                 {[
-                  { src: "/images/nhan-lmx.jpg", alt: "Làng nhang Lê Minh Xuân" },
-                  { src: "/images/lang-dan-lat.jpg", alt: "Làng đan lát Thái Mỹ" },
-                  { src: "/images/lo-banh-trang.jpg", alt: "Làng bánh tráng Phú Hòa Đông" },
-                ].map((img) => (
-                  <div key={img.src} className="vn-card overflow-hidden">
-                    <div className="relative h-20 sm:h-24">
-                      <Image src={img.src} alt={img.alt} fill className="object-cover" sizes="160px" />
-                      <div className="absolute inset-0 bg-black/15" />
-                    </div>
+                  { src: "/images/nhan-lmx.jpg", alt: "Làng nhang" },
+                  { src: "/images/lang-dan-lat.jpg", alt: "Làng đan lát" },
+                  { src: "/images/lo-banh-trang.jpg", alt: "Làng bánh tráng" },
+                ].map((img, idx) => (
+                  <div key={idx} className="vn-card h-24 overflow-hidden group">
+                    <Image src={img.src} alt={img.alt} fill className="object-cover transition-transform duration-500 group-hover:scale-110" />
+                    <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
                   </div>
                 ))}
-              </div>
+              </motion.div>
             </div>
           </div>
         </div>
       </section>
 
       {/* 🗺️ Map preview */}
-      <div id="map-preview">
-        <HomeMapSection />
+      <div id="map-preview" className="relative z-20 -mt-10 lg:-mt-24 px-4">
+        <div className="container mx-auto max-w-6xl">
+          <div className="rounded-[2rem] lg:rounded-[3rem] overflow-hidden shadow-[0_30px_70px_rgba(0,0,0,0.12)] border-4 md:border-8 border-white bg-white relative">
+            <div className="absolute top-4 left-4 lg:top-8 lg:left-8 z-30 inline-flex items-center gap-3 px-4 py-2 rounded-2xl bg-white/90 backdrop-blur-md border border-emerald-100 shadow-xl">
+              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-primary">Khám phá trực quan</span>
+            </div>
+            <HomeMapSection />
+          </div>
+        </div>
       </div>
 
       {/* 🌾 Trải nghiệm làng nghề nổi bật */}

@@ -54,6 +54,8 @@ export default function PackageManagement() {
   const [isLoading, setIsLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
   const [searchQuery, setSearchQuery] = useState('')
+  const [packageToDelete, setPackageToDelete] = useState<TourPackage | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
   const router = useRouter()
   const { toast } = useToast()
 
@@ -105,26 +107,34 @@ export default function PackageManagement() {
     router.push(`/admin/manage-packages/${packageId}`)
   }
 
-  const handleDelete = async (packageId: string) => {
+  const handleDelete = async () => {
+    if (!packageToDelete) return
     try {
-      const response = await fetch(`/api/packages/${packageId}`, {
+      setIsDeleting(true)
+      const response = await fetch(`/api/packages/${packageToDelete.id}`, {
         method: 'DELETE',
       })
 
-      if (!response.ok) throw new Error('Failed to delete package')
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.details || errorData.error || 'Failed to delete package')
+      }
 
       toast({
         title: "Thành công",
         description: "Gói tour đã được xóa khỏi hệ thống.",
       })
+      setPackageToDelete(null)
       fetchPackages()
     } catch (error) {
       console.error('Error deleting package:', error)
       toast({
         title: "Lỗi xóa",
-        description: "Không thể xóa gói tour đã chọn.",
+        description: error instanceof Error ? error.message : "Không thể xóa gói tour đã chọn.",
         variant: "destructive",
       })
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -342,28 +352,13 @@ export default function PackageManagement() {
                                   <span className="text-xs font-black">Xem trước</span>
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator className="my-2 border-slate-50" />
-                                <AlertDialog>
-                                  <AlertDialogTrigger asChild>
-                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="rounded-xl h-10 cursor-pointer text-red-500 hover:bg-red-500 hover:text-white focus:bg-red-500 focus:text-white group/item transition-all">
-                                      <Trash2 className="mr-3 h-4 w-4 opacity-50 group-hover/item:opacity-100 transition-opacity" /> 
-                                      <span className="text-xs font-black">Xóa gói tour</span>
-                                    </DropdownMenuItem>
-                                  </AlertDialogTrigger>
-                                  <AlertDialogContent className="rounded-[2rem] border-none bg-white shadow-2xl max-w-sm">
-                                    <AlertDialogHeader>
-                                      <AlertDialogTitle className="text-xl font-black tracking-tight text-slate-900">Xác nhận xóa</AlertDialogTitle>
-                                      <AlertDialogDescription className="text-sm text-slate-500 font-bold">
-                                        Xóa &quot;{pkg.name}&quot; khỏi danh mục đang hoạt động? Hành động này không thể hoàn tác dễ dàng.
-                                      </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter className="mt-8 gap-3">
-                                      <AlertDialogCancel className="rounded-xl h-11 border-slate-100 bg-slate-50 text-xs font-black text-slate-600 hover:bg-slate-100">Hủy</AlertDialogCancel>
-                                      <AlertDialogAction onClick={() => handleDelete(pkg.id)} className="bg-red-500 hover:bg-red-600 rounded-xl h-11 text-xs font-black">
-                                        Xác nhận xóa
-                                      </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                  </AlertDialogContent>
-                                </AlertDialog>
+                                <DropdownMenuItem 
+                                  onClick={() => setPackageToDelete(pkg)} 
+                                  className="rounded-xl h-10 cursor-pointer text-red-500 hover:bg-red-500 hover:text-white focus:bg-red-500 focus:text-white group/item transition-all"
+                                >
+                                  <Trash2 className="mr-3 h-4 w-4 opacity-50 group-hover/item:opacity-100 transition-opacity" /> 
+                                  <span className="text-xs font-black">Xóa gói tour</span>
+                                </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </TableCell>
@@ -406,6 +401,30 @@ export default function PackageManagement() {
           )}
         </CardContent>
       </Card>
+
+      <AlertDialog open={!!packageToDelete} onOpenChange={(open) => !open && setPackageToDelete(null)}>
+        <AlertDialogContent className="rounded-[2rem] border-none bg-white shadow-2xl max-w-sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-xl font-black tracking-tight text-slate-900">Xác nhận xóa</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm text-slate-500 font-bold">
+              Xóa &quot;{packageToDelete?.name}&quot; khỏi danh mục đang hoạt động? Hành động này không thể hoàn tác dễ dàng.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-8 gap-3">
+            <AlertDialogCancel className="rounded-xl h-11 border-slate-100 bg-slate-50 text-xs font-black text-slate-600 hover:bg-slate-100">Hủy</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={(e) => {
+                e.preventDefault()
+                handleDelete()
+              }} 
+              disabled={isDeleting}
+              className="bg-red-500 hover:bg-red-600 rounded-xl h-11 text-xs font-black"
+            >
+              {isDeleting ? 'Đang xóa...' : 'Xác nhận xóa'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
