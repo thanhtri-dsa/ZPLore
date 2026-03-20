@@ -1,14 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { getAuth } from '@clerk/nextjs/server';
+import crypto from 'crypto'
 
 const prisma = new PrismaClient();
 
-const BOOKING_STATUSES = ['PENDING', 'CONFIRMED', 'CANCELLED'] as const
+const BOOKING_STATUSES = ['PENDING', 'APPROVED', 'REJECTED', 'COMPLETED', 'CONFIRMED', 'CANCELLED'] as const
 type BookingStatus = typeof BOOKING_STATUSES[number]
 
 function isBookingStatus(value: unknown): value is BookingStatus {
   return typeof value === 'string' && (BOOKING_STATUSES as readonly string[]).includes(value)
+}
+
+function expectedAdminCookieValue() {
+  const secret = (process.env.ADMIN_TOOL_SECRET || process.env.ADMIN_TOOL_PASSWORD || '').trim()
+  return crypto.createHmac('sha256', secret).update('ecoTourAdmin.v1').digest('hex')
+}
+
+function isValidAdminCookie(req: NextRequest) {
+  const cookie = req.cookies.get('ecoTourAdmin')?.value
+  return !!cookie && cookie === expectedAdminCookieValue()
 }
 
 function normalizeEmail(email: string) {
@@ -37,7 +48,8 @@ export async function GET(req: NextRequest) {
         userId = null
       }
 
-      if (!userId) {
+      const isAdmin = isValidAdminCookie(req)
+      if (!userId && !isAdmin) {
         console.log('Unauthorized access attempt'); // Debug log
         return NextResponse.json(
           { error: 'Unauthorized - Please login to access bookings' },
@@ -255,7 +267,8 @@ export async function PUT(req: NextRequest) {
         userId = null
       }
 
-      if (!userId) {
+      const isAdmin = isValidAdminCookie(req)
+      if (!userId && !isAdmin) {
         console.log('Unauthorized access attempt'); // Debug log
         return NextResponse.json(
           { error: 'Unauthorized - Please login to update bookings' },

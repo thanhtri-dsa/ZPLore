@@ -14,7 +14,7 @@ interface Booking {
   lastname: string
   email: string
   phone: string
-  status: 'PENDING' | 'COMPLETED' | 'CANCELLED'
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'COMPLETED' | 'CONFIRMED' | 'CANCELLED'
   bookingDate: string | null
   numberOfGuests: number
   specialRequests: string
@@ -87,10 +87,10 @@ export default function RecentBookings() {
         <div>
           <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-500 mb-1 opacity-80">
             <Users className="h-3 w-3" />
-            <span>Live Feed</span>
+            <span>Truc tiep</span>
           </div>
-          <CardTitle className="text-lg font-black tracking-tight text-white">Recent Activity</CardTitle>
-          <CardDescription className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Latest 4 booking events</CardDescription>
+          <CardTitle className="text-lg font-black tracking-tight text-white">Hoat dong gan day</CardTitle>
+          <CardDescription className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">4 su kien dat cho moi nhat</CardDescription>
         </div>
         <Button
           variant="ghost"
@@ -119,7 +119,7 @@ export default function RecentBookings() {
             ))
           ) : bookings.length === 0 ? (
             <div className="p-12 text-center">
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">No active bookings</p>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Chua co dat cho</p>
             </div>
           ) : (
             bookings.map((booking) => (
@@ -138,9 +138,11 @@ export default function RecentBookings() {
                 <div className="flex flex-col items-end gap-2">
                   <Badge variant="outline" className={`
                     text-[9px] font-black uppercase tracking-widest h-5 px-2 border
-                    ${booking.status === 'COMPLETED' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 
-                      booking.status === 'PENDING' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 
-                      'bg-red-500/10 text-red-500 border-red-500/20'}
+                    ${booking.status === 'COMPLETED' || booking.status === 'CONFIRMED' || booking.status === 'APPROVED'
+                      ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                      : booking.status === 'PENDING'
+                        ? 'bg-amber-500/10 text-amber-500 border-amber-500/20'
+                        : 'bg-red-500/10 text-red-500 border-red-500/20'}
                   `}>
                     {booking.status}
                   </Badge>
@@ -155,7 +157,7 @@ export default function RecentBookings() {
         <div className="p-6 border-t border-white/5">
           <Link href="/admin/view-bookings" className="w-full">
             <Button variant="ghost" className="w-full h-11 rounded-xl text-xs font-black text-slate-400 hover:text-white hover:bg-white/5 transition-all">
-              View All Audit Logs
+              Xem tat ca nhat ky
             </Button>
           </Link>
         </div>

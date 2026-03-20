@@ -92,43 +92,65 @@ export default function CustomerManagement() {
 
   const totalPages = Math.ceil(filtered.length / LIMIT)
   const currentPageData = filtered.slice((page - 1) * LIMIT, page * LIMIT)
+  const activeCount = customers.filter((c) => c.status === 'ACTIVE').length
+  const pendingCount = customers.filter((c) => c.status === 'PENDING').length
+  const blockedCount = customers.filter((c) => c.status === 'BLOCKED').length
 
   const gotoCustomer = (id: string) => {
     router.push(`/admin/customers/${id}`)
   }
 
   return (
-    <div className="space-y-8 pb-12">
-      <div className="flex flex-col gap-4 md:flex-row md:items-end justify-between">
-        <div className="space-y-1">
+    <div className="space-y-6 pb-6">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center justify-between">
+        <div className="space-y-0.5">
           <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.25em] text-emerald-500 mb-1">
             <Users className="h-3 w-3" />
             <span>Quản lý quan hệ khách hàng</span>
           </div>
-          <h2 className="text-3xl font-black tracking-tight text-white">Cộng đồng Explorer</h2>
-          <p className="text-sm text-slate-400 font-bold max-w-xl">
+          <h2 className="text-2xl font-black tracking-tight text-white">Cộng đồng Explorer</h2>
+          <p className="text-xs text-slate-400 font-bold max-w-xl">
             Theo dõi sự tương tác, hồ sơ và lịch sử đặt chỗ của người dùng.
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="sm" onClick={fetchCustomers} className="h-10 px-4 border-white/10 bg-white/5 text-xs font-black text-slate-300 hover:bg-white/10 hover:text-white transition-all">
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={fetchCustomers} className="h-9 px-3.5 border-white/10 bg-white/5 text-[11px] font-black text-slate-300 hover:bg-white/10 hover:text-white transition-all">
             <RefreshCw className={`mr-2 h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
             Làm mới dữ liệu
           </Button>
-          <Button className="h-10 px-5 eco-gradient text-white shadow-lg shadow-emerald-900/20 text-xs font-black hover:scale-[1.02] transition-all">
+          <Button className="h-9 px-4 eco-gradient text-white shadow-lg shadow-emerald-900/20 text-[11px] font-black hover:scale-[1.02] transition-all">
             <Zap className="mr-2 h-3.5 w-3.5 fill-current" /> Báo cáo phân tích
           </Button>
         </div>
       </div>
 
-      <Card className="border-none shadow-2xl bg-white rounded-3xl overflow-hidden">
-        <CardHeader className="pb-4 pt-6 px-6 border-b border-slate-100 bg-slate-50/50">
+      <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+        {[
+          { label: 'Tổng khách hàng', value: customers.length, tone: 'text-blue-600 bg-blue-50 border-blue-100' },
+          { label: 'Đang hoạt động', value: activeCount, tone: 'text-emerald-600 bg-emerald-50 border-emerald-100' },
+          { label: 'Chờ xác minh', value: pendingCount, tone: 'text-amber-600 bg-amber-50 border-amber-100' },
+          { label: 'Đã khóa', value: blockedCount, tone: 'text-rose-600 bg-rose-50 border-rose-100' },
+        ].map((item) => (
+          <Card key={item.label} className="rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-md shadow-none">
+            <CardContent className="px-4 py-3.5">
+              <div className="text-[10px] uppercase tracking-widest font-black text-slate-400">{item.label}</div>
+              <div className="mt-1.5 flex items-center justify-between">
+                <div className="text-2xl font-black text-white leading-none">{item.value}</div>
+                <Badge variant="outline" className={`text-[10px] font-black border ${item.tone}`}>LIVE</Badge>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <Card className="border border-white/10 shadow-none bg-white rounded-2xl overflow-hidden">
+        <CardHeader className="pb-3 pt-4 px-4 md:px-5 border-b border-slate-100 bg-slate-50/70">
           <div className="flex flex-col gap-4 md:flex-row md:items-center">
             <div className="relative flex-1 group">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
               <Input
                 placeholder="Tìm kiếm khách hàng theo tên, email..."
-                className="pl-10 h-11 bg-white border-slate-200 rounded-xl text-sm text-slate-900 transition-all focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                className="pl-10 h-10 bg-white border-slate-200 rounded-lg text-sm text-slate-900 transition-all focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value)
@@ -137,7 +159,7 @@ export default function CustomerManagement() {
               />
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="outline" className="h-11 px-5 rounded-xl border-slate-200 bg-white text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all">
+              <Button variant="outline" className="h-10 px-4 rounded-lg border-slate-200 bg-white text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all">
                 <Filter className="mr-2 h-4 w-4" /> Lọc
               </Button>
             </div>
@@ -147,25 +169,25 @@ export default function CustomerManagement() {
           <div className="overflow-x-auto">
             <Table>
               <TableHeader className="bg-slate-50/80">
-                <TableRow className="hover:bg-transparent border-slate-100 h-12">
-                  <TableHead className="pl-6 text-[10px] font-black uppercase tracking-widest text-slate-500">Explorer</TableHead>
+                <TableRow className="hover:bg-transparent border-slate-100 h-11">
+                  <TableHead className="pl-5 text-[10px] font-black uppercase tracking-widest text-slate-500">Explorer</TableHead>
                   <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-500">Liên hệ</TableHead>
                   <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-500">Tương tác</TableHead>
                   <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-500">Trạng thái</TableHead>
                   <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-500">Ngày gia nhập</TableHead>
-                  <TableHead className="text-right pr-6 text-[10px] font-black uppercase tracking-widest text-slate-500">Hành động</TableHead>
+                  <TableHead className="text-right pr-5 text-[10px] font-black uppercase tracking-widest text-slate-500">Hành động</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
                   Array(LIMIT).fill(0).map((_, i) => (
-                    <TableRow key={i} className="h-20 border-slate-50">
-                      <TableCell className="pl-6"><Skeleton className="h-10 w-48 rounded-lg bg-slate-100" /></TableCell>
+                    <TableRow key={i} className="h-16 border-slate-50">
+                      <TableCell className="pl-5"><Skeleton className="h-9 w-44 rounded-lg bg-slate-100" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-32 bg-slate-100" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-20 bg-slate-100" /></TableCell>
                       <TableCell><Skeleton className="h-6 w-20 rounded-md bg-slate-100" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-24 bg-slate-100" /></TableCell>
-                      <TableCell className="pr-6"><Skeleton className="h-9 w-9 ml-auto rounded-lg bg-slate-100" /></TableCell>
+                      <TableCell className="pr-5"><Skeleton className="h-9 w-9 ml-auto rounded-lg bg-slate-100" /></TableCell>
                     </TableRow>
                   ))
                 ) : currentPageData.length === 0 ? (
@@ -178,16 +200,16 @@ export default function CustomerManagement() {
                   currentPageData.map((customer) => {
                     const fullName = `${customer.firstname} ${customer.lastname}`
                     return (
-                      <TableRow key={customer.id} className="h-20 border-slate-50 hover:bg-slate-50/50 transition-colors group">
-                        <TableCell className="pl-6">
+                      <TableRow key={customer.id} className="h-16 border-slate-50 hover:bg-slate-50/60 transition-colors group">
+                        <TableCell className="pl-5">
                           <div className="flex items-center gap-3">
-                            <Avatar className="h-10 w-10 border border-slate-100 ring-2 ring-emerald-500/10 ring-offset-2 ring-offset-white">
-                              <AvatarFallback className="bg-emerald-50 text-emerald-600 font-black text-xs">
+                            <Avatar className="h-9 w-9 border border-slate-100 ring-2 ring-emerald-500/10 ring-offset-2 ring-offset-white">
+                              <AvatarFallback className="bg-emerald-50 text-emerald-600 font-black text-[11px]">
                                 {customer.firstname[0]}{customer.lastname[0]}
                               </AvatarFallback>
                             </Avatar>
                             <div className="flex flex-col">
-                              <span className="text-sm font-black text-slate-900 group-hover:text-emerald-600 transition-colors leading-tight">
+                              <span className="text-[13px] font-black text-slate-900 group-hover:text-emerald-600 transition-colors leading-tight">
                                 {fullName}
                               </span>
                               <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">ID: {customer.id.slice(-8)}</span>
@@ -195,8 +217,8 @@ export default function CustomerManagement() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="flex flex-col gap-1">
-                            <div className="flex items-center text-xs font-bold text-slate-600">
+                          <div className="flex flex-col gap-0.5">
+                            <div className="flex items-center text-[11px] font-bold text-slate-600">
                               <Mail className="mr-2 h-3 w-3 text-slate-400" />
                               {customer.email}
                             </div>
@@ -227,10 +249,10 @@ export default function CustomerManagement() {
                             {new Date(customer.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
                           </div>
                         </TableCell>
-                        <TableCell className="text-right pr-6">
+                        <TableCell className="text-right pr-5">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-900 transition-all">
+                              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-900 transition-all">
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
@@ -260,7 +282,7 @@ export default function CustomerManagement() {
             </Table>
           </div>
           
-          <div className="flex items-center justify-between px-6 py-4 border-t border-slate-50 bg-slate-50/50">
+          <div className="flex items-center justify-between px-4 md:px-5 py-3 border-t border-slate-50 bg-slate-50/60">
             <div className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
               Hiển thị {Math.min(filtered.length, (page - 1) * LIMIT + 1)} - {Math.min(page * LIMIT, filtered.length)} của {filtered.length}
             </div>

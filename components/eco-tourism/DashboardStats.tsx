@@ -82,7 +82,7 @@ export default function DashboardStats() {
 
   const cards = [
     {
-      label: "Total Bookings",
+      label: "Tong dat cho",
       value: stats.totalBookings.toLocaleString(),
       icon: Users,
       trend: "+12%",
@@ -90,7 +90,7 @@ export default function DashboardStats() {
       bg: "bg-blue-500/10"
     },
     {
-      label: "Gross Revenue",
+      label: "Doanh thu",
       value: `$${stats.totalRevenue.toLocaleString()}`,
       icon: DollarSign,
       trend: "+8.4%",
@@ -98,7 +98,7 @@ export default function DashboardStats() {
       bg: "bg-emerald-500/10"
     },
     {
-      label: "Active Destinations",
+      label: "Diem den dang hoat dong",
       value: stats.activeDestinations.toLocaleString(),
       icon: MapPin,
       trend: "+2 new",
@@ -106,7 +106,7 @@ export default function DashboardStats() {
       bg: "bg-indigo-500/10"
     },
     {
-      label: "Blog Engagement",
+      label: "Bai viet",
       value: stats.totalBlogs.toLocaleString(),
       icon: BookText,
       trend: "+5.1%",
@@ -136,7 +136,7 @@ export default function DashboardStats() {
                 <TrendingUp className="h-2.5 w-2.5 mr-1" />
                 {card.trend}
               </span>
-              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider opacity-60">vs last period</span>
+              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider opacity-60">so voi ky truoc</span>
             </div>
           </CardContent>
         </Card>

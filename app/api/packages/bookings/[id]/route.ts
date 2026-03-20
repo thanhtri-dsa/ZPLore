@@ -116,10 +116,9 @@ Làng Nghề Travel Team`,
   }
 }
 
-export async function PUT(req: Request) {
+export async function PUT(req: Request, { params }: { params: { id: string } }) {
   try {
-    const url = new URL(req.url)
-    const bookingId = url.searchParams.get('id')
+    const bookingId = params.id
     const { status } = await req.json()
 
     if (!bookingId) {

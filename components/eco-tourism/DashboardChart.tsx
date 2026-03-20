@@ -59,7 +59,7 @@ export default function DashboardChart() {
           <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">{label}</p>
           <div className="flex items-center gap-2">
             <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
-            <p className="text-sm font-black text-white">{payload[0].value} Bookings</p>
+            <p className="text-sm font-black text-white">{payload[0].value} Dat cho</p>
           </div>
         </div>
       );
@@ -89,17 +89,17 @@ export default function DashboardChart() {
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-600 mb-1 opacity-80">
             <Activity className="h-3 w-3" />
-            <span>Growth Intelligence</span>
+            <span>Tang truong</span>
           </div>
-          <CardTitle className="text-xl font-black tracking-tight text-slate-900">Booking Velocity</CardTitle>
-          <CardDescription className="text-xs text-slate-500 font-bold">Volume of sustainable travel reservations</CardDescription>
+          <CardTitle className="text-xl font-black tracking-tight text-slate-900">Toc do dat cho</CardTitle>
+          <CardDescription className="text-xs text-slate-500 font-bold">So luong dat tour theo chu ky</CardDescription>
         </div>
         <div className="flex flex-col items-end gap-2">
           <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-[10px] font-black text-emerald-600 border border-emerald-100/50 shadow-sm shadow-emerald-900/5">
             <TrendingUp className="h-3 w-3" />
             +{totalGrowth}%
           </div>
-          <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">vs 6mo period</div>
+          <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">so voi 6 thang</div>
         </div>
       </CardHeader>
       <CardContent className="p-6">

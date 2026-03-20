@@ -34,36 +34,36 @@ const CookieConsentBanner = () => {
         <div className="w-full max-w-7xl mx-auto px-4 py-4 sm:px-6 sm:py-6">
           <div className="flex flex-col gap-4">
             <div className="space-y-2">
-              <h3 className="text-base sm:text-lg font-semibold">We Value Your Privacy</h3>
+              <h3 className="text-base sm:text-lg font-semibold">Chúng tôi tôn trọng quyền riêng tư của bạn</h3>
               <p className="text-sm sm:text-base text-gray-600">
-                Our travel website uses cookies to enhance your booking experience and improve our services. 
-                We need these to help you book tours, remember your preferences, and keep our website secure.
+                Website du lịch của chúng tôi sử dụng cookie để cải thiện trải nghiệm đặt tour và nâng cao chất lượng dịch vụ.
+                Cookie giúp lưu tùy chọn của bạn, hỗ trợ quy trình đặt tour và bảo mật trang web.
               </p>
             </div>
             
             <div className="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-end">
               <button
                 onClick={handleDecline}
-                aria-label="Decline all cookies"
+                aria-label="Từ chối tất cả cookie"
                 className="w-full sm:w-auto px-4 py-2.5 text-sm border border-gray-300 rounded-md 
                   hover:bg-gray-50 text-gray-700 order-1 sm:order-none"
               >
-                Decline All
+                Từ chối tất cả
               </button>
               <button
                 onClick={handleAccept}
-                 aria-label="Accept all cookies"
+                 aria-label="Chấp nhận tất cả cookie"
                 className="w-full sm:w-auto px-4 py-2.5 text-sm bg-green-600 text-white rounded-md 
                   hover:bg-green-700 order-2 sm:order-none"
               >
-                Accept All
+                Chấp nhận tất cả
               </button>
             </div>
             <div className="text-xs text-gray-500">
               <p>
-                For more information about our cookie practices, please view our{' '}
-                <a href="/terms-and-condition" className="underline hover:text-gray-700">Privacy Policy</a>.
-                You can change your preferences at any time.
+                Để biết thêm về cách chúng tôi sử dụng cookie, vui lòng xem{' '}
+                <a href="/terms-and-condition" className="underline hover:text-gray-700">Chính sách quyền riêng tư</a>.
+                Bạn có thể thay đổi lựa chọn bất cứ lúc nào.
               </p>
             </div>
           </div>

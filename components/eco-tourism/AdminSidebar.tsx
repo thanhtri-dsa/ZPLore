@@ -78,67 +78,67 @@ export default function AdminSidebar({ isOpen, setIsOpen }: AdminSidebarProps) {
 
   const groups: NavGroup[] = [
     {
-      label: "General",
+      label: "Tong quan",
       items: [
-        { href: "/admin", icon: LayoutDashboard, label: "Overview" },
+        { href: "/admin", icon: LayoutDashboard, label: "Tong quan" },
       ]
     },
     {
-      label: "Inventory",
+      label: "Noi dung",
       items: [
         { 
           icon: MapPin, 
-          label: "Destinations",
+          label: "Diem den",
           children: [
-            { href: "/admin/create-destinations", label: "Add New" },
-            { href: "/admin/manage-destinations", label: "View All" },
+            { href: "/admin/create-destinations", label: "Them moi" },
+            { href: "/admin/manage-destinations", label: "Danh sach" },
           ]
         },
         { 
           icon: Package, 
-          label: "Tour Packages",
+          label: "Goi tour",
           children: [
-            { href: "/admin/create-packages", label: "Add New" },
-            { href: "/admin/manage-packages", label: "View All" },
+            { href: "/admin/create-packages", label: "Them moi" },
+            { href: "/admin/manage-packages", label: "Danh sach" },
           ]
         },
         { 
           icon: PenTool, 
-          label: "Blog Posts",
+          label: "Bai viet",
           children: [
-            { href: "/admin/create-blogs", label: "Write New" },
-            { href: "/admin/manage-blogs", label: "View All" },
+            { href: "/admin/create-blogs", label: "Viet bai" },
+            { href: "/admin/manage-blogs", label: "Danh sach" },
           ]
         },
       ]
     },
     {
-      label: "Business",
+      label: "Van hanh",
       items: [
         { 
           icon: BookOpen, 
-          label: "Bookings",
+          label: "Dat cho",
           children: [
-            { href: "/admin/view-bookings", label: "By Destination" },
-            { href: "/admin/view-packages", label: "By Package" },
+            { href: "/admin/view-bookings", label: "Theo diem den" },
+            { href: "/admin/view-packages", label: "Theo goi tour" },
           ]
         },
         {
           icon: Users,
-          label: "Customers",
+          label: "Khach hang",
           href: "/admin/customers"
         },
         {
           icon: ImageIcon,
-          label: "Media Asset",
+          label: "Thu vien anh",
           children: [
-            { href: "/admin/images", label: "Edit Gallery" },
-            { href: "/admin/suggestions", label: "Proposals" },
+            { href: "/admin/images", label: "Chinh sua" },
+            { href: "/admin/suggestions", label: "De xuat" },
           ],
         },
         {
           icon: MessageSquare,
-          label: "Community",
+          label: "Cong dong",
           href: "/admin/community"
         }
       ]

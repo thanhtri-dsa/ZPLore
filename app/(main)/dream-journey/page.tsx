@@ -88,11 +88,11 @@ export default function DreamJourneyFormPage() {
                 
                 <div className="relative z-10">
                   <div className="mb-12">
-                    <h4 className="text-[11px] font-black text-secondary uppercase tracking-[0.5em] mb-4 flex items-center gap-2">
-                      <Sparkles size={14} className="animate-pulse" /> Global Eco-Intelligence
+                    <h4 className="text-[11px] font-black text-emerald-800 uppercase tracking-[0.5em] mb-4 flex items-center gap-2">
+                      <Sparkles size={14} className="animate-pulse text-emerald-600" /> Global Eco-Intelligence
                     </h4>
                     <h3 className="text-3xl md:text-5xl font-serif font-black text-primary leading-tight">
-                      Kiến tạo <span className="italic text-secondary">di sản riêng</span> của bạn
+                      Kiến tạo <span className="italic text-emerald-700">di sản riêng</span> của bạn
                     </h3>
                   </div>
 

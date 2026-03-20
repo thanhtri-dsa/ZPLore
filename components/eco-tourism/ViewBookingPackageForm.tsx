@@ -64,7 +64,7 @@ interface PackageBooking {
   email: string
   phone: string
   country: string | null
-  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'COMPLETED'
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'COMPLETED' | 'CONFIRMED' | 'CANCELLED'
   bookingDate: string | null
   numberOfGuests: number
   specialRequests: string | null
@@ -220,10 +220,13 @@ export default function PackageBookingsView() {
           APPROVED: 'bg-emerald-50 text-emerald-600 border-emerald-100',
           REJECTED: 'bg-red-50 text-red-600 border-red-100',
           COMPLETED: 'bg-blue-50 text-blue-600 border-blue-100',
+          CONFIRMED: 'bg-emerald-50 text-emerald-600 border-emerald-100',
+          CANCELLED: 'bg-red-50 text-red-600 border-red-100',
         } as const
-        
+        const statusClass = statusStyles[status] ?? 'bg-slate-50 text-slate-600 border-slate-200'
+
         return (
-          <Badge variant="outline" className={`${statusStyles[status]} text-[10px] font-bold h-5 border px-2`}>
+          <Badge variant="outline" className={`${statusClass} text-[10px] font-bold h-5 border px-2`}>
             {status.charAt(0) + status.slice(1).toLowerCase()}
           </Badge>
         )

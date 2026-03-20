@@ -22,6 +22,27 @@ const Navbar = () => {
   // Some pages (e.g. full-map explore) have busy backgrounds; force solid navbar for readability.
   const forceSolid = pathname === "/explore" || pathname?.startsWith("/explore/")
 
+  /** Full-bleed photo (or similar) under the nav: green text is illegible — light nav + optional scrim. */
+  const matchesPhotoHero =
+    pathname != null &&
+    [
+      "/packages",
+      "/contact",
+      "/blogs",
+      "/careers",
+      "/gallery",
+      "/sustainability",
+      "/about",
+      "/green-travel",
+    ].some((p) => pathname === p || pathname.startsWith(`${p}/`))
+
+  const isDreamJourney = pathname === "/dream-journey"
+
+  const transparentBar = !isScrolled && !forceSolid
+  const photoTopScrim = transparentBar && matchesPhotoHero
+  /** Light nav on dark/busy backdrops; omit scrim on dream-journey (page is already solid primary). */
+  const lightNav = transparentBar && (matchesPhotoHero || isDreamJourney)
+
   const { scrollYProgress } = useScroll()
   const scaleX = useSpring(scrollYProgress, {
     stiffness: 100,
@@ -113,14 +134,30 @@ const Navbar = () => {
             : 'bg-transparent py-4 md:py-8'
         }`}
       >
+        {photoTopScrim && (
+          <div
+            className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/70 via-black/35 to-transparent md:from-black/60 md:via-black/25"
+            aria-hidden
+          />
+        )}
         {/* Subtle Vietnamese Pattern Overlay */}
-        <div className="absolute inset-0 opacity-[0.03] pointer-events-none vn-pattern rotate-180 overflow-hidden" />
+        <div
+          className={`absolute inset-0 pointer-events-none vn-pattern rotate-180 overflow-hidden ${
+            lightNav ? 'opacity-[0.06]' : 'opacity-[0.03]'
+          }`}
+        />
         
         <nav className="container mx-auto px-4 relative z-[101]">
           <div className="flex items-center justify-between gap-4">
             {/* Logo */}
             <Link href="/" className="flex items-center space-x-3 md:space-x-5 group shrink-0">
-              <div className="relative w-11 h-11 md:w-16 md:h-16 bg-white/70 rounded-[1rem] md:rounded-[1.5rem] group-hover:bg-emerald-50 transition-all duration-700 border border-white/70 group-hover:border-emerald-200 shadow-sm overflow-hidden">
+              <div
+                className={`relative w-11 h-11 md:w-16 md:h-16 rounded-[1rem] md:rounded-[1.5rem] transition-all duration-700 shadow-sm overflow-hidden border ${
+                  lightNav
+                    ? 'bg-white/95 border-white/90 group-hover:bg-white group-hover:border-white'
+                    : 'bg-white/70 border-white/70 group-hover:bg-emerald-50 group-hover:border-emerald-200'
+                }`}
+              >
                 <Image
                   src="/images/lang-nghe-travel-logo.svg.png"
                   alt="Làng Nghề Travel"
@@ -131,11 +168,23 @@ const Navbar = () => {
                 />
               </div>
               <div className="flex flex-col">
-                <span className="text-xl md:text-4xl font-black text-primary font-serif tracking-tighter leading-none group-hover:scale-105 transition-transform duration-500 origin-left">
+                <span
+                  className={`text-xl md:text-4xl font-black font-serif tracking-tighter leading-none group-hover:scale-105 transition-transform duration-500 origin-left ${
+                    lightNav
+                      ? 'text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.45)]'
+                      : 'text-primary'
+                  }`}
+                >
                   Làng Nghề
                 </span>
                 <div className="flex items-center gap-2 md:gap-3 mt-1 md:mt-2">
-                  <span className="text-[8px] md:text-[12px] font-black text-emerald-700/80 tracking-[0.32em] md:tracking-[0.5em] uppercase leading-none">
+                  <span
+                    className={`text-[8px] md:text-[12px] font-black tracking-[0.32em] md:tracking-[0.5em] uppercase leading-none ${
+                      lightNav
+                        ? 'text-emerald-100 drop-shadow-[0_1px_4px_rgba(0,0,0,0.4)]'
+                        : 'text-emerald-700/80'
+                    }`}
+                  >
                     TRAVEL
                   </span>
                 </div>
@@ -155,10 +204,18 @@ const Navbar = () => {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className="px-3 xl:px-5 py-3 text-primary/80 hover:text-primary transition-all font-black text-[11px] xl:text-[12px] uppercase tracking-[0.18em] relative group rounded-2xl hover:bg-emerald-500/10"
+                    className={`px-3 xl:px-5 py-3 transition-all font-black text-[11px] xl:text-[12px] uppercase tracking-[0.18em] relative group rounded-2xl ${
+                      lightNav
+                        ? 'text-white/95 hover:text-white hover:bg-white/15 drop-shadow-[0_1px_3px_rgba(0,0,0,0.35)]'
+                        : 'text-primary/90 hover:text-primary hover:bg-emerald-500/10'
+                    }`}
                   >
                     {item.label}
-                    <span className="absolute bottom-0 left-3 xl:left-5 right-3 xl:right-5 h-0.5 bg-emerald-600 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
+                    <span
+                      className={`absolute bottom-0 left-3 xl:left-5 right-3 xl:right-5 h-0.5 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left ${
+                        lightNav ? 'bg-emerald-300' : 'bg-emerald-600'
+                      }`}
+                    />
                   </Link>
                 ))}
               </div>
@@ -169,7 +226,11 @@ const Navbar = () => {
               <button
                 suppressHydrationWarning
                 onClick={() => setShowSearch(true)}
-                className="flex items-center justify-center w-10 h-10 md:w-12 md:h-12 xl:w-auto xl:h-auto p-0 xl:p-3.5 text-primary/70 hover:text-primary hover:bg-emerald-500/10 rounded-xl xl:rounded-2xl transition-all border border-primary/10 hover:border-emerald-500/20"
+                className={`flex items-center justify-center w-10 h-10 md:w-12 md:h-12 xl:w-auto xl:h-auto p-0 xl:p-3.5 rounded-xl xl:rounded-2xl transition-all border ${
+                  lightNav
+                    ? 'text-white hover:text-white hover:bg-white/15 border-white/35 hover:border-white/55 drop-shadow-[0_1px_3px_rgba(0,0,0,0.35)]'
+                    : 'text-primary/70 hover:text-primary hover:bg-emerald-500/10 border-primary/10 hover:border-emerald-500/20'
+                }`}
                 aria-label="Tìm kiếm"
               >
                 <Search className="w-5 h-5 xl:w-5 xl:h-5" />
@@ -186,7 +247,15 @@ const Navbar = () => {
 
               <Sheet open={isOpen} onOpenChange={setIsOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="lg:hidden text-primary hover:bg-emerald-500/10 p-0 w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl border border-primary/10">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className={`lg:hidden p-0 w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl border ${
+                      lightNav
+                        ? 'text-white hover:bg-white/15 border-white/35 hover:border-white/50'
+                        : 'text-primary hover:bg-emerald-500/10 border-primary/10'
+                    }`}
+                  >
                     <Menu className="h-6 w-6 md:h-7 md:w-7" />
                   </Button>
                 </SheetTrigger>
