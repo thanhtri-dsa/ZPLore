@@ -244,7 +244,10 @@ export default function CommunityModeration() {
                           <DropdownMenuContent align="end" className="w-56 rounded-2xl border border-slate-100 bg-white p-2 mt-2 shadow-2xl">
                             <DropdownMenuLabel className="px-3 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Tác vụ kiểm duyệt</DropdownMenuLabel>
                             <DropdownMenuItem className="rounded-xl h-10 cursor-pointer hover:bg-emerald-50 hover:text-white focus:bg-emerald-500 focus:text-white group/item transition-all">
-                              <ExternalLink className="mr-3 h-4 w-4 opacity-50 group-hover/item:opacity-100 transition-opacity" /> 
+                              <ExternalLink
+                                href={`/community/${post.id}/detail`}
+                                className="mr-3 h-4 w-4 opacity-50 group-hover/item:opacity-100 transition-opacity"
+                              />
                               <span className="text-xs font-black">Xem bài viết</span>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator className="my-2 border-slate-50" />

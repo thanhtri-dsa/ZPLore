@@ -79,7 +79,7 @@ export default function AdminDashboardPage() {
                     <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">Goi y toi uu</span>
                 </div>
                 <h3 className="text-xl font-black mb-2 tracking-tight leading-tight max-w-md">
-                  Goi tour "Safari Green" dang tang nhanh o thi truong chau Au.
+                  Goi tour &quot;Safari Green&quot; dang tang nhanh o thi truong chau Au.
                 </h3>
                 <p className="text-slate-400 font-bold text-xs mb-6 leading-relaxed max-w-sm">
                   Tang cong suat them 15% cho mua he sap toi de dap ung nhu cau.

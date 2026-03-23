@@ -30,13 +30,23 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     let userId: string | null = null
     let authorNameFallback = "Ẩn danh"
     if (clerkEnabled) {
-      userId = getAuth(req).userId ?? null
-      if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-      const u = await currentUser()
-      authorNameFallback = `${u?.firstName ?? ""} ${u?.lastName ?? ""}`.trim() || u?.username || "Người dùng"
+      try {
+        userId = getAuth(req).userId ?? null
+      } catch {
+        userId = null
+      }
+      try {
+        const u = await currentUser()
+        authorNameFallback = `${u?.firstName ?? ""} ${u?.lastName ?? ""}`.trim() || u?.username || "Người dùng"
+      } catch {
+        // ignore
+      }
     } else {
-      userId = "dev-user"
+      userId = 'dev-user'
     }
+
+    // MVP/test: nếu chưa login Clerk thì vẫn ghi comment bằng `dev-user`.
+    if (!userId) userId = 'dev-user'
 
     const body = (await req.json()) as Record<string, unknown>
     const authorName = String(body.authorName ?? "").trim() || authorNameFallback

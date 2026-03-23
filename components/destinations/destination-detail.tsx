@@ -24,6 +24,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Destination } from '@/types/destinations'
 import { motion } from 'framer-motion'
+import { safeImageSrc } from '@/lib/image'
 
 interface DestinationDetailProps {
   destination: Destination
@@ -237,7 +238,7 @@ export default function DestinationDetail({ destination }: DestinationDetailProp
           className="absolute inset-0"
         >
           <Image 
-            src={typeof destination.imageData === 'string' && destination.imageData.trim().length > 0 && destination.imageData !== '/images/saigon.jpg' ? destination.imageData : "/images/travel_detsinations.jpg"} 
+            src={safeImageSrc(destination.imageData, "/images/travel_detsinations.jpg")} 
             alt={destination.name} 
             fill
             className="object-cover"

@@ -25,8 +25,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Sai mật khẩu' }, { status: 401 })
   }
 
-  const res = NextResponse.json({ ok: true })
-  res.cookies.set('ecoTourAdmin', expectedCookieValue(), {
+  // React Native không đọc được cookie httpOnly — app Admin mobile gửi header
+  // `X-Client: EcoTourMobileAdmin` để nhận sessionToken và gửi lại qua header Cookie.
+  const isMobileAdmin = req.headers.get('x-client') === 'EcoTourMobileAdmin'
+  const token = expectedCookieValue()
+  const res = NextResponse.json(
+    isMobileAdmin ? { ok: true, sessionToken: token } : { ok: true }
+  )
+  res.cookies.set('ecoTourAdmin', token, {
     httpOnly: true,
     sameSite: 'lax',
     secure: process.env.NODE_ENV === 'production',

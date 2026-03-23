@@ -8,6 +8,7 @@ import { Search, MapPinned, Clock3, Leaf, Footprints, Bus, Palette, Soup, Locate
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import type { Destination } from "@/types/destinations"
+import { safeImageSrc } from "@/lib/image"
 
 type ExperienceFilter = "near_me" | "green_travel" | "walking" | "public_transport" | "craft_village" | "food"
 
@@ -413,7 +414,9 @@ export default function ExplorePage() {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {filtered.map((d, idx) => {
-                    const img = d.imageData?.trim() ? d.imageData : "/images/travel_detsinations.jpg"
+                    const img = d.imageData?.trim()
+                      ? safeImageSrc(d.imageData, "/images/travel_detsinations.jpg")
+                      : "/images/travel_detsinations.jpg"
                     const isData = img.startsWith("data:")
                     const isActive = selected?.id === d.id
                     return (

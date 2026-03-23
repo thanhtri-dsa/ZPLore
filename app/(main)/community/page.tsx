@@ -14,8 +14,9 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useToast } from "@/hooks/use-toast"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { safeImageSrc } from "@/lib/image"
+import { toast } from "sonner"
 
 type CommunityPost = {
   id: string
@@ -65,7 +66,6 @@ function fmtDate(iso: string) {
 }
 
 export default function CommunityPage() {
-  const { toast } = useToast()
   const [posts, setPosts] = React.useState<CommunityPost[]>([])
   const [loading, setLoading] = React.useState(true)
   const [q, setQ] = React.useState("")
@@ -141,14 +141,34 @@ export default function CommunityPage() {
       })
       const data = await res.json()
       if (res.ok) {
-        toast({ title: "Thành công", description: "Bạn đã đổi thưởng thành công!" })
-        setEcoPoints(data.ecoPoints)
-        loadEcoData()
+        toast.success("Đổi thưởng thành công", {
+          description: `Đã trừ ${rewards.find((x) => x.id === rewardId)?.pointsRequired ?? 0} điểm.`,
+        })
+        setEcoPoints(typeof data.ecoPoints === "number" ? data.ecoPoints : 0)
+        setRewards((prev) =>
+          prev.map((r) => (r.id === rewardId ? { ...r, stock: Math.max(0, r.stock - 1) } : r))
+        )
+        const reward = rewards.find((x) => x.id === rewardId)
+        if (reward) {
+          const now = new Date().toISOString()
+          setPointLogs((prev) => [
+            {
+              id: `tmp-redeem-${reward.id}-${now}`,
+              actionType: "SPEND_REDEEM",
+              pointsChange: -reward.pointsRequired,
+              description: `Redeemed reward: ${reward.title}`,
+              createdAt: now,
+              reward,
+            },
+            ...prev,
+          ])
+        }
+        void loadEcoData()
       } else {
-        toast({ title: "Lỗi", description: data.error || "Không thể đổi thưởng", variant: "destructive" })
+        toast.error("Không thể đổi thưởng", { description: data.error || "Vui lòng thử lại." })
       }
     } catch {
-      toast({ title: "Lỗi", description: "Đã có lỗi xảy ra", variant: "destructive" })
+      toast.error("Đã có lỗi xảy ra", { description: "Vui lòng thử lại." })
     } finally {
       setRedeeming(null)
     }
@@ -164,14 +184,16 @@ export default function CommunityPage() {
         body: JSON.stringify(reportForm),
       })
       if (res.ok) {
-        toast({ title: "Đã gửi báo cáo", description: "Cảm ơn bạn đã góp phần bảo vệ môi trường." })
+        toast.success("Đã gửi báo cáo", {
+          description: "Cảm ơn bạn đã góp phần bảo vệ môi trường.",
+        })
         setOpenReport(false)
         setReportForm({ description: "", proofImageData: "" })
       } else {
-        toast({ title: "Lỗi", description: "Không thể gửi báo cáo", variant: "destructive" })
+        toast.error("Không thể gửi báo cáo")
       }
     } catch {
-      toast({ title: "Lỗi", description: "Đã có lỗi xảy ra", variant: "destructive" })
+      toast.error("Đã có lỗi xảy ra")
     } finally {
       setReporting(false)
     }
@@ -383,7 +405,9 @@ export default function CommunityPage() {
                     </Card>
                   ) : (
                     posts.map((p) => {
-                      const img = p.imageData && p.imageData.trim() ? p.imageData : null
+                      const img = p.imageData && p.imageData.trim()
+                        ? safeImageSrc(p.imageData, "/images/travel_detsinations.jpg")
+                        : null
                       const isData = !!img && img.startsWith("data:")
                       return (
                         <Card key={p.id} className="vn-card overflow-hidden border-none shadow-sm hover:shadow-md transition-all group">
@@ -563,7 +587,12 @@ export default function CommunityPage() {
                     <Card key={r.id} className="vn-card overflow-hidden border-none shadow-sm flex flex-col group h-full">
                       <div className="relative h-32 md:h-48 bg-slate-100 shrink-0">
                         {r.imageData ? (
-                          <Image src={r.imageData} alt={r.title} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                          <Image
+                            src={safeImageSrc(r.imageData, '/placeholder-image.jpg')}
+                            alt={r.title}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-700"
+                          />
                         ) : (
                           <div className="absolute inset-0 flex items-center justify-center">
                             <Gift className="w-10 h-10 text-slate-300" />

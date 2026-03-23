@@ -12,9 +12,6 @@ import { motion } from 'framer-motion';
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import Link from "next/link";
 
-const CACHE_KEY = "packages_data";
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-
 export default function PackagesPage() {
   const [packages, setPackages] = useState<Package[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,29 +30,11 @@ export default function PackagesPage() {
       try {
         setLoading(true);
 
-        const cachedData = localStorage.getItem(CACHE_KEY);
-        if (cachedData) {
-          const { data, timestamp } = JSON.parse(cachedData);
-          if (Date.now() - timestamp < CACHE_DURATION) {
-            setPackages(data);
-            setLoading(false);
-            return;
-          }
-        }
-
         const response = await fetch("/api/packages");
         if (!response.ok) {
           throw new Error("No packages found, retry refreshing the page");
         }
         const data = await response.json();
-
-        localStorage.setItem(
-          CACHE_KEY,
-          JSON.stringify({
-            data,
-            timestamp: Date.now(),
-          })
-        );
 
         setPackages(data);
         setError(null);

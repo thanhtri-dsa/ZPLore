@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import Image from "next/image"
 import Link from "next/link"
+import { safeImageSrc } from "@/lib/image"
 
 interface Blog {
   id: string
@@ -107,16 +108,18 @@ export function BlogsSection() {
           </Link>
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {blogs.map((blog) => (
+          {blogs.map((blog) => {
+            const imageSrc = safeImageSrc(blog.imageData, '/placeholder-image.jpg')
+            return (
             <Card key={blog.id} className="vn-card overflow-hidden group">
               <CardContent className="relative p-0">
                 <Image
-                  src={blog.imageData || '/placeholder-image.jpg'}
+                  src={imageSrc}
                   alt={blog.title}
                   width={400}
                   height={200}
-                  {...(blog.imageData.startsWith('data:') 
-                    ? { unoptimized: true } 
+                  {...(imageSrc.startsWith('data:')
+                    ? { unoptimized: true }
                     : {})}
                   className="h-[200px] w-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
@@ -138,7 +141,8 @@ export function BlogsSection() {
                 </div>
               </CardContent>
             </Card>
-          ))}
+            )
+          })}
         </div>
       </div>
     </section>

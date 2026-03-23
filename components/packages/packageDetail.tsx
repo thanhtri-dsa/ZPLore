@@ -14,6 +14,7 @@ import { toast } from "sonner"
 import Link from 'next/link'
 import Image from 'next/image'
 import dynamic from 'next/dynamic'
+import { safeImageSrc } from '@/lib/image'
 
 const RouteMapLoader = dynamic(
   () => import('@/components/ui/RouteMapLoader'),
@@ -254,6 +255,8 @@ const ItineraryTabContent = ({
   itinerarySummary,
   bookingDate,
   checkpointDone,
+  currentCoords,
+  checkpointRadiusM = 20,
   onCheckIn
 }: {
   travelPackage: PackageDestinationProps['package']
@@ -271,6 +274,8 @@ const ItineraryTabContent = ({
   itinerarySummary: { legs: { id: string, fromName: string, toName: string, mode: string, kgCo2e?: number | null }[] }
   bookingDate: Date | undefined
   checkpointDone: Record<string, boolean>
+  currentCoords: { lat: number; lng: number } | null
+  checkpointRadiusM?: number
   onCheckIn: (legId: string) => void
 }) => (
   <div className="space-y-8 md:space-y-12">
@@ -361,6 +366,33 @@ const ItineraryTabContent = ({
                       legNumber > 1 ? legs[legNumber - 2]?.id : null
                     const canCheckIn =
                       bookingDate && !isChecked && (!prevLegId || checkpointDone[prevLegId] === true)
+
+                    // Geofence check: complete checkpoint only when the user is near the checkpoint coordinates.
+                    // We use `toLat/toLng` if available, otherwise fallback to `fromLat/fromLng`.
+                    const targetLat =
+                      typeof leg.toLat === 'number' && Number.isFinite(leg.toLat)
+                        ? leg.toLat
+                        : typeof leg.fromLat === 'number' && Number.isFinite(leg.fromLat)
+                          ? leg.fromLat
+                          : null
+                    const targetLng =
+                      typeof leg.toLng === 'number' && Number.isFinite(leg.toLng)
+                        ? leg.toLng
+                        : typeof leg.fromLng === 'number' && Number.isFinite(leg.fromLng)
+                          ? leg.fromLng
+                          : null
+                    const targetOk = targetLat != null && targetLng != null
+                    const distanceToCheckpointM =
+                      currentCoords && targetOk
+                        ? haversineDistanceKm(currentCoords, { lat: targetLat, lng: targetLng }) * 1000
+                        : null
+                    const isNearCheckpoint =
+                      typeof distanceToCheckpointM === 'number' && Number.isFinite(distanceToCheckpointM)
+                        ? distanceToCheckpointM <= checkpointRadiusM
+                        : false
+
+                    // If checkpoint doesn't have coordinates, fallback to the old manual behavior.
+                    const canConfirmCheckpoint = canCheckIn && (!targetOk || isNearCheckpoint)
                     const etaLabel = (() => {
                       if (!bookingDate) return null
                       const offsetMinutes = typeof leg.offsetMinutes === 'number' ? leg.offsetMinutes : 0
@@ -429,10 +461,20 @@ const ItineraryTabContent = ({
                               className={`h-10 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${
                                 isChecked ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-emerald-600 border-emerald-600 text-white hover:bg-emerald-700'
                               }`}
-                              disabled={!canCheckIn}
+                              disabled={!canConfirmCheckpoint}
                               onClick={() => onCheckIn(leg.id)}
                             >
-                              {isChecked ? 'Đã check-in' : `Checkpoint chặng ${legNumber}`}
+                              {isChecked
+                                ? 'Đã check-in'
+                                : !canCheckIn
+                                  ? 'Chờ chặng trước'
+                                  : !targetOk
+                                    ? `Checkpoint chặng ${legNumber}`
+                                    : distanceToCheckpointM == null
+                                      ? 'Đang lấy GPS...'
+                                      : isNearCheckpoint
+                                        ? 'Conform & check-in'
+                                        : `Còn ~${Math.max(1, Math.round(distanceToCheckpointM))}m`}
                             </Button>
 
                             <Button
@@ -738,8 +780,8 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
   const [isTracking, setIsTracking] = useState(false)
   const [trackedDistance, setTrackedDistance] = useState(0)
   const [lastCoords, setLastCoords] = useState<{ lat: number; lng: number } | null>(null)
+  const [currentCoords, setCurrentCoords] = useState<{ lat: number; lng: number } | null>(null)
   const [trackingMode, setTrackingMode] = useState<TransportMode>('BUS')
-
   // Computations
   const trackedEmissions = useMemo(() => {
     return computeLegKgCo2e({ mode: trackingMode, distanceKm: trackedDistance, travelers: travelerCount });
@@ -1053,6 +1095,8 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
           const { latitude: lat, longitude: lng, accuracy } = position.coords;
           if (accuracy > 100) return;
           const newCoords = { lat, lng };
+          // Keep a "live" position for geofence checks (independent of distance accumulation).
+          setCurrentCoords(newCoords);
           if (lastCoords) {
             const distance = haversineDistanceKm(lastCoords, newCoords);
             if (distance > 0.01 && distance < 5) {
@@ -1139,7 +1183,7 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
           className="absolute inset-0"
         >
           <Image 
-            src={travelPackage.imageUrl || "/images/travel_detsinations.jpg"} 
+            src={safeImageSrc(travelPackage.imageUrl, "/images/travel_detsinations.jpg")} 
             alt={travelPackage.name} 
             fill 
             className="object-cover" 
@@ -1274,6 +1318,7 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
                       itinerarySummary={itinerarySummary}
                       bookingDate={bookingDate}
                       checkpointDone={checkpointDone}
+                      currentCoords={currentCoords}
                       onCheckIn={handleCheckIn}
                     />
                   </motion.div>
@@ -1304,6 +1349,7 @@ export default function PackageDestination({ package: travelPackage }: PackageDe
                           itinerarySummary={itinerarySummary}
                           bookingDate={bookingDate}
                           checkpointDone={checkpointDone}
+                          currentCoords={currentCoords}
                           onCheckIn={handleCheckIn}
                         />
                       </motion.div>

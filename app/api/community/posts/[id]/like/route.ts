@@ -13,8 +13,16 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
       !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim() &&
       (process.env.NODE_ENV === "production" || process.env.FORCE_CLERK_AUTH === "true")
 
-    const userId = clerkEnabled ? getAuth(_req).userId : "dev-user"
-    if (clerkEnabled && !userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    // Nếu Clerk bật mà chưa login thì dùng `dev-user` để vẫn cho tương tác chạy (MVP/test).
+    let userId: string | null = null
+    if (clerkEnabled) {
+      try {
+        userId = getAuth(_req).userId ?? null
+      } catch {
+        userId = null
+      }
+    }
+    if (!userId) userId = "dev-user"
 
     // Ensure each user can like once (v2 table), keep counter as aggregate
     await prisma.communityPostLike.upsert({

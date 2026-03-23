@@ -3,6 +3,7 @@ import { Package } from '@/types/packages';
 import { ArrowRight, MapPin, CalendarDays, Tag } from 'lucide-react'
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { safeImageSrc } from '@/lib/image';
 
 interface PackageCardProps {
   package: Package;
@@ -50,10 +51,7 @@ function deriveActivityLabel(type: string | undefined, description: string | und
 
 export function PackageCard({ package: pkg }: PackageCardProps) {
   const fallbackImage = "/images/travel_detsinations.jpg"
-  const src =
-    typeof pkg.imageData === 'string' && pkg.imageData.trim().length > 0 && pkg.imageData !== '/images/saigon.jpg'
-      ? pkg.imageData
-      : fallbackImage
+  const src = safeImageSrc(pkg.imageData, fallbackImage)
 
   const typeText = (pkg.type ?? "").toLowerCase()
   const descText = (pkg.description ?? "").toLowerCase()

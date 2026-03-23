@@ -11,6 +11,7 @@ import {
   AlertTitle 
 } from '@/components/ui/alert';
 import Image from 'next/image';
+import { safeImageSrc } from '@/lib/image';
 
 // Skeleton Component for Loading State
 const BlogPostSkeleton = () => (
@@ -48,14 +49,19 @@ const RelatedBlogCard = ({ blog }: { blog: BlogPost }) => (
   >
     {blog.imageData && (
       <div className="relative pt-[56.25%] overflow-hidden rounded-t-lg"> {/* 16:9 Aspect Ratio */}
+        {(() => {
+          const imageSrc = safeImageSrc(blog.imageData, '/placeholder-image.jpg')
+          return (
         <Image 
-          src={blog.imageData} 
+          src={imageSrc} 
           alt={blog.title} 
           fill
           className="object-cover"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          {...(blog.imageData.startsWith('data:') ? { unoptimized: true } : {})}
+          {...(imageSrc.startsWith('data:') ? { unoptimized: true } : {})}
         />
+          )
+        })()}
       </div>
     )}
     <div className="p-4">
@@ -216,16 +222,21 @@ export default function EnhancedBlogPostPage({ params }: { params: { id: string 
 
           {blog.imageData && (
             <div className="mb-6 rounded-lg overflow-hidden shadow-md">
+              {(() => {
+                const imageSrc = safeImageSrc(blog.imageData, '/placeholder-image.jpg')
+                return (
               <Image
-                src={blog.imageData}
+                src={imageSrc}
                 alt={blog.title}
                 className="w-full h-auto object-cover"
                 width={1200}  // Added width
                 height={600}  // Added height
-                {...(blog.imageData.startsWith('data:') 
+                {...(imageSrc.startsWith('data:') 
                   ? { unoptimized: true } 
                   : {})}
               />
+                )
+              })()}
             </div>
           )}
 

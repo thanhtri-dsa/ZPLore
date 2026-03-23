@@ -85,10 +85,13 @@ export default function CustomerManagement() {
     fetchCustomers()
   }, [fetchCustomers])
 
-  const filtered = customers.filter(c => 
-    `${c.firstname} ${c.lastname}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    c.email.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const filtered = customers.filter((c) => {
+    const first = (c.firstname ?? '').toString()
+    const last = (c.lastname ?? '').toString()
+    const email = (c.email ?? '').toString()
+    const q = searchQuery.toLowerCase()
+    return `${first} ${last}`.toLowerCase().includes(q) || email.toLowerCase().includes(q)
+  })
 
   const totalPages = Math.ceil(filtered.length / LIMIT)
   const currentPageData = filtered.slice((page - 1) * LIMIT, page * LIMIT)
@@ -198,14 +201,19 @@ export default function CustomerManagement() {
                   </TableRow>
                 ) : (
                   currentPageData.map((customer) => {
-                    const fullName = `${customer.firstname} ${customer.lastname}`
+                    const fullName =
+                      `${customer.firstname ?? ''} ${customer.lastname ?? ''}`.trim() ||
+                      'Khách hàng'
+                    const firstInitial = (customer.firstname ?? '').toString().trim().charAt(0).toUpperCase()
+                    const lastInitial = (customer.lastname ?? '').toString().trim().charAt(0).toUpperCase()
                     return (
                       <TableRow key={customer.id} className="h-16 border-slate-50 hover:bg-slate-50/60 transition-colors group">
                         <TableCell className="pl-5">
                           <div className="flex items-center gap-3">
                             <Avatar className="h-9 w-9 border border-slate-100 ring-2 ring-emerald-500/10 ring-offset-2 ring-offset-white">
                               <AvatarFallback className="bg-emerald-50 text-emerald-600 font-black text-[11px]">
-                                {customer.firstname[0]}{customer.lastname[0]}
+                                {firstInitial}
+                                {lastInitial}
                               </AvatarFallback>
                             </Avatar>
                             <div className="flex flex-col">

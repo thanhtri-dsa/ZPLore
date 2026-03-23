@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Calendar, Tag, ArrowUpRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import type { BlogPost } from '@/types/blogs';
+import { safeImageSrc } from '@/lib/image';
 
 interface BlogCardProps {
   blog: BlogPost;
@@ -24,6 +25,7 @@ export default function BlogCard({ blog }: BlogCardProps) {
       : typeof tagsValue === 'string'
         ? tagsValue.split(',').map((t) => t.trim()).filter(Boolean)
         : []
+  const imageSrc = safeImageSrc(blog.imageData, '/placeholder.svg?height=320&width=400')
 
   return (
     <Card className="group hover:shadow-lg transition-all duration-300 overflow-hidden border-green-100">
@@ -32,7 +34,7 @@ export default function BlogCard({ blog }: BlogCardProps) {
           <div className="w-full sm:w-48 flex-shrink-0">
             <div className="relative w-full aspect-video sm:aspect-square rounded-lg overflow-hidden">
               <Image
-                src={blog.imageData || '/placeholder.svg?height=320&width=400'}
+                src={imageSrc}
                 alt={blog.title}
                 fill
                 className="object-cover transform group-hover:scale-110 transition-transform duration-300"
