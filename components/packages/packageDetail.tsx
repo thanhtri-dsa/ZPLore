@@ -111,7 +111,16 @@ const InfoTabContent = ({
 }: {
   travelPackage: PackageDestinationProps['package']
   itinerarySummary: { totalDistanceKm: number; totalKgCo2e: number; totalSavings: number }
-}) => (
+}) => {
+  const estimatedCo2Kg =
+    itinerarySummary.totalKgCo2e > 0
+      ? itinerarySummary.totalKgCo2e
+      : Math.max(0.6, itinerarySummary.totalDistanceKm * 0.08)
+  const estimatedCo2PerGuest = Math.max(0.1, estimatedCo2Kg / 2)
+  const co2Level = estimatedCo2Kg < 1 ? 'Thấp' : estimatedCo2Kg < 3 ? 'Trung bình' : 'Cao'
+  const co2Progress = Math.min(100, Math.round((estimatedCo2Kg / 5) * 100))
+
+  return (
   <div className="bg-white/80 backdrop-blur-md p-6 sm:p-8 md:p-12 lg:p-16 rounded-[2rem] sm:rounded-[2.5rem] md:rounded-[3rem] shadow-sm border border-white relative overflow-hidden">
     <div className="absolute top-0 right-0 opacity-[0.05] vn-pattern w-64 h-64 rotate-12 -mr-10 -mt-10" />
     <div className="absolute bottom-0 left-0 opacity-[0.05] vn-pattern w-48 h-48 -ml-10 -mb-10 rotate-45" />
@@ -126,6 +135,40 @@ const InfoTabContent = ({
         <p className="text-sm sm:text-base md:text-lg text-gray-700 leading-relaxed whitespace-pre-line">
           {travelPackage.description}
         </p>
+
+        <div className="mt-6 rounded-[1.6rem] bg-white border border-gray-100 p-5 shadow-sm">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-2">
+              <Leaf className="text-secondary" size={16} />
+              <div className="text-[10px] font-black uppercase tracking-widest text-primary">Demo lượng CO2 dự kiến</div>
+            </div>
+            <div className="rounded-full bg-primary/5 border border-primary/10 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-primary">
+              {co2Level}
+            </div>
+          </div>
+
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="rounded-xl border border-gray-100 bg-gray-50/50 p-3">
+              <div className="text-[9px] font-black uppercase tracking-widest text-gray-400">Tổng CO2 dự kiến</div>
+              <div className="mt-1 text-base font-black text-primary">{estimatedCo2Kg.toFixed(1)} kg CO2e</div>
+            </div>
+            <div className="rounded-xl border border-gray-100 bg-gray-50/50 p-3">
+              <div className="text-[9px] font-black uppercase tracking-widest text-gray-400">CO2 / người</div>
+              <div className="mt-1 text-base font-black text-primary">{estimatedCo2PerGuest.toFixed(1)} kg CO2e</div>
+            </div>
+            <div className="rounded-xl border border-gray-100 bg-gray-50/50 p-3">
+              <div className="text-[9px] font-black uppercase tracking-widest text-gray-400">Mục tiêu demo</div>
+              <div className="mt-1 text-base font-black text-secondary">Net Zero Carbon</div>
+            </div>
+          </div>
+
+          <div className="mt-4 h-2 rounded-full bg-gray-100 overflow-hidden">
+            <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${co2Progress}%` }} />
+          </div>
+          <div className="mt-2 text-[11px] text-gray-500">
+            Thang demo phát thải: 0 - 5 kg CO2e cho toàn hành trình.
+          </div>
+        </div>
 
         <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="rounded-2xl bg-white p-5 border border-gray-100 shadow-sm flex items-start gap-4 min-w-0">
@@ -237,7 +280,8 @@ const InfoTabContent = ({
       </div>
     </div>
   </div>
-)
+  )
+}
 
 const ItineraryTabContent = ({ 
   travelPackage, 

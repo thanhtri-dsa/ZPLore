@@ -13,7 +13,7 @@ export default function MainLayout({
       <main className="pb-[calc(env(safe-area-inset-bottom)+70px)] lg:pb-0">
         {children}
       </main>
-      {/* <MobileBottomNav /> */}
+      <MobileBottomNav /> 
       <Footer />
     </>
   )

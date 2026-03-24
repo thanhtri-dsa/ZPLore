@@ -396,7 +396,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 🤝 Cộng đồng */}
+      {/* Cộng đồng */}
       <section className="py-14 md:py-20 vn-pattern">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
