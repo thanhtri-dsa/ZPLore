@@ -3,7 +3,7 @@ import { Be_Vietnam_Pro, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { Toaster } from 'sonner'
 import AuthWrapper from '@/components/auth-wrapper'
-import { Analytics } from "@vercel/analytics/react"
+import { Analytics } from "@vercel/analytics/next"
 import Script from 'next/script'
 import { OfflineWrapper } from "@/components/offlineWrapper"
 import CookieConsentBanner from '@/components/CookieConsentBanner';
